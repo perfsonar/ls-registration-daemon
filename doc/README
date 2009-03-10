@@ -1,0 +1,42 @@
+Lookup Service Registration Daemon README File
+==============================================
+
+Description
+-----------
+
+The Lookup Service Registration Daemon enables sites to register all their
+bwctl, owamp, ndt and npad services from a single location. The daemon will try
+contacting the services periodically and will register the services if they are
+up and unregister them if they go down.
+
+Installation From Tarball
+-------------------------
+
+    1. Become root.
+    2. Run "scripts/install_dependencies.sh"
+    3. Run "make install"
+    4. Run "scripts/prepare_environment.sh"
+
+Configuration
+-------------
+
+    1. Edit "/opt/perfsonar_ps/ls_registration_daemon/etc/ls_registration_daemon.conf"
+    2. Set the "ls_instance" variable if you'd like to register with a specific Lookup Service
+    3. Add desired services to check
+
+
+    5. Start the daemon with "/opt/perfsonar_ps/ls_registration_daemon/scripts/ls_registration_daemon start"
+
+Starting The Daemon
+-------------------
+  Installation from RPM:
+
+    1. As root, start the daemon with "/etc/init.d/topology_service start"
+
+  Installation from Tarball:
+
+    1. As root, start the daemon with "/opt/perfsonar_ps/topology_service/scripts/topology_service start"
+
+Copyright (c) 2004-2008, Internet2 and the University of Delaware
+
+All rights reserved.
