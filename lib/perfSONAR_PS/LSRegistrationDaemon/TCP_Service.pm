@@ -20,6 +20,8 @@ use warnings;
 use perfSONAR_PS::Utils::DNS qw(resolve_address);
 use perfSONAR_PS::Utils::Host qw(get_ips);
 
+our $VERSION = 3.1;
+
 use base 'perfSONAR_PS::LSRegistrationDaemon::Base';
 
 use fields 'ADDRESSES', 'PORT';

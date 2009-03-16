@@ -17,6 +17,8 @@ service status checking or event type.
 use strict;
 use warnings;
 
+our $VERSION = 3.1;
+
 use Log::Log4perl qw/get_logger/;
 
 use perfSONAR_PS::Utils::DNS qw(reverse_dns);

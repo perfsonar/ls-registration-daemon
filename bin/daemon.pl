@@ -5,18 +5,16 @@ use warnings;
 
 =head1 NAME
 
-ls_registration_daemin.pl - Registers services (e.g. daemons such as owamp,
+ls_registration_daemon.pl - Registers services (e.g. daemons such as owamp,
 bwctl) into the global information service.
 
 =head1 DESCRIPTION
 
-TBD
+This daemon reads a configuration file consisting of sites and the services
+those sites are running. It will then check those services and register them
+with the specified lookup service.
 
 =cut
-
-use lib "lib";
-use lib "../../lib";
-use lib "/usr/local/perfSONAR/lib";
 
 use FindBin qw($Bin);
 use lib "$Bin/../lib";
