@@ -1,5 +1,19 @@
 package perfSONAR_PS::LSRegistrationDaemon::TCP_Service;
 
+=head1 NAME
+
+perfSONAR_PS::LSRegistrationDaemon::TCP_Service - The TCP_Service class
+provides a simple sub-class for checking if generic TCP services are running.
+
+=head1 DESCRIPTION
+
+This module is meant to be inherited by other classes that define the TCP
+services. It defines the function get_service_addresses, get_node_addresses and
+a simple is_up routine that checks it can connect to the service with a simple
+TCP connect.
+=cut
+
+
 use strict;
 use warnings;
 
@@ -14,6 +28,10 @@ use IO::Socket;
 use IO::Socket::INET6;
 use IO::Socket::INET;
 
+=head2 init($self, $conf)
+This function checks if an address has been configured, if not, it reads the
+local addresses, and uses those to perform the later checks.
+=cut
 sub init {
     my ( $self, $conf ) = @_;
 
@@ -59,6 +77,11 @@ sub init {
     return $self->SUPER::init( $conf );
 }
 
+=head2 is_up ($self)
+This function uses IO::Socket::INET or IO::Socket::INET6 to make a TCP
+connection to the addresses and ports. If it can connect to any of them, it
+returns that the service is up. If not, it returns that the service is down.
+=cut
 sub is_up {
     my ( $self ) = @_;
 
@@ -84,6 +107,9 @@ sub is_up {
     return 0;
 }
 
+=head2 get_service_addresses ($self)
+This function returns the list of addresses for the service is running on.
+=cut
 sub get_service_addresses {
     my ( $self ) = @_;
 
@@ -112,6 +138,9 @@ sub get_service_addresses {
     return \@addresses;
 }
 
+=head2 get_service_addresses ($self)
+This function returns the list of addresses for the service is running on.
+=cut
 sub get_node_addresses {
     my ( $self ) = @_;
 
@@ -141,3 +170,46 @@ sub get_node_addresses {
 }
 
 1;
+
+__END__
+
+=head1 SEE ALSO
+
+L<perfSONAR_PS::Utils::DNS>,L<perfSONAR_PS::Utils::Host>,
+L<perfSONAR_PS::LSRegistrationDaemon::Base>,L<IO::Socket>,
+L<IO::Socket::INET>,L<IO::Socket::INET6>
+
+To join the 'perfSONAR Users' mailing list, please visit:
+
+  https://mail.internet2.edu/wws/info/perfsonar-user
+
+The perfSONAR-PS subversion repository is located at:
+
+  http://anonsvn.internet2.edu/svn/perfSONAR-PS/trunk
+
+Questions and comments can be directed to the author, or the mailing list.
+Bugs, feature requests, and improvements can be directed here:
+
+  http://code.google.com/p/perfsonar-ps/issues/list
+
+=head1 VERSION
+
+$Id$
+
+=head1 AUTHOR
+
+Aaron Brown, aaron@internet2.edu
+
+=head1 LICENSE
+
+You should have received a copy of the Internet2 Intellectual Property Framework
+along with this software.  If not, see
+<http://www.internet2.edu/membership/ip.html>
+
+=head1 COPYRIGHT
+
+Copyright (c) 2007-2009, Internet2
+
+All rights reserved.
+
+=cut

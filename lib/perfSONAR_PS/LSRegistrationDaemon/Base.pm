@@ -1,10 +1,22 @@
 package perfSONAR_PS::LSRegistrationDaemon::Base;
 
+=head1 NAME
+
+perfSONAR_PS::LSRegistrationDaemon::Base - The Base class from which all LS
+Registration Agents inherit.
+
+=head1 DESCRIPTION
+
+This module provides the Base for all the LS Registration Agents. It includes
+most of the common components, like service checking, LS message construction
+and LS registration. The Agents implement the functions specific to them, like
+service status checking or event type.
+
+=cut
+
 use strict;
 use warnings;
 
-use Socket;
-use Socket6;
 use Log::Log4perl qw/get_logger/;
 
 use perfSONAR_PS::Utils::DNS qw(reverse_dns);
@@ -12,6 +24,16 @@ use perfSONAR_PS::Client::LS::Remote;
 
 use fields 'CONF', 'STATUS', 'LOGGER', 'KEY', 'NEXT_REFRESH', 'LS_CLIENT';
 
+=head1 API
+
+The offered API is not meant for external use as many of the functions are
+relied upon by internal aspects of the perfSONAR-PS framework.
+=cut
+
+=head2 new()
+This call instantiates new objects. The object's "init" function must be called
+before any interaction can occur.
+=cut
 sub new {
     my $class = shift;
 
@@ -22,6 +44,11 @@ sub new {
     return $self;
 }
 
+=head2 init($self, $conf)
+This function initializes the object according to the configuration options set
+in the $conf hash. It allocates an LS client, and sets its status to
+"UNREGISTERED".
+=cut
 sub init {
     my ( $self, $conf ) = @_;
 
@@ -38,6 +65,10 @@ sub init {
     return 0;
 }
 
+=head2 service_name ($self)
+This internal function generates the name to register this service as. It calls
+the object-specific function "type" when creating the function.
+=cut
 sub service_name {
     my ( $self ) = @_;
 
@@ -54,6 +85,11 @@ sub service_name {
     return $retval;
 }
 
+=head2 service_name ($self)
+This internal function generates the human-readable description of the service
+to register. It calls the object-specific function "type" when creating the
+function.
+=cut
 sub service_desc {
     my ( $self ) = @_;
 
@@ -73,6 +109,11 @@ sub service_desc {
     return $retval;
 }
 
+=head2 refresh ($self)
+This function is called by the daemon. It checks if the service is up, and if
+so, checks if it should regster the service or send a keepalive to the Lookup
+Service. If not, it unregisters the service from the Lookup Service.
+=cut
 sub refresh {
     my ( $self ) = @_;
 
@@ -106,6 +147,11 @@ sub refresh {
     return;
 }
 
+=head2 register ($self)
+This function is called by the refresh function. It creates an XML description
+of the service. It then registers that service and saves the KEY for when a
+keepalive needs to be done.
+=cut
 sub register {
     my ( $self ) = @_;
 
@@ -166,6 +212,10 @@ sub register {
     return;
 }
 
+=head2 keepalive ($self)
+This function is called by the refresh function. It uses the saved KEY from the
+Lookup Service registration, and sends a refresh to the Lookup Service.
+=cut
 sub keepalive {
     my ( $self ) = @_;
 
@@ -178,6 +228,11 @@ sub keepalive {
     return;
 }
 
+=head2 keepalive ($self)
+This function is called by the refresh function. It uses the saved KEY from the
+Lookup Service registration, and sends an unregister request to the Lookup
+Service.
+=cut
 sub unregister {
     my ( $self ) = @_;
 
@@ -187,6 +242,11 @@ sub unregister {
     return;
 }
 
+=head2 create_node ($self, $addresses)
+This internal function is called by the register function. It uses the passed
+in set of addresses to construct the node that is registered along with the
+lookup service registration.
+=cut
 sub create_node {
     my ( $self, $addresses ) = @_;
     my $node = q{};
@@ -213,3 +273,46 @@ sub create_node {
 }
 
 1;
+
+__END__
+
+=head1 SEE ALSO
+
+L<Log::Log4perl>, L<perfSONAR_PS::Utils::DNS>,
+L<perfSONAR_PS::Client::LS::Remote>
+
+
+To join the 'perfSONAR Users' mailing list, please visit:
+
+  https://mail.internet2.edu/wws/info/perfsonar-user
+
+The perfSONAR-PS subversion repository is located at:
+
+  http://anonsvn.internet2.edu/svn/perfSONAR-PS/trunk
+
+Questions and comments can be directed to the author, or the mailing list.
+Bugs, feature requests, and improvements can be directed here:
+
+  http://code.google.com/p/perfsonar-ps/issues/list
+
+=head1 VERSION
+
+$Id$
+
+=head1 AUTHOR
+
+Aaron Brown, aaron@internet2.edu
+
+=head1 LICENSE
+
+You should have received a copy of the Internet2 Intellectual Property Framework
+along with this software.  If not, see
+<http://www.internet2.edu/membership/ip.html>
+
+=head1 COPYRIGHT
+
+Copyright (c) 2007-2009, Internet2
+
+All rights reserved.
+
+=cut
