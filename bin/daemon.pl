@@ -231,6 +231,12 @@ foreach my $pid ( @child_pids ) {
     waitpid( $pid, 0 );
 }
 
+exit(0);
+
+=head2 init_site ($site_conf)
+This function takes a configuration for a site, and generates agents for each
+service it finds. It returns that as an array of service agents.
+=cut
 sub init_site {
     my ( $site_conf ) = @_;
 
@@ -334,6 +340,10 @@ sub init_site {
     return \@services;
 }
 
+=head2 handle_site ($site_conf, \@services )
+This function is the main loop for a ls registration daemon process. It goes
+through and refreshes the services, and pauses for "check_interval" seconds.
+=cut
 sub handle_site {
     my ( $site_conf, $services ) = @_;
 
@@ -378,6 +388,13 @@ __END__
 L<perfSONAR_PS::Common>, L<perfSONAR_PS::Utils::Daemon>,
 L<perfSONAR_PS::Utils::Host>, L<use Getopt::Long>, L<Config::General>,
 L<Log::Log4perl>
+
+L<FindBin>,L<perfSONAR_PS::Common>,L<perfSONAR_PS::Utils::Daemon>
+L<perfSONAR_PS::Utils::Host>,L<perfSONAR_PS::LSRegistrationDaemon::Phoebus>,
+L<perfSONAR_PS::LSRegistrationDaemon::BWCTL>,L<perfSONAR_PS::LSRegistrationDaemon::OWAMP>,
+L<perfSONAR_PS::LSRegistrationDaemon::NDT>,L<perfSONAR_PS::LSRegistrationDaemon::NPAD>,
+L<perfSONAR_PS::LSRegistrationDaemon::Ping>,L<perfSONAR_PS::LSRegistrationDaemon::Traceroute>,
+L<Getopt::Long>,L<Config::General>,L<Log::Log4perl>
 
 To join the 'perfSONAR-PS' mailing list, please visit:
 
