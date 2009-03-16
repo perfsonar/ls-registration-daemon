@@ -424,7 +424,7 @@ with this software.  If not, see <http://www.internet2.edu/membership/ip.html>
 
 =head1 COPYRIGHT
 
-Copyright (c) 2008, Internet2
+Copyright (c) 2009, Internet2
 
 All rights reserved.
 

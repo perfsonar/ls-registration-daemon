@@ -20,10 +20,10 @@ Installation From Tarball
 Configuration
 -------------
 
-    1. Edit "/opt/perfsonar_ps/gc/etc/ls_registration_daemon.conf"
+    1. Edit "/opt/perfsonar_ps/ls_registration_daemon/etc/ls_registration_daemon.conf"
     2. Set the "ls_instance" variable if you'd like to register with a specific Lookup Service
     3. Add desired services to check
-    4. Start the daemon with "/opt/perfsonar_ps/gc/scripts/ls_registration_daemon start"
+    4. Start the daemon with "/opt/perfsonar_ps/ls_registration_daemon/scripts/ls_registration_daemon start"
 
 Starting The Daemon
 -------------------
@@ -35,6 +35,6 @@ Starting The Daemon
 
     1. As root, start the daemon with "/opt/perfsonar_ps/ls_registration_daemon/scripts/ls_registration_daemon start"
 
-Copyright (c) 2004-2008, Internet2 and the University of Delaware
+Copyright (c) 2004-2009, Internet2 and the University of Delaware
 
 All rights reserved.
