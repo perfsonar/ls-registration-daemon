@@ -23,6 +23,7 @@ use base 'perfSONAR_PS::LSRegistrationDaemon::ICMP_Service';
 =head2 type($self)
 Returns the human readable description of the service "Traceroute Responder".
 =cut
+
 sub type {
     my ( $self ) = @_;
 
@@ -32,6 +33,7 @@ sub type {
 =head2 service_type($self)
 Returns the traceroute service type.
 =cut
+
 sub service_type {
     my ( $self ) = @_;
 
@@ -41,6 +43,7 @@ sub service_type {
 =head2 event_type($self)
 Returns the traceroute event type.
 =cut
+
 sub event_type {
     my ( $self ) = @_;
 

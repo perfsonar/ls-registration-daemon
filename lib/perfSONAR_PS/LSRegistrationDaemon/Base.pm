@@ -36,6 +36,7 @@ relied upon by internal aspects of the perfSONAR-PS framework.
 This call instantiates new objects. The object's "init" function must be called
 before any interaction can occur.
 =cut
+
 sub new {
     my $class = shift;
 
@@ -51,6 +52,7 @@ This function initializes the object according to the configuration options set
 in the $conf hash. It allocates an LS client, and sets its status to
 "UNREGISTERED".
 =cut
+
 sub init {
     my ( $self, $conf ) = @_;
 
@@ -58,7 +60,7 @@ sub init {
     $self->{STATUS} = "UNREGISTERED";
 
     if ( $conf->{ls_instance} ) {
-        $self->{LS_CLIENT} = perfSONAR_PS::Client::LS->new({ instance => $conf->{ls_instance} });
+        $self->{LS_CLIENT} = perfSONAR_PS::Client::LS->new( { instance => $conf->{ls_instance} } );
     }
     else {
         $self->{LS_CLIENT} = perfSONAR_PS::Client::LS->new();
@@ -71,6 +73,7 @@ sub init {
 This internal function generates the name to register this service as. It calls
 the object-specific function "type" when creating the function.
 =cut
+
 sub service_name {
     my ( $self ) = @_;
 
@@ -92,6 +95,7 @@ This internal function generates the human-readable description of the service
 to register. It calls the object-specific function "type" when creating the
 function.
 =cut
+
 sub service_desc {
     my ( $self ) = @_;
 
@@ -116,6 +120,7 @@ This function is called by the daemon. It checks if the service is up, and if
 so, checks if it should regster the service or send a keepalive to the Lookup
 Service. If not, it unregisters the service from the Lookup Service.
 =cut
+
 sub refresh {
     my ( $self ) = @_;
 
@@ -154,6 +159,7 @@ This function is called by the refresh function. It creates an XML description
 of the service. It then registers that service and saves the KEY for when a
 keepalive needs to be done.
 =cut
+
 sub register {
     my ( $self ) = @_;
 
@@ -218,6 +224,7 @@ sub register {
 This function is called by the refresh function. It uses the saved KEY from the
 Lookup Service registration, and sends a refresh to the Lookup Service.
 =cut
+
 sub keepalive {
     my ( $self ) = @_;
 
@@ -235,6 +242,7 @@ This function is called by the refresh function. It uses the saved KEY from the
 Lookup Service registration, and sends an unregister request to the Lookup
 Service.
 =cut
+
 sub unregister {
     my ( $self ) = @_;
 
@@ -249,6 +257,7 @@ This internal function is called by the register function. It uses the passed
 in set of addresses to construct the node that is registered along with the
 lookup service registration.
 =cut
+
 sub create_node {
     my ( $self, $addresses ) = @_;
     my $node = q{};

@@ -25,6 +25,7 @@ use constant DEFAULT_PORT => 8200;
 This function reads the NPAD configuration file (if appropriate), and then
 passes the appropriate address and port to the TCP service init routines.
 =cut
+
 sub init {
     my ( $self, $conf ) = @_;
 
@@ -56,6 +57,7 @@ sub init {
 This function reads the NPAD configuration file and returns the address and
 port that the service listens on if set.
 =cut
+
 sub read_npad_config {
     my ( $file ) = @_;
 
@@ -82,6 +84,7 @@ This function returns the list of addresses for this service. This overrides
 the TCP_Service get_service_addresses function so that NPAD URLs are returned as
 URLs.
 =cut
+
 sub get_service_addresses {
     my ( $self ) = @_;
 
@@ -116,6 +119,7 @@ sub get_service_addresses {
 =head2 type($self)
 Returns the human readable description of the service "NPAD Server".
 =cut
+
 sub type {
     my ( $self ) = @_;
 
@@ -125,6 +129,7 @@ sub type {
 =head2 service_type($self)
 Returns the NPAD service type.
 =cut
+
 sub service_type {
     my ( $self ) = @_;
 
@@ -134,6 +139,7 @@ sub service_type {
 =head2 event_type($self)
 Returns the NPAD event type.
 =cut
+
 sub event_type {
     my ( $self ) = @_;
 

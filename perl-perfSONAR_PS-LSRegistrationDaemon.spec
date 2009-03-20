@@ -42,7 +42,9 @@ Requires: 		perl(XML::LibXML)
 Requires: 		perl(base)
 
 %description
-XXX ADD A DESCRIPTION OF THE PACKAGE XXX
+The LS Registration Daemon is used to register service instances for services
+like bwctl, NDT, NPAD, etc. that don't currently support registering
+themselves.
 
 %pre
 /usr/sbin/groupadd perfsonar 2> /dev/null || :
@@ -70,13 +72,13 @@ install -c -m 755 scripts/%{init_script_1}.new $RPM_BUILD_ROOT/etc/init.d/%{init
 rm -rf $RPM_BUILD_ROOT
 
 %files
-%defattr(-,perfsonar,perfsonar,-)
+%defattr(0644,perfsonar,perfsonar,0755)
 %doc %{install_base}/doc/*
 %config %{install_base}/etc/*
-%{install_base}/bin/*
-%{install_base}/scripts/*
+%attr(0755,perfsonar,perfsonar) %{install_base}/bin/*
+%attr(0755,perfsonar,perfsonar) %{install_base}/scripts/*
 %{install_base}/lib/*
-/etc/init.d/*
+%attr(0755,perfsonar,perfsonar) /etc/init.d/*
 
 %post
 mkdir -p /var/log/perfsonar

@@ -25,6 +25,7 @@ use constant DEFAULT_PORT => 7123;
 Since NDT doesn't have a configuration file like the others, this function
 simply sets the default port values unless it has been set in the config file.
 =cut
+
 sub init {
     my ( $self, $conf ) = @_;
 
@@ -41,6 +42,7 @@ This function returns the list of addresses for this service. This overrides
 the TCP_Service get_service_addresses function so that NDT URLs are returned as
 URLs.
 =cut
+
 sub get_service_addresses {
     my ( $self ) = @_;
 
@@ -72,6 +74,7 @@ sub get_service_addresses {
 =head2 type($self)
 Returns the human readable description of the service "NDT Server".
 =cut
+
 sub type {
     my ( $self ) = @_;
 
@@ -81,6 +84,7 @@ sub type {
 =head2 service_type($self)
 Returns the NDT service type.
 =cut
+
 sub service_type {
     my ( $self ) = @_;
 
@@ -90,6 +94,7 @@ sub service_type {
 =head2 event_type($self)
 Returns the NDT event type.
 =cut
+
 sub event_type {
     my ( $self ) = @_;
 

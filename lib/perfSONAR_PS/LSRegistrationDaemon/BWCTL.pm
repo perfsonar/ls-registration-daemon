@@ -26,6 +26,7 @@ use constant DEFAULT_PORT => 4823;
 This function reads the bwctl configuration file (if appropriate), and then
 passes the appropriate address and port to the TCP service init routines.
 =cut
+
 sub init {
     my ( $self, $conf ) = @_;
 
@@ -66,6 +67,7 @@ sub init {
 This function reads the bwctl configuration file and returns the address and
 port that the service listens on if set.
 =cut
+
 sub read_bwctl_config {
     my ( $file ) = @_;
 
@@ -120,6 +122,7 @@ sub read_bwctl_config {
 =head2 type($self)
 Returns the human readable description of the service "BWCTL Server".
 =cut
+
 sub type {
     my ( $self ) = @_;
 
@@ -129,6 +132,7 @@ sub type {
 =head2 type($self)
 Returns the bwctl service type.
 =cut
+
 sub service_type {
     my ( $self ) = @_;
 
@@ -138,6 +142,7 @@ sub service_type {
 =head2 type($self)
 Returns the bwctl event type.
 =cut
+
 sub event_type {
     my ( $self ) = @_;
 

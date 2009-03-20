@@ -25,6 +25,7 @@ use constant DEFAULT_PORT => 5006;
 This function doesn't yet read the Phoebus configuration file, so it simply
 sets the default port values unless it has been set in the config file.
 =cut
+
 sub init {
     my ( $self, $conf ) = @_;
 
@@ -39,6 +40,7 @@ sub init {
 =head2 type($self)
 Returns the human readable description of the service "Phoebus Gateway".
 =cut
+
 sub type {
     my ( $self ) = @_;
 
@@ -48,6 +50,7 @@ sub type {
 =head2 service_type($self)
 Returns the Phoebus service type.
 =cut
+
 sub service_type {
     my ( $self ) = @_;
 
@@ -57,6 +60,7 @@ sub service_type {
 =head2 event_type($self)
 Returns the Phoebus event type.
 =cut
+
 sub event_type {
     my ( $self ) = @_;
 

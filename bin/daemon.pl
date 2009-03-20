@@ -229,12 +229,13 @@ foreach my $pid ( @child_pids ) {
     waitpid( $pid, 0 );
 }
 
-exit(0);
+exit( 0 );
 
 =head2 init_site ($site_conf)
 This function takes a configuration for a site, and generates agents for each
 service it finds. It returns that as an array of service agents.
 =cut
+
 sub init_site {
     my ( $site_conf ) = @_;
 
@@ -342,6 +343,7 @@ sub init_site {
 This function is the main loop for a ls registration daemon process. It goes
 through and refreshes the services, and pauses for "check_interval" seconds.
 =cut
+
 sub handle_site {
     my ( $site_conf, $services ) = @_;
 
