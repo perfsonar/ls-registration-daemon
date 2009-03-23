@@ -84,6 +84,16 @@ rm -rf $RPM_BUILD_ROOT
 mkdir -p /var/log/perfsonar
 chown perfsonar:perfsonar /var/log/perfsonar
 
+/sbin/chkconfig --add %{init_script_1}
+#/sbin/chkconfig --add %{init_script_2}
+
+%preun
+/etc/init.d/%{init_script_1} stop
+/sbin/chkconfig --del %{init_script_1}
+
+#/etc/init.d/%{init_script_2} stop
+#/sbin/chkconfig --del %{init_script_2}
+
 %changelog
 * Wed Dec 10 2008 aaron@internet2.edu 0.10-1
 - Initial service oriented spec file

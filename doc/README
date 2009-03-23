@@ -23,7 +23,20 @@ Configuration
     1. Edit "/opt/perfsonar_ps/ls_registration_daemon/etc/ls_registration_daemon.conf"
     2. Set the "ls_instance" variable if you'd like to register with a specific Lookup Service
     3. Add desired services to check
-    4. Start the daemon with "/opt/perfsonar_ps/ls_registration_daemon/scripts/ls_registration_daemon start"
+
+Configuring Services To Check
+-----------------------------
+	Edit the file "/opt/perfsonar_ps/ls_registration_daemon/etc/ls_registration_daemon.conf". This file consists of key/value pairs separated by spaces, along with 
+
+    Configuring A Site
+    ------------------
+
+	The site is the basic unit of configuration is the site. A single
+	configured site can include one or more services. 
+
+Logging Configuration
+---------------------
+    The file "/opt/perfsonar_ps/ls_registration_daemon/etc/ls_registration_daemon-logger.conf" can be edited to change where the logs are sent to. 
 
 Starting The Daemon
 -------------------
