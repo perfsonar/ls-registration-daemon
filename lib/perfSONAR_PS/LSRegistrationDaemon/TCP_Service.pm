@@ -16,7 +16,7 @@ TCP connect.
 use strict;
 use warnings;
 
-use perfSONAR_PS::Utils::DNS qw(resolve_address);
+use perfSONAR_PS::Utils::DNS qw(resolve_address reverse_dns);
 use perfSONAR_PS::Utils::Host qw(get_ips);
 
 our $VERSION = 3.1;
@@ -66,7 +66,7 @@ sub init {
 
         @addresses = keys %addr_map;
     }
-    elsif ( $conf->{is_local} ) {
+    else {
         @addresses = get_ips();
     }
 
@@ -122,8 +122,13 @@ sub get_service_addresses {
     foreach my $addr ( @{ $self->{ADDRESSES} } ) {
         my $uri;
 
+        my $dns = reverse_dns( $addr->{value} );
+
         $uri = "tcp://";
-        if ( $addr =~ /:/ ) {
+		if ( $dns ) {
+			$uri .= "$dns";
+        }
+        elsif ( $addr =~ /:/ ) {
             $uri .= "[$addr]";
         }
         else {

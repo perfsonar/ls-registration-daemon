@@ -19,7 +19,6 @@ NetAddr::IP
 POSIX
 Params::Validate
 Regexp::Common
-Socket
 Time::HiRes
 XML::LibXML
 base
