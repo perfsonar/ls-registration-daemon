@@ -1,0 +1,122 @@
+          perfSONAR LS Registration Daemon Installation Instructions
+
+--------------------------------------------------------------------------------
+
+The perfSONAR-PS LS Registration Daemon allows networks to register their
+BWCTL, OWAMP, NDT, NPAD and Phoebus services with a perfSONAR-PS Lookup
+Service. This allows interested clients to search for and find the network's
+services. 
+
+Prerequisites:
+--------------
+
+The Topology Service is packaged as an RPM - an installation format that is
+geared towards use on Red Hat linux based systems. Examples include Fedora, Red
+Hat Enterprise Linux, CentOS, White Box, Scientific Linux, and possibly others. 
+
+These Linux distributions normally rely on "Package Management" tools to install
+and maintain software. Examples of these tools include Up2Date and YUM.
+Internet2 has created a repository to house the perfSONAR-PS software, related
+performance tools, and hard to find prerequisites, we encourage adopters of
+these tools to install a simple RPM package that gives the necessary
+configuration information for the YUM tools. The RPM can be found here:
+
+  http://software.interent2.edu/Internet2-repo-0.1-2.noarch.rpm
+  
+To install this RPM first import the signing key:
+
+  rpm --import http://software.internet2.edu/rpms/RPM-GPG-KEY-Internet2
+
+Then install the RPM:
+
+  rpm -ivh Internet2-repo-0.1-2.noarch.rpm
+
+It is also recommended that an additional repository be installed for hard to 
+find prerequisite software that may not be available in traditional repositories
+used by the Linux distributions. Two regarded repositories are:
+
+ * http://dries.ulyssis.org/rpm/
+ * http://dag.wieers.com/rpm/
+ 
+Each site provides configuration instructions and packages similar to the
+Internet2 repository.
+
+
+
+Installation (YUM):
+-------------------
+
+YUM installation also manages the task of finding dependencies. The following
+command is all that is needed:
+
+  yum install perl-perfSONAR_PS-LSRegistrationDaemon-3.1-1.noarch.rpm
+
+There may be several pre-requisites to install depending on the age of your
+system. To ensure that all are found, please be sure to install one of the
+alternative repositories above. 
+
+
+
+Installation (Bare RPM):
+------------------------
+
+If you do not wish to install the Internet2 Repository package, you may simply
+find the appropriate RPM for your architecture without using a package manger.
+For example if you are on an "i386" architecture:
+
+  wget -c http://software.internet2.edu/rpms/i386/main/RPMS/perl-perfSONAR_PS-LSRegistrationDaemon-3.1-1.noarch.rpm
+  
+To install without package manager help:
+
+  rpm -ivh perl-perfSONAR_PS-LSRegistrationDaemon-3.1-1.noarch.rpm
+  
+Note that this RPM may need packages to install correctly: if they are not found
+on your system manual download and install will be required. An alternate
+method is to still use a package manager in a "local" way (YUM only):
+
+  yum localinstall perl-perfSONAR_PS-LSRegistrationDaemon-3.1-1.noarch.rpm
+  
+This will still search the available repositories for any necessary packages.
+
+
+
+Installation (Tar Package):
+---------------------------
+
+All RPM packages are also available in "source" packages that may be installed
+and used in the typical Unix/Linux fashion. There are helper scripts included
+that may be used to download the necessary prerequisite software packages:
+
+  wget -c http://software.internet2.edu/source/perl-perfSONAR_PS-LSRegistrationDaemon-3.1-1.tar.gz
+  tar -zxfv perl-perfSONAR_PS-LSRegistrationDaemon-3.1-1.tar.gz
+  cd perl-perfSONAR_PS-LSRegistrationDaemon-3.1-1/scripts
+  ./install_dependencies.sh
+  ./prepare_environment.sh
+
+These two included scripts will configure the machine's users and startup
+scripts as well as contact CPAN for any necessary perl libraries. 
+
+
+
+Installation (SVN):
+-------------------
+
+Similar to Tar packages, a single service may be downloaded from our anonymous
+subversion server. This is useful for staying on the cutting edge of our
+development (note the example below uses our specific release, but "trunk" may
+be used as well:
+
+  svn checkout http://anonsvn.internet2.edu/svn/perfSONAR-PS/tags/RELEASE_3.1/perfSONAR_PS-LSRegistrationDaemon/
+  svn checkout http://anonsvn.internet2.edu/svn/perfSONAR-PS/tags/RELEASE_3.1/Shared
+
+The instructions are the same here as for the Tar package. When you wish to
+update a specific svn checkout (to retrieve new development or bugfixes):
+
+  cd Shared
+  svn update
+  cd perfSONAR_PS-LSRegistrationDaemon
+  svn update
+
+--------------------------------------------------------------------------------
+
+$Id$

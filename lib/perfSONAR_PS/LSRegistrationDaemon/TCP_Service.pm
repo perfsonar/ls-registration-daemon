@@ -122,7 +122,7 @@ sub get_service_addresses {
     foreach my $addr ( @{ $self->{ADDRESSES} } ) {
         my $uri;
 
-        my $dns = reverse_dns( $addr->{value} );
+        my $dns = reverse_dns( $addr );
 
         $uri = "tcp://";
 		if ( $dns ) {

@@ -6,7 +6,7 @@
 
 Name:           perl-perfSONAR_PS-LSRegistrationDaemon
 Version:        0.10
-Release:        1%{?dist}
+Release:        3%{?dist}
 Summary:        perfSONAR_PS Lookup Service Registration Daemon
 License:        distributable, see LICENSE
 Group:          Development/Libraries
@@ -88,11 +88,20 @@ chown perfsonar:perfsonar /var/log/perfsonar
 #/sbin/chkconfig --add %{init_script_2}
 
 %preun
-/etc/init.d/%{init_script_1} stop
-/sbin/chkconfig --del %{init_script_1}
+if [ "$1" = "0" ]; then
+	# Totally removing the service
+	/etc/init.d/%{init_script_1} stop
+	/sbin/chkconfig --del %{init_script_1}
+#	/etc/init.d/%{init_script_2} stop
+#	/sbin/chkconfig --del %{init_script_2}
+fi
 
-#/etc/init.d/%{init_script_2} stop
-#/sbin/chkconfig --del %{init_script_2}
+%postun
+if [ "$1" != "0" ]; then
+	# An RPM upgrade
+	/etc/init.d/%{init_script_1} restart
+#	/etc/init.d/%{init_script_2} restart
+fi
 
 %changelog
 * Wed Dec 10 2008 aaron@internet2.edu 0.10-1
