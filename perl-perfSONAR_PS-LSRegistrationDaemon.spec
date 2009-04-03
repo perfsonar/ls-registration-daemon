@@ -4,9 +4,11 @@
 %define init_script_1 ls_registration_daemon
 # %define init_script_2 ls_registration_daemon
 
+%define disttag pSPS
+
 Name:           perl-perfSONAR_PS-LSRegistrationDaemon
 Version:        0.10
-Release:        3%{?dist}
+Release:        1.%{disttag}
 Summary:        perfSONAR_PS Lookup Service Registration Daemon
 License:        distributable, see LICENSE
 Group:          Development/Libraries
