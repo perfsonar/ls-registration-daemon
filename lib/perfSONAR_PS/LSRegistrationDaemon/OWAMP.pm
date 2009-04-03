@@ -23,8 +23,10 @@ use base 'perfSONAR_PS::LSRegistrationDaemon::TCP_Service';
 use constant DEFAULT_PORT => 861;
 
 =head2 init($self, $conf)
+
 This function reads the owamp configuration file (if appropriate), and then
 passes the appropriate address and port to the TCP service init routines.
+
 =cut
 
 sub init {
@@ -64,8 +66,10 @@ sub init {
 }
 
 =head2 read_owamp_config($file)
+
 This function reads the owamp configuration file and returns the address and
 port that the service listens on if set.
+
 =cut
 
 sub read_owamp_config {
@@ -121,7 +125,9 @@ sub read_owamp_config {
 }
 
 =head2 type($self)
+
 Returns the human readable description of the service "OWAMP Server".
+
 =cut
 
 sub type {
@@ -131,7 +137,9 @@ sub type {
 }
 
 =head2 service_type($self)
+
 Returns the owamp service type.
+
 =cut
 
 sub service_type {
@@ -141,7 +149,9 @@ sub service_type {
 }
 
 =head2 event_type($self)
+
 Returns the owamp event type.
+
 =cut
 
 sub event_type {

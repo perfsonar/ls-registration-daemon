@@ -10,6 +10,7 @@ NPAD services.
 This module provides the request functions to check an NPAD service, and the
 information necessary for the Base module to construct an NPAD service
 instance.
+
 =cut
 
 use strict;
@@ -22,8 +23,10 @@ use base 'perfSONAR_PS::LSRegistrationDaemon::TCP_Service';
 use constant DEFAULT_PORT => 8200;
 
 =head2 init($self, $conf)
+
 This function reads the NPAD configuration file (if appropriate), and then
 passes the appropriate address and port to the TCP service init routines.
+
 =cut
 
 sub init {
@@ -54,8 +57,10 @@ sub init {
 }
 
 =head2 read_npad_config($file)
+
 This function reads the NPAD configuration file and returns the address and
 port that the service listens on if set.
+
 =cut
 
 sub read_npad_config {
@@ -80,9 +85,11 @@ sub read_npad_config {
 }
 
 =head2 get_service_addresses ($self)
+
 This function returns the list of addresses for this service. This overrides
 the TCP_Service get_service_addresses function so that NPAD URLs are returned as
 URLs.
+
 =cut
 
 sub get_service_addresses {
@@ -117,7 +124,9 @@ sub get_service_addresses {
 }
 
 =head2 type($self)
+
 Returns the human readable description of the service "NPAD Server".
+
 =cut
 
 sub type {
@@ -127,7 +136,9 @@ sub type {
 }
 
 =head2 service_type($self)
+
 Returns the NPAD service type.
+
 =cut
 
 sub service_type {
@@ -137,7 +148,9 @@ sub service_type {
 }
 
 =head2 event_type($self)
+
 Returns the NPAD event type.
+
 =cut
 
 sub event_type {

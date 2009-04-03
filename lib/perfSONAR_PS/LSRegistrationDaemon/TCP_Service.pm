@@ -11,6 +11,7 @@ This module is meant to be inherited by other classes that define the TCP
 services. It defines the function get_service_addresses, get_node_addresses and
 a simple is_up routine that checks it can connect to the service with a simple
 TCP connect.
+
 =cut
 
 use strict;
@@ -30,8 +31,10 @@ use IO::Socket::INET6;
 use IO::Socket::INET;
 
 =head2 init($self, $conf)
+
 This function checks if an address has been configured, if not, it reads the
 local addresses, and uses those to perform the later checks.
+
 =cut
 
 sub init {
@@ -80,9 +83,11 @@ sub init {
 }
 
 =head2 is_up ($self)
+
 This function uses IO::Socket::INET or IO::Socket::INET6 to make a TCP
 connection to the addresses and ports. If it can connect to any of them, it
 returns that the service is up. If not, it returns that the service is down.
+
 =cut
 
 sub is_up {
@@ -111,7 +116,9 @@ sub is_up {
 }
 
 =head2 get_service_addresses ($self)
+
 This function returns the list of addresses for the service is running on.
+
 =cut
 
 sub get_service_addresses {
@@ -148,7 +155,9 @@ sub get_service_addresses {
 }
 
 =head2 get_service_addresses ($self)
+
 This function returns the list of addresses for the service is running on.
+
 =cut
 
 sub get_node_addresses {

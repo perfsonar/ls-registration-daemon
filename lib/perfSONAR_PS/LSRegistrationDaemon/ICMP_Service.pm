@@ -27,8 +27,10 @@ use base 'perfSONAR_PS::LSRegistrationDaemon::Base';
 use fields 'ADDRESSES';
 
 =head2 init($self, $conf)
+
 This function checks if an address has been configured, if not, it reads the
 local addresses, and uses those to perform the later checks.
+
 =cut
 
 sub init {
@@ -71,7 +73,9 @@ sub init {
 }
 
 =head2 get_service_addresses ($self)
+
 This function returns the list of addresses for this service.
+
 =cut
 
 sub get_service_addresses {
@@ -99,7 +103,9 @@ sub get_service_addresses {
 }
 
 =head2 get_node_addresses ($self)
+
 This function returns the list of addresses for the node the service is running on.
+
 =cut
 
 sub get_node_addresses {
@@ -109,8 +115,10 @@ sub get_node_addresses {
 }
 
 =head2 is_up ($self)
+
 This function uses Net::Ping::External to ping the service. If any of the
 addresses match, it returns true, if not, it returns false.
+
 =cut
 
 sub is_up {

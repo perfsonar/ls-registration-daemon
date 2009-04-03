@@ -30,11 +30,14 @@ use fields 'CONF', 'STATUS', 'LOGGER', 'KEY', 'NEXT_REFRESH', 'LS_CLIENT';
 
 The offered API is not meant for external use as many of the functions are
 relied upon by internal aspects of the perfSONAR-PS framework.
+
 =cut
 
 =head2 new()
+
 This call instantiates new objects. The object's "init" function must be called
 before any interaction can occur.
+
 =cut
 
 sub new {
@@ -48,9 +51,11 @@ sub new {
 }
 
 =head2 init($self, $conf)
+
 This function initializes the object according to the configuration options set
 in the $conf hash. It allocates an LS client, and sets its status to
 "UNREGISTERED".
+
 =cut
 
 sub init {
@@ -70,8 +75,10 @@ sub init {
 }
 
 =head2 service_name ($self)
+
 This internal function generates the name to register this service as. It calls
 the object-specific function "type" when creating the function.
+
 =cut
 
 sub service_name {
@@ -91,9 +98,11 @@ sub service_name {
 }
 
 =head2 service_name ($self)
+
 This internal function generates the human-readable description of the service
 to register. It calls the object-specific function "type" when creating the
 function.
+
 =cut
 
 sub service_desc {
@@ -116,9 +125,11 @@ sub service_desc {
 }
 
 =head2 refresh ($self)
+
 This function is called by the daemon. It checks if the service is up, and if
 so, checks if it should regster the service or send a keepalive to the Lookup
 Service. If not, it unregisters the service from the Lookup Service.
+
 =cut
 
 sub refresh {
@@ -155,9 +166,11 @@ sub refresh {
 }
 
 =head2 register ($self)
+
 This function is called by the refresh function. It creates an XML description
 of the service. It then registers that service and saves the KEY for when a
 keepalive needs to be done.
+
 =cut
 
 sub register {
@@ -221,8 +234,10 @@ sub register {
 }
 
 =head2 keepalive ($self)
+
 This function is called by the refresh function. It uses the saved KEY from the
 Lookup Service registration, and sends a refresh to the Lookup Service.
+
 =cut
 
 sub keepalive {
@@ -238,9 +253,11 @@ sub keepalive {
 }
 
 =head2 keepalive ($self)
+
 This function is called by the refresh function. It uses the saved KEY from the
 Lookup Service registration, and sends an unregister request to the Lookup
 Service.
+
 =cut
 
 sub unregister {
@@ -253,9 +270,11 @@ sub unregister {
 }
 
 =head2 create_node ($self, $addresses)
+
 This internal function is called by the register function. It uses the passed
 in set of addresses to construct the node that is registered along with the
 lookup service registration.
+
 =cut
 
 sub create_node {
@@ -291,7 +310,6 @@ __END__
 
 L<Log::Log4perl>, L<perfSONAR_PS::Utils::DNS>,
 L<perfSONAR_PS::Client::LS::Remote>
-
 
 To join the 'perfSONAR Users' mailing list, please visit:
 

@@ -232,8 +232,10 @@ foreach my $pid ( @child_pids ) {
 exit( 0 );
 
 =head2 init_site ($site_conf)
+
 This function takes a configuration for a site, and generates agents for each
 service it finds. It returns that as an array of service agents.
+
 =cut
 
 sub init_site {
@@ -340,8 +342,10 @@ sub init_site {
 }
 
 =head2 handle_site ($site_conf, \@services )
+
 This function is the main loop for a ls registration daemon process. It goes
 through and refreshes the services, and pauses for "check_interval" seconds.
+
 =cut
 
 sub handle_site {
@@ -359,9 +363,11 @@ sub handle_site {
 }
 
 =head2 killChildren
+
 Kills all the children for this process off. It uses global variables
 because this function is used by the signal handler to kill off all
 child processes.
+
 =cut
 
 sub killChildren {
@@ -373,7 +379,9 @@ sub killChildren {
 }
 
 =head2 signalHandler
+
 Kills all the children for the process and then exits
+
 =cut
 
 sub signalHandler {
@@ -385,27 +393,26 @@ __END__
 
 =head1 SEE ALSO
 
+L<FindBin>, L<Getopt::Long>, L<Config::General>, L<Log::Log4perl>,
 L<perfSONAR_PS::Common>, L<perfSONAR_PS::Utils::Daemon>,
-L<perfSONAR_PS::Utils::Host>, L<use Getopt::Long>, L<Config::General>,
-L<Log::Log4perl>
+L<perfSONAR_PS::Utils::Host>, L<perfSONAR_PS::LSRegistrationDaemon::Phoebus>,
+L<perfSONAR_PS::LSRegistrationDaemon::BWCTL>,
+L<perfSONAR_PS::LSRegistrationDaemon::OWAMP>,
+L<perfSONAR_PS::LSRegistrationDaemon::NDT>,
+L<perfSONAR_PS::LSRegistrationDaemon::NPAD>,
+L<perfSONAR_PS::LSRegistrationDaemon::Ping>,
+L<perfSONAR_PS::LSRegistrationDaemon::Traceroute>
 
-L<FindBin>,L<perfSONAR_PS::Common>,L<perfSONAR_PS::Utils::Daemon>
-L<perfSONAR_PS::Utils::Host>,L<perfSONAR_PS::LSRegistrationDaemon::Phoebus>,
-L<perfSONAR_PS::LSRegistrationDaemon::BWCTL>,L<perfSONAR_PS::LSRegistrationDaemon::OWAMP>,
-L<perfSONAR_PS::LSRegistrationDaemon::NDT>,L<perfSONAR_PS::LSRegistrationDaemon::NPAD>,
-L<perfSONAR_PS::LSRegistrationDaemon::Ping>,L<perfSONAR_PS::LSRegistrationDaemon::Traceroute>,
-L<Getopt::Long>,L<Config::General>,L<Log::Log4perl>
+To join the 'perfSONAR Users' mailing list, please visit:
 
-To join the 'perfSONAR-PS' mailing list, please visit:
-
-  https://mail.internet2.edu/wws/info/i2-perfsonar
+  https://mail.internet2.edu/wws/info/perfsonar-user
 
 The perfSONAR-PS subversion repository is located at:
 
-  https://svn.internet2.edu/svn/perfSONAR-PS
+  http://anonsvn.internet2.edu/svn/perfSONAR-PS/trunk
 
-Questions and comments can be directed to the author, or the mailing list.  Bugs,
-feature requests, and improvements can be directed here:
+Questions and comments can be directed to the author, or the mailing list.
+Bugs, feature requests, and improvements can be directed here:
 
   http://code.google.com/p/perfsonar-ps/issues/list
 

@@ -10,6 +10,7 @@ NDT services.
 This module provides the request functions to check an NDT service, and the
 information necessary for the Base module to construct an NDT service
 instance.
+
 =cut
 
 use strict;
@@ -22,8 +23,10 @@ use base 'perfSONAR_PS::LSRegistrationDaemon::TCP_Service';
 use constant DEFAULT_PORT => 7123;
 
 =head2 init($self, $conf)
+
 Since NDT doesn't have a configuration file like the others, this function
 simply sets the default port values unless it has been set in the config file.
+
 =cut
 
 sub init {
@@ -38,9 +41,11 @@ sub init {
 }
 
 =head2 get_service_addresses ($self)
+
 This function returns the list of addresses for this service. This overrides
 the TCP_Service get_service_addresses function so that NDT URLs are returned as
 URLs.
+
 =cut
 
 sub get_service_addresses {
@@ -72,7 +77,9 @@ sub get_service_addresses {
 }
 
 =head2 type($self)
+
 Returns the human readable description of the service "NDT Server".
+
 =cut
 
 sub type {
@@ -82,7 +89,9 @@ sub type {
 }
 
 =head2 service_type($self)
+
 Returns the NDT service type.
+
 =cut
 
 sub service_type {
@@ -92,7 +101,9 @@ sub service_type {
 }
 
 =head2 event_type($self)
+
 Returns the NDT event type.
+
 =cut
 
 sub event_type {

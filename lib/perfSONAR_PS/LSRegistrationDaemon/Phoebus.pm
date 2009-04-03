@@ -10,6 +10,7 @@ Phoebus services.
 This module provides the request functions to check an Phoebus service, and the
 information necessary for the Base module to construct an Phoebus service
 instance.
+
 =cut
 
 use strict;
@@ -22,8 +23,10 @@ use base 'perfSONAR_PS::LSRegistrationDaemon::TCP_Service';
 use constant DEFAULT_PORT => 5006;
 
 =head2 init($self, $conf)
+
 This function doesn't yet read the Phoebus configuration file, so it simply
 sets the default port values unless it has been set in the config file.
+
 =cut
 
 sub init {
@@ -38,7 +41,9 @@ sub init {
 }
 
 =head2 type($self)
+
 Returns the human readable description of the service "Phoebus Gateway".
+
 =cut
 
 sub type {
@@ -48,7 +53,9 @@ sub type {
 }
 
 =head2 service_type($self)
+
 Returns the Phoebus service type.
+
 =cut
 
 sub service_type {
@@ -58,7 +65,9 @@ sub service_type {
 }
 
 =head2 event_type($self)
+
 Returns the Phoebus event type.
+
 =cut
 
 sub event_type {
