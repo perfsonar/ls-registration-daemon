@@ -21,7 +21,7 @@ performance tools, and hard to find prerequisites, we encourage adopters of
 these tools to install a simple RPM package that gives the necessary
 configuration information for the YUM tools. The RPM can be found here:
 
-  http://software.interent2.edu/Internet2-repo-0.1-2.noarch.rpm
+  wget -c http://software.interent2.edu/Internet2-repo-0.1-2.noarch.rpm
   
 To install this RPM first import the signing key:
 
@@ -101,19 +101,35 @@ scripts as well as contact CPAN for any necessary perl libraries.
 Installation (SVN):
 -------------------
 
-Similar to Tar packages, a single service may be downloaded from our anonymous
-subversion server. This is useful for staying on the cutting edge of our
-development (note the example below uses our specific release, but "trunk" may
-be used as well:
+Software may be downloaded directly from our anonymous subversion server.  This
+installation method allows for easy upgrades between versions and access to 
+bugfixes immediately.  There are two ways to download from our server, one that
+retrieves all software and another that retrieves only selective services.
+
+To download the entire release:
+
+  svn checkout http://anonsvn.internet2.edu/svn/perfSONAR-PS/branches/RELEASE_3.1 perfSONAR-PS
+  
+The instructions are the same here as for the Tar package.  When you wish to
+update the checkout (to retrieve new development or bugfixes):
+
+  cd perfSONAR-PS
+  svn update
+  
+If a single service is all that is required, a similar method is used but also
+note that the service must have access to a "Shared" directory that contains
+perfSONAR-PS libraries:
 
   svn checkout http://anonsvn.internet2.edu/svn/perfSONAR-PS/tags/RELEASE_3.1/perfSONAR_PS-LSRegistrationDaemon/
   svn checkout http://anonsvn.internet2.edu/svn/perfSONAR-PS/tags/RELEASE_3.1/Shared
-
-The instructions are the same here as for the Tar package. When you wish to
-update a specific svn checkout (to retrieve new development or bugfixes):
+  
+The instructions are also the same as above:
 
   cd Shared
   svn update
+
+and
+
   cd perfSONAR_PS-LSRegistrationDaemon
   svn update
 
