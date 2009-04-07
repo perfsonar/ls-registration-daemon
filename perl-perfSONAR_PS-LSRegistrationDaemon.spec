@@ -7,13 +7,13 @@
 %define disttag pSPS
 
 Name:           perl-perfSONAR_PS-LSRegistrationDaemon
-Version:        0.10
+Version:        3.1
 Release:        1.%{disttag}
 Summary:        perfSONAR_PS Lookup Service Registration Daemon
 License:        distributable, see LICENSE
 Group:          Development/Libraries
 URL:            http://search.cpan.org/dist/perfSONAR_PS-LSRegistrationDaemon/
-Source0:        perfSONAR_PS-LSRegistrationDaemon.tar.gz
+Source0:        perfSONAR_PS-LSRegistrationDaemon-%{version}.tar.gz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch:      noarch
 # XXX Add your perl requirements here. e.g.

@@ -105,14 +105,16 @@ All RPM packages are also available in "source" packages that may be installed
 and used in the typical Unix/Linux fashion.  There are helper scripts included
 that may be used to download the necessary prerequisite software packages:
 
-  wget -c http://software.internet2.edu/source/perl-perfSONAR_PS-LSRegistrationDaemon-3.1-1.tar.gz
-  tar -zxfv perl-perfSONAR_PS-LSRegistrationDaemon-3.1-1.tar.gz
-  cd perl-perfSONAR_PS-LSRegistrationDaemon-3.1-1/scripts
-  ./install_dependencies.sh
-  ./prepare_environment.sh
+  wget -c http://software.internet2.edu/source/perfSONAR_PS-LSRegistrationDaemon-3.1-1.tar.gz
+  tar -zxfv perfSONAR_PS-LSRegistrationDaemon-3.1-1.tar.gz
+  cd perfSONAR_PS-LSRegistrationDaemon
+  make install 
+  ./scripts/install_dependencies.sh
+  ./scripts/prepare_environment.sh
 
-These two included scripts will configure the machine's users and startup
-scripts as well as contact CPAN for any necessary perl libraries.  
+The last three steps need to be run as root or via sudo. The latter two steps
+will configure the machine's users and startup scripts as well as contact CPAN
+for any necessary perl libraries.
 
 
 

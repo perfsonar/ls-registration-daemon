@@ -1,5 +1,6 @@
 PACKAGE=perfSONAR_PS-LSRegistrationDaemon
 ROOTPATH=/opt/perfsonar_ps/ls_registration_daemon
+VERSION=3.1
 
 default:
 	@echo No need to build the package. Just run \"make install\"
@@ -7,7 +8,13 @@ default:
 dist:
 	mkdir /tmp/$(PACKAGE)
 	tar ch -T MANIFEST | tar x -C /tmp/$(PACKAGE)
-	tar czf $(PACKAGE).tar.gz -C /tmp $(PACKAGE)
+	tar czf $(PACKAGE)-$(VERSION).tar.gz -C /tmp $(PACKAGE)
+	rm -rf /tmp/$(PACKAGE)
+
+upgrade:
+	mkdir /tmp/$(PACKAGE)
+	tar ch --exclude=etc/* -T MANIFEST | tar x -C /tmp/$(PACKAGE)
+	tar czf $(PACKAGE)-$(VERSION)-upgrade.tar.gz -C /tmp $(PACKAGE)
 	rm -rf /tmp/$(PACKAGE)
 
 install:
