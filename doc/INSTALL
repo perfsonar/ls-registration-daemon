@@ -23,7 +23,7 @@ these performance tools to install a simple RPM package that gives the
 necessary configuration information for the YUM and APT-RPM tools.  The RPM can
 be found here:
 
-  wget -c http://software.interent2.edu/Internet2-repo-0.1-2.noarch.rpm
+  wget -c http://software.internet2.edu/Internet2-repo-0.1-2.noarch.rpm
   
 To install this RPM first import the signing key:
 
@@ -42,6 +42,40 @@ used by the Linux distributions.  Two regarded repositories are:
  
 Each site provides configuration instructions and packages similar to the
 Internet2 repository.
+
+If using a package management system is not an option, or if your system is not
+RedHat based (e.g. Debian, Gentoo, etc.) it is still possible to install this
+software and related requirements by hand.  Please see the "Installation (Tar
+Package)" and "Installation (SVN)" sections for more details.  This tool uses
+the following Perl libraries, libraries, and external tools to function:
+
+  * Perl Libraries
+    - Config::General
+    - Digest::MD5
+    - English
+    - Exporter
+    - Fcntl
+    - File::Basename
+    - Getopt::Long
+    - IO::File
+    - IO::Socket
+    - IO::Socket::INET
+    - IO::Socket::INET6
+    - LWP::Simple
+    - LWP::UserAgent
+    - Log::Log4perl
+    - Net::DNS
+    - Net::Ping
+    - Net::Ping::External
+    - NetAddr::IP
+    - POSIX
+    - Params::Validate
+    - Regexp::Common
+    - Time::HiRes
+    - XML::LibXML
+    - base
+  * Libraries
+    - LibXML2
 
 
 
@@ -116,7 +150,14 @@ The last three steps need to be run as root or via sudo. The latter two steps
 will configure the machine's users and startup scripts as well as contact CPAN
 for any necessary perl libraries.
 
+In addition to perl requirements, there are other software requirements that
+should be installed.  These are not controlled via the dependency scripts due to
+differences in package mangement.  The tools are listed below:
 
+  * LibXML2
+    - Package management names:
+      * Debian/Ubuntu: libxml2, libxml2-dev, libxml2-utils
+      * RedHat Systems: libxml2, libxml2-devel
 
 Installation (SVN):
 -------------------
@@ -130,8 +171,10 @@ To download the entire release:
 
   svn checkout http://anonsvn.internet2.edu/svn/perfSONAR-PS/tags/RELEASE_3.1 perfSONAR-PS
   
-The instructions are the same here as for the Tar package.  When you wish to
-update the checkout (to retrieve new development or bugfixes):
+The instructions are the same here as for the Tar package.  Note that
+installation may require pre-requisite software.  Read the preceding sections
+for necessary items and suggestions on how to install and configure them.  When
+you wish to update the checkout (to retrieve new development or bugfixes):
 
   cd perfSONAR-PS
   svn update
@@ -155,5 +198,4 @@ and
 
 --------------------------------------------------------------------------------
 
-Fri Mar 27 08:55:59 EDT 2009
-
+Mon Apr 13 08:40:45 EDT 2009
