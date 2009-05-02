@@ -139,8 +139,8 @@ All RPM packages are also available in "source" packages that may be installed
 and used in the typical Unix/Linux fashion.  There are helper scripts included
 that may be used to download the necessary prerequisite software packages:
 
-  wget -c http://software.internet2.edu/source/perfSONAR-PS/perfSONAR_PS-LSRegistrationDaemon-3.1-1.tar.gz
-  tar -zxfv perfSONAR_PS-LSRegistrationDaemon-3.1-1.tar.gz
+  wget -c http://software.internet2.edu/source/perfSONAR-PS/perfSONAR_PS-LSRegistrationDaemon-3.1.tar.gz
+  tar -zxfv perfSONAR_PS-LSRegistrationDaemon-3.1.tar.gz
   cd perfSONAR_PS-LSRegistrationDaemon
   cd scripts
   ./install_dependencies.sh
