@@ -8,7 +8,7 @@
 
 Name:           perl-perfSONAR_PS-LSRegistrationDaemon
 Version:        3.1
-Release:        1.%{disttag}
+Release:        2.%{disttag}
 Summary:        perfSONAR_PS Lookup Service Registration Daemon
 License:        distributable, see LICENSE
 Group:          Development/Libraries
@@ -106,5 +106,8 @@ if [ "$1" != "0" ]; then
 fi
 
 %changelog
-* Wed Dec 10 2008 aaron@internet2.edu 0.10-1
+* Thu May 29 2009 aaron@internet2.edu 3.1-2
+- Documentation updates
+
+* Wed Dec 10 2008 aaron@internet2.edu 3.1-1
 - Initial service oriented spec file
