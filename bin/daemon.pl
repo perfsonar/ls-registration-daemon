@@ -157,7 +157,11 @@ else {
 }
 
 if ( not $conf{"ls_instance"} ) {
-    $logger->warn( "You did not specify which LS Registration Daemon to register with. Will select an LS registration daemon to register with" );
+    $logger->error( "You must specify which LS Registration Daemon to register with." );
+    exit(-1);
+} elsif (ref $conf{"ls_instance"} eq "ARRAY" or $conf{"ls_instance"} =~ /,/ or $conf{"ls_instance"} =~ / /) {
+    $logger->error( "You can only specify a single LS Registration Daemon to register with.");
+    exit(-1);
 }
 
 if ( not $conf{"ls_interval"} ) {

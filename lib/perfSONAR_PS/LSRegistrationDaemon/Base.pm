@@ -22,7 +22,7 @@ our $VERSION = 3.1;
 use Log::Log4perl qw/get_logger/;
 
 use perfSONAR_PS::Utils::DNS qw(reverse_dns);
-use perfSONAR_PS::Client::LS::Remote;
+use perfSONAR_PS::Client::LS;
 
 use fields 'CONF', 'STATUS', 'LOGGER', 'KEY', 'NEXT_REFRESH', 'LS_CLIENT';
 
@@ -63,13 +63,7 @@ sub init {
 
     $self->{CONF}   = $conf;
     $self->{STATUS} = "UNREGISTERED";
-
-    if ( $conf->{ls_instance} ) {
-        $self->{LS_CLIENT} = perfSONAR_PS::Client::LS->new( { instance => $conf->{ls_instance} } );
-    }
-    else {
-        $self->{LS_CLIENT} = perfSONAR_PS::Client::LS->new();
-    }
+    $self->{LS_CLIENT} = perfSONAR_PS::Client::LS->new( { instance => $conf->{ls_instance} } );
 
     return 0;
 }
@@ -136,7 +130,7 @@ sub refresh {
     my ( $self ) = @_;
 
     if ( $self->{STATUS} eq "BROKEN" ) {
-        $self->{LOGGER}->debug( "Refreshing broken service" );
+        $self->{LOGGER}->error( "Refreshing misconfigured service: ".$self->service_desc );
         return;
     }
 
@@ -145,9 +139,11 @@ sub refresh {
     if ( $self->is_up ) {
         $self->{LOGGER}->debug( "Service is up" );
         if ( $self->{STATUS} ne "REGISTERED" ) {
+            $self->{LOGGER}->info( "Service '".$self->service_desc."' is up, registering" );
             $self->register();
         }
         elsif ( time >= $self->{NEXT_REFRESH} ) {
+            $self->{LOGGER}->info( "Service '".$self->service_desc."' is up, refreshing registration" );
             $self->keepalive();
         }
         else {
@@ -155,11 +151,11 @@ sub refresh {
         }
     }
     elsif ( $self->{STATUS} eq "REGISTERED" ) {
-        $self->{LOGGER}->debug( "Service isn't" );
+        $self->{LOGGER}->info( "Service '".$self->service_desc."' is down, unregistering" );
         $self->unregister();
     }
     else {
-        $self->{LOGGER}->debug( "Service failed" );
+        $self->{LOGGER}->info( "Service '".$self->service_desc."' is down" );
     }
 
     return;
@@ -223,10 +219,10 @@ sub register {
     else {
         my $error;
         if ( $res and $res->{error} ) {
-            $self->{LOGGER}->debug( "Registration failed: " . $res->{error} );
+            $self->{LOGGER}->error( "Registration failed: " . $res->{error} );
         }
         else {
-            $self->{LOGGER}->debug( "Registration failed" );
+            $self->{LOGGER}->error( "Registration failed" );
         }
     }
 
@@ -246,13 +242,13 @@ sub keepalive {
     my $res = $self->{LS_CLIENT}->keepaliveRequestLS( key => $self->{KEY} );
     if ( $res->{eventType} ne "success.ls.keepalive" ) {
         $self->{STATUS} = "UNREGISTERED";
-        $self->{LOGGER}->debug( "Keepalive failed" );
+        $self->{LOGGER}->error( "Keepalive failed" );
     }
 
     return;
 }
 
-=head2 keepalive ($self)
+=head2 unregister ($self)
 
 This function is called by the refresh function. It uses the saved KEY from the
 Lookup Service registration, and sends an unregister request to the Lookup
@@ -309,7 +305,7 @@ __END__
 =head1 SEE ALSO
 
 L<Log::Log4perl>, L<perfSONAR_PS::Utils::DNS>,
-L<perfSONAR_PS::Client::LS::Remote>
+L<perfSONAR_PS::Client::LS>
 
 To join the 'perfSONAR Users' mailing list, please visit:
 
