@@ -65,6 +65,16 @@ sub init {
     $self->{STATUS} = "UNREGISTERED";
     $self->{LS_CLIENT} = perfSONAR_PS::Client::LS->new( { instance => $conf->{ls_instance} } );
 
+    if ($self->{CONF}->{require_site_name} and not $self->{CONF}->{site_name}) {
+    	$self->{LOGGER}->error("site_name is a required configuration option");
+    	return -1;
+    }
+
+    if ($self->{CONF}->{require_site_location} and not $self->{CONF}->{site_location}) {
+    	$self->{LOGGER}->error("site_location is a required configuration option");
+    	return -1;
+    }
+
     return 0;
 }
 
