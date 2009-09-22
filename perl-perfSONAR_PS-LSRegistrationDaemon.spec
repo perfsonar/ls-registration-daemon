@@ -8,7 +8,7 @@
 
 Name:           perl-perfSONAR_PS-LSRegistrationDaemon
 Version:        3.1
-Release:        3.%{disttag}
+Release:        4.%{disttag}
 Summary:        perfSONAR_PS Lookup Service Registration Daemon
 License:        distributable, see LICENSE
 Group:          Development/Libraries
@@ -50,7 +50,7 @@ themselves.
 
 %pre
 /usr/sbin/groupadd perfsonar 2> /dev/null || :
-/usr/sbin/useradd -g perfsonar -s /sbin/nologin -c "perfSONAR User" -d /tmp perfsonar 2> /dev/null || :
+/usr/sbin/useradd -g perfsonar -r -s /sbin/nologin -c "perfSONAR User" -d /tmp perfsonar 2> /dev/null || :
 
 %prep
 %setup -q -n perfSONAR_PS-LSRegistrationDaemon
@@ -106,6 +106,9 @@ if [ "$1" != "0" ]; then
 fi
 
 %changelog
+* Tue Sep 22 2009 zurawski@internet2.edu 3.1-4
+- useradd option change
+
 * XXX YYY ZZ 2009 aaron@internet2.edu 3.1-3
 - Improved sanity checking of the specified ls instance
 - Improved logging
