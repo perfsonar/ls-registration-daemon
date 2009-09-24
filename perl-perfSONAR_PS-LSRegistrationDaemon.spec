@@ -8,7 +8,7 @@
 
 Name:           perl-perfSONAR_PS-LSRegistrationDaemon
 Version:        3.1
-Release:        4.%{disttag}
+Release:        3.%{disttag}
 Summary:        perfSONAR_PS Lookup Service Registration Daemon
 License:        distributable, see LICENSE
 Group:          Development/Libraries
@@ -106,12 +106,11 @@ if [ "$1" != "0" ]; then
 fi
 
 %changelog
-* Tue Sep 22 2009 zurawski@internet2.edu 3.1-4
+* Tue Sep 22 2009 zurawski@internet2.edu 3.1-3
 - useradd option change
-
-* XXX YYY ZZ 2009 aaron@internet2.edu 3.1-3
 - Improved sanity checking of the specified ls instance
 - Improved logging
+- Add option to require 'site_name' and 'site_location' before starting
 
 * Thu May 29 2009 aaron@internet2.edu 3.1-2
 - Documentation updates
