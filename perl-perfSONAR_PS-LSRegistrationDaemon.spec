@@ -4,16 +4,17 @@
 %define init_script_1 ls_registration_daemon
 # %define init_script_2 ls_registration_daemon
 
+%define relnum 4
 %define disttag pSPS
 
 Name:           perl-perfSONAR_PS-LSRegistrationDaemon
 Version:        3.1
-Release:        3.%{disttag}
+Release:        %{relnum}.%{disttag}
 Summary:        perfSONAR_PS Lookup Service Registration Daemon
 License:        distributable, see LICENSE
 Group:          Development/Libraries
 URL:            http://search.cpan.org/dist/perfSONAR_PS-LSRegistrationDaemon/
-Source0:        perfSONAR_PS-LSRegistrationDaemon-%{version}.tar.gz
+Source0:        perfSONAR_PS-LSRegistrationDaemon-%{version}.%{relnum}.tar.gz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch:      noarch
 # XXX Add your perl requirements here. e.g.
@@ -31,6 +32,7 @@ Requires: 		perl(IO::Socket::INET)
 Requires: 		perl(IO::Socket::INET6)
 Requires: 		perl(LWP::UserAgent)
 Requires: 		perl(Log::Log4perl)
+Requires: 		perl(Log::Dispatch::FileRotate)
 Requires: 		perl(Net::DNS)
 Requires: 		perl(Net::Ping)
 Requires: 		perl(Net::Ping::External)
@@ -53,22 +55,22 @@ themselves.
 /usr/sbin/useradd -g perfsonar -r -s /sbin/nologin -c "perfSONAR User" -d /tmp perfsonar 2> /dev/null || :
 
 %prep
-%setup -q -n perfSONAR_PS-LSRegistrationDaemon
+%setup -q -n perfSONAR_PS-LSRegistrationDaemon-%{version}.%{relnum}
 
 %build
 
 %install
 rm -rf $RPM_BUILD_ROOT
 
-make ROOTPATH=$RPM_BUILD_ROOT/%{install_base} install
+make ROOTPATH=$RPM_BUILD_ROOT/%{install_base} rpminstall
 
 mkdir -p $RPM_BUILD_ROOT/etc/init.d
 
 awk "{gsub(/^PREFIX=.*/,\"PREFIX=%{install_base}\"); print}" scripts/%{init_script_1} > scripts/%{init_script_1}.new
-install -c -m 755 scripts/%{init_script_1}.new $RPM_BUILD_ROOT/etc/init.d/%{init_script_1}
+install -D -m 755 scripts/%{init_script_1}.new $RPM_BUILD_ROOT/etc/init.d/%{init_script_1}
 
 #awk "{gsub(/^PREFIX=.*/,\"PREFIX=%{install_base}\"); print}" scripts/%{init_script_2} > scripts/%{init_script_2}.new
-#install -c -m 755 scripts/%{init_script_2}.new $RPM_BUILD_ROOT/etc/init.d/%{init_script_2}
+#install -D -m 755 scripts/%{init_script_2}.new $RPM_BUILD_ROOT/etc/init.d/%{init_script_2}
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -106,6 +108,9 @@ if [ "$1" != "0" ]; then
 fi
 
 %changelog
+* Tue Jan 12 2010 aaron@internet2.edu 3.1-4
+- Packaging update
+
 * Tue Sep 22 2009 zurawski@internet2.edu 3.1-3
 - useradd option change
 - Improved sanity checking of the specified ls instance
