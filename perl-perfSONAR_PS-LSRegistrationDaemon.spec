@@ -4,7 +4,7 @@
 %define init_script_1 ls_registration_daemon
 # %define init_script_2 ls_registration_daemon
 
-%define relnum 4
+%define relnum 5
 %define disttag pSPS
 
 Name:           perl-perfSONAR_PS-LSRegistrationDaemon
@@ -108,6 +108,9 @@ if [ "$1" != "0" ]; then
 fi
 
 %changelog
+* Thu Feb 25 2010 zurawski@internet2.edu 3.1-5
+- Support for REDDnet depots
+
 * Tue Jan 12 2010 aaron@internet2.edu 3.1-4
 - Packaging update
 

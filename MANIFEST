@@ -1,7 +1,9 @@
+dependencies
 MANIFEST
 Makefile
 bin/daemon.pl
 doc/Changes
+doc/INSTALL
 doc/LICENSE
 doc/README
 etc/ls_registration_daemon-logger.conf
@@ -19,6 +21,7 @@ lib/perfSONAR_PS/LSRegistrationDaemon/NPAD.pm
 lib/perfSONAR_PS/LSRegistrationDaemon/OWAMP.pm
 lib/perfSONAR_PS/LSRegistrationDaemon/Phoebus.pm
 lib/perfSONAR_PS/LSRegistrationDaemon/Ping.pm
+lib/perfSONAR_PS/LSRegistrationDaemon/REDDnet.pm
 lib/perfSONAR_PS/LSRegistrationDaemon/TCP_Service.pm
 lib/perfSONAR_PS/LSRegistrationDaemon/Traceroute.pm
 lib/perfSONAR_PS/Messages.pm

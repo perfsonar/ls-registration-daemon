@@ -3,30 +3,43 @@
 MAKEROOT=""
 if [[ $EUID -ne 0 ]];
 then
-    MAKEROOT="sudo "
+	MAKEROOT="sudo"
 fi
 
-$MAKEROOT cpan Config::General
-$MAKEROOT cpan Digest::MD5
-$MAKEROOT cpan English
-$MAKEROOT cpan Exporter
-$MAKEROOT cpan Fcntl
-$MAKEROOT cpan File::Basename
-$MAKEROOT cpan Getopt::Long
-$MAKEROOT cpan IO::File
-$MAKEROOT cpan IO::Socket
-$MAKEROOT cpan IO::Socket::INET
-$MAKEROOT cpan IO::Socket::INET6
-$MAKEROOT cpan LWP::Simple
-$MAKEROOT cpan LWP::UserAgent
-$MAKEROOT cpan Log::Log4perl
-$MAKEROOT cpan Net::DNS
-$MAKEROOT cpan Net::Ping
-$MAKEROOT cpan Net::Ping::External
-$MAKEROOT cpan NetAddr::IP
-$MAKEROOT cpan POSIX
-$MAKEROOT cpan Params::Validate
-$MAKEROOT cpan Regexp::Common
-$MAKEROOT cpan Time::HiRes
-$MAKEROOT cpan XML::LibXML
-$MAKEROOT cpan base
+for i in `cat ../dependencies`
+do
+	NAME=`echo $i | awk '{ split($0, a, ",");print a[1] }'`
+	VER=`echo $i | awk '{ split($0, a, ",");print a[2] }'`
+
+	if [ -z $VER ];
+	then
+		echo "Checking for $NAME..."
+	else
+		echo "Checking for version $VER of $NAME..."
+	fi
+
+	typeset -x LIBRARY=$NAME
+	VERSION=`perl -e 'my $module = $ENV{LIBRARY};eval "require $module";print $module->VERSION unless ( $@ );'`
+
+	if [ -z $VERSION ];
+	then
+		echo "Upgrading $NAME"
+		$MAKEROOT cpan $NAME
+	else
+		if [ -z $VER ];
+		then
+			echo "Upgrading $NAME from $VERSION..."
+			$MAKEROOT cpan $NAME
+		else
+			if [[ $VERSION < $VER ]];
+			then
+				echo "Upgrading $NAME from $VERSION..."
+				$MAKEROOT cpan $NAME
+			else
+				echo "$NAME is not being upgraded, version $VERSION is installed." 
+			fi
+		fi
+	fi
+done
+
+echo "Exiting install_dependencies.sh"

@@ -23,6 +23,7 @@ use perfSONAR_PS::Common;
 use perfSONAR_PS::Utils::Daemon qw/daemonize setids lockPIDFile unlockPIDFile/;
 use perfSONAR_PS::Utils::Host qw(get_ips);
 use perfSONAR_PS::LSRegistrationDaemon::Phoebus;
+use perfSONAR_PS::LSRegistrationDaemon::REDDnet;
 use perfSONAR_PS::LSRegistrationDaemon::BWCTL;
 use perfSONAR_PS::LSRegistrationDaemon::OWAMP;
 use perfSONAR_PS::LSRegistrationDaemon::NDT;
@@ -310,6 +311,16 @@ sub init_site {
 
                 # complain
                 $logger->error( "Error: Couldn't initialize Phoebus watcher" );
+                exit( -1 );
+            }
+            push @services, $service;
+        }
+        elsif ( lc( $service_conf->{type} ) eq "reddnet" ) {
+            my $service = perfSONAR_PS::LSRegistrationDaemon::REDDnet->new();
+            if ( $service->init( $service_conf ) != 0 ) {
+
+                # complain
+                $logger->error( "Error: Couldn't initialize REDDnet watcher" );
                 exit( -1 );
             }
             push @services, $service;
