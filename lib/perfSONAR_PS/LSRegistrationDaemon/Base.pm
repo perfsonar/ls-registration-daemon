@@ -254,6 +254,9 @@ sub keepalive {
         $self->{STATUS} = "UNREGISTERED";
         $self->{LOGGER}->error( "Keepalive failed" );
     }
+    else {
+        $self->{NEXT_REFRESH} = time + $self->{CONF}->{"ls_interval"};
+    }
 
     return;
 }
