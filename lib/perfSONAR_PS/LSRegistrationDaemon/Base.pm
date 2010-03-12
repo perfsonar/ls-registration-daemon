@@ -229,10 +229,10 @@ sub register {
     else {
         my $error;
         if ( $res and $res->{error} ) {
-            $self->{LOGGER}->error( "Registration failed: " . $res->{error} );
+            $self->{LOGGER}->error( "Problem registering service. Will retry full registration next time: " . $res->{error} );
         }
         else {
-            $self->{LOGGER}->error( "Registration failed" );
+            $self->{LOGGER}->error( "Problem registering service. Will retry full registration next time." );
         }
     }
 
@@ -252,7 +252,7 @@ sub keepalive {
     my $res = $self->{LS_CLIENT}->keepaliveRequestLS( key => $self->{KEY} );
     if ( $res->{eventType} ne "success.ls.keepalive" ) {
         $self->{STATUS} = "UNREGISTERED";
-        $self->{LOGGER}->error( "Keepalive failed" );
+        $self->{LOGGER}->error( "Couldn't send Keepalive. Will send full registration next time." );
     }
     else {
         $self->{NEXT_REFRESH} = time + $self->{CONF}->{"ls_interval"};
