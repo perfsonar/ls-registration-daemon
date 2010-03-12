@@ -1,7 +1,7 @@
-dependencies
 MANIFEST
 Makefile
 bin/daemon.pl
+dependencies
 doc/Changes
 doc/INSTALL
 doc/LICENSE
@@ -29,6 +29,7 @@ lib/perfSONAR_PS/Transport.pm
 lib/perfSONAR_PS/Utils/DNS.pm
 lib/perfSONAR_PS/Utils/Daemon.pm
 lib/perfSONAR_PS/Utils/Host.pm
+lib/perfSONAR_PS/Utils/NetLogger.pm
 lib/perfSONAR_PS/Utils/ParameterValidation.pm
 lib/perfSONAR_PS/XML/Document.pm
 perl-perfSONAR_PS-LSRegistrationDaemon.spec

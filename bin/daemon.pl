@@ -35,6 +35,9 @@ use Getopt::Long;
 use Config::General;
 use Log::Log4perl qw/:easy/;
 
+# set the process name
+$0 = "ls_registration_daemon.pl";
+
 my @child_pids = ();
 
 $SIG{INT}  = \&signalHandler;

@@ -1,6 +1,10 @@
 Config::General
 Data::Dumper
+Data::UUID
 Digest::MD5
+English
+Exporter
+Fcntl
 File::Basename
 Getopt::Long
 IO::File
@@ -17,7 +21,9 @@ Net::DNS
 Net::Ping
 Net::Ping::External
 NetAddr::IP
+POSIX
 Params::Validate
 Regexp::Common
 Time::HiRes
 XML::LibXML,1.66
+base
