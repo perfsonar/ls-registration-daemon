@@ -83,6 +83,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(0755,perfsonar,perfsonar) %{install_base}/scripts/*
 %{install_base}/lib/*
 %attr(0755,perfsonar,perfsonar) /etc/init.d/*
+%{install_base}/dependencies
 
 %post
 mkdir -p /var/log/perfsonar
@@ -110,6 +111,8 @@ fi
 %changelog
 * Thu Feb 25 2010 zurawski@internet2.edu 3.1-5
 - Support for REDDnet depots
+- Increase time between when keepalives are sent
+- Minor bugfixes
 
 * Tue Jan 12 2010 aaron@internet2.edu 3.1-4
 - Packaging update
