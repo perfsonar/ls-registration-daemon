@@ -250,12 +250,12 @@ sub keepalive {
     my ( $self ) = @_;
 
     my $res = $self->{LS_CLIENT}->keepaliveRequestLS( key => $self->{KEY} );
-    if ( $res->{eventType} ne "success.ls.keepalive" ) {
-        $self->{STATUS} = "UNREGISTERED";
-        $self->{LOGGER}->error( "Couldn't send Keepalive. Will send full registration next time." );
+    if ( $res->{eventType} and $res->{eventType} ne "success.ls.keepalive" ) {
+        $self->{NEXT_REFRESH} = time + $self->{CONF}->{"ls_interval"};
     }
     else {
-        $self->{NEXT_REFRESH} = time + $self->{CONF}->{"ls_interval"};
+        $self->{STATUS} = "UNREGISTERED";
+        $self->{LOGGER}->error( "Couldn't send Keepalive. Will send full registration next time." );
     }
 
     return;

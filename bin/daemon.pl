@@ -210,6 +210,23 @@ foreach my $site_conf ( @$site_confs ) {
     push @site_params, \%params;
 }
 
+# Before daemonizing, set die and warn handlers so that any Perl errors or
+# warnings make it into the logs.
+my $insig = 0;
+$SIG{__WARN__} = sub {
+    $logger->warn("Warned: ".join( '', @_ ));
+    return;
+};
+
+$SIG{__DIE__} = sub {                       ## still dies upon return
+	die @_ if $^S;                      ## see perldoc -f die perlfunc
+	die @_ if $insig;                   ## protect against reentrance.
+	$insig = 1;
+	$logger->error("Died: ".join( '', @_ ));
+	$insig = 0;
+	return;
+};
+										    #
 if ( not $DEBUGFLAG ) {
     ( $status, $res ) = daemonize();
     if ( $status != 0 ) {
