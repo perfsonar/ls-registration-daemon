@@ -44,6 +44,9 @@ Requires: 		perl(Socket)
 Requires: 		perl(Time::HiRes)
 Requires: 		perl(XML::LibXML)
 Requires: 		perl(base)
+Requires: 		shadow-utils
+Requires: 		coreutils
+Requires: 		chkconfig
 
 %description
 The LS Registration Daemon is used to register service instances for services
