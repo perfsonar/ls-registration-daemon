@@ -49,6 +49,7 @@ do
 
 	if $PERFSONAR ; then
 	    echo "$0 $ARG: LS Registration Daemon started"
+            touch /var/lock/subsys/ls_registration_daemon
 	else
 	    echo "$0 $ARG: LS Registration Daemon could not be started"
 	    ERROR=3
@@ -61,6 +62,7 @@ do
 	fi
 	if kill $PID ; then
 	    echo "$0 $ARG: LS Registration Daemon stopped"
+            rm /var/lock/subsys/ls_registration_daemon
 	else
 	    echo "$0 $ARG: LS Registration Daemon could not be stopped"
 	    ERROR=4

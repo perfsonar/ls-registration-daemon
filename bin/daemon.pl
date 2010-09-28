@@ -169,8 +169,8 @@ if ( not $conf{"ls_instance"} ) {
 }
 
 if ( not $conf{"ls_interval"} ) {
-    $logger->info( "No LS interval specified. Defaulting to 24 hours" );
-    $conf{"ls_interval"} = 24;
+    $logger->info( "No LS interval specified. Defaulting to 4 hours" );
+    $conf{"ls_interval"} = 4;
 }
 
 if ( not $conf{"check_interval"} ) {

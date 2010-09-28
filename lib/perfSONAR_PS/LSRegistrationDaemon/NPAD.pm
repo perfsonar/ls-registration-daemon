@@ -20,7 +20,7 @@ our $VERSION = 3.1;
 
 use base 'perfSONAR_PS::LSRegistrationDaemon::TCP_Service';
 
-use constant DEFAULT_PORT => 8200;
+use constant DEFAULT_PORT => 8000;
 
 =head2 init($self, $conf)
 

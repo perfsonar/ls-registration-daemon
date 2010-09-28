@@ -4,7 +4,7 @@
 %define init_script_1 ls_registration_daemon
 # %define init_script_2 ls_registration_daemon
 
-%define relnum 5
+%define relnum 6
 %define disttag pSPS
 
 Name:           perl-perfSONAR_PS-LSRegistrationDaemon
