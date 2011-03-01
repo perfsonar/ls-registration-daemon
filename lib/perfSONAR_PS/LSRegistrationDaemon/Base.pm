@@ -250,7 +250,7 @@ sub keepalive {
     my ( $self ) = @_;
 
     my $res = $self->{LS_CLIENT}->keepaliveRequestLS( key => $self->{KEY} );
-    if ( $res->{eventType} and $res->{eventType} ne "success.ls.keepalive" ) {
+    if ( $res->{eventType} and $res->{eventType} eq "success.ls.keepalive" ) {
         $self->{NEXT_REFRESH} = time + $self->{CONF}->{"ls_interval"};
     }
     else {
