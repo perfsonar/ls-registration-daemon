@@ -28,6 +28,7 @@ use perfSONAR_PS::LSRegistrationDaemon::BWCTL;
 use perfSONAR_PS::LSRegistrationDaemon::OWAMP;
 use perfSONAR_PS::LSRegistrationDaemon::NDT;
 use perfSONAR_PS::LSRegistrationDaemon::NPAD;
+use perfSONAR_PS::LSRegistrationDaemon::GridFTP;
 use perfSONAR_PS::LSRegistrationDaemon::Ping;
 use perfSONAR_PS::LSRegistrationDaemon::Traceroute;
 
@@ -361,6 +362,16 @@ sub init_site {
 
                 # complain
                 $logger->error( "Error: Couldn't initialize NPAD watcher" );
+                exit( -1 );
+            }
+            push @services, $service;
+        }
+        elsif ( lc( $service_conf->{type} ) eq "gridftp" ) {
+            my $service = perfSONAR_PS::LSRegistrationDaemon::GridFTP->new();
+            if ( $service->init( $service_conf ) != 0 ) {
+
+                # complain
+                $logger->error( "Error: Couldn't initialize GridFTP watcher" );
                 exit( -1 );
             }
             push @services, $service;
