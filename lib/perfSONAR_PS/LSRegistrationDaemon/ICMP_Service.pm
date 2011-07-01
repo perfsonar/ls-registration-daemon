@@ -55,10 +55,12 @@ sub init {
 
         my %addr_map = ();
         foreach my $addr ( @tmp ) {
-            my @addrs = resolve_address( $addr );
-            foreach my $addr ( @addrs ) {
-                $addr_map{$addr} = 1;
-            }
+            $addr_map{$addr} = 1;
+
+            #            my @addrs = resolve_address($addr);
+            #            foreach my $addr (@addrs) {
+            #                $addr_map{$addr} = 1;
+            #            }
         }
 
         @addresses = keys %addr_map;
