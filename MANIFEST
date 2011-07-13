@@ -15,6 +15,7 @@ lib/perfSONAR_PS/Client/gLS.pm
 lib/perfSONAR_PS/Common.pm
 lib/perfSONAR_PS/LSRegistrationDaemon/BWCTL.pm
 lib/perfSONAR_PS/LSRegistrationDaemon/Base.pm
+lib/perfSONAR_PS/LSRegistrationDaemon/GridFTP.pm
 lib/perfSONAR_PS/LSRegistrationDaemon/ICMP_Service.pm
 lib/perfSONAR_PS/LSRegistrationDaemon/NDT.pm
 lib/perfSONAR_PS/LSRegistrationDaemon/NPAD.pm
