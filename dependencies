@@ -14,9 +14,6 @@ IO::Socket::INET6
 LWP::Simple
 LWP::UserAgent
 Log::Log4perl
-Log::Dispatch
-Log::Dispatch::FileRotate
-Log::Dispatch::Screen
 Net::DNS
 Net::Ping
 Net::Ping::External
@@ -25,5 +22,5 @@ POSIX
 Params::Validate
 Regexp::Common
 Time::HiRes
-XML::LibXML,1.66
+XML::LibXML
 base
