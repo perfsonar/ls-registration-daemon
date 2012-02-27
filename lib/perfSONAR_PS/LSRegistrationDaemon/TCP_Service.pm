@@ -17,6 +17,9 @@ TCP connect.
 use strict;
 use warnings;
 
+use Net::CIDR;
+use Net::IP;
+
 use perfSONAR_PS::Utils::DNS qw(resolve_address reverse_dns);
 use perfSONAR_PS::Utils::Host qw(get_ips);
 
@@ -70,7 +73,19 @@ sub init {
         @addresses = keys %addr_map;
     }
     else {
-        @addresses = get_ips();
+        my @all_addresses = get_ips();
+        foreach my $ip (@all_addresses) {
+            if (Net::IP::ip_is_ipv6( $ip )) {
+                push @addresses, $ip;
+            }
+            else {
+                my @private_list = ( '10.0.0.0/8', '172.16.0.0/12', '192.168.0.0/16' );
+
+                next unless ($conf->{allow_internal_addresses} or not Net::CIDR::cidrlookup( $ip, @private_list ));
+
+                push @addresses, $ip;
+            }
+        }
     }
 
     $self->{ADDRESSES} = \@addresses;
