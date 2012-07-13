@@ -11,6 +11,9 @@ etc/ls_registration_daemon.conf
 lib/perfSONAR_PS/Client/Echo.pm
 lib/perfSONAR_PS/Client/LS.pm
 lib/perfSONAR_PS/Client/LS/Remote.pm
+lib/perfSONAR_PS/Client/LS/REST.pm
+lib/perfSONAR_PS/Client/LS/Requests/Registration.pm
+lib/perfSONAR_PS/Client/LS/Requests/MARegistration.pm
 lib/perfSONAR_PS/Client/gLS.pm
 lib/perfSONAR_PS/Common.pm
 lib/perfSONAR_PS/LSRegistrationDaemon/BWCTL.pm

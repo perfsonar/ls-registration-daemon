@@ -22,7 +22,8 @@ our $VERSION = 3.2;
 use Log::Log4perl qw/get_logger/;
 
 use perfSONAR_PS::Utils::DNS qw(reverse_dns);
-use perfSONAR_PS::Client::LS;
+use perfSONAR_PS::Client::LS::REST;
+use perfSONAR_PS::Client::LS::Requests::Registration;
 
 use fields 'CONF', 'STATUS', 'LOGGER', 'KEY', 'NEXT_REFRESH', 'LS_CLIENT';
 
@@ -190,17 +191,19 @@ sub register {
         }
     }
     
+    my @addressList = map { $_->{value} } @{$addresses};
+    
     my $reg = new perfSONAR_PS::Client::LS::Requests::Registration();
     $reg->init({
-        domain => $projects
-        locator => $addresses,
+        domain => $projects,
+        locator => \@addressList,
         type => $self->service_type()
     });
-    $reg->setServiceName($self->service_name());
-    $reg->setServiceDescription($self->service_desc());
+    $reg->setServiceName([$self->service_name()]);
+    $reg->setServiceSiteLocation([$self->service_desc()]);
 
     #Register
-    my ($resCode, $res) = $client->register({ registration => $reg, uri => $self->{CONF}->{ls_instance} });
+    my ($resCode, $res) = $self->{LS_CLIENT}->register({ registration => $reg, uri => $self->{CONF}->{ls_instance} });
 
     if($resCode == 0){
         $self->{LOGGER}->debug( "Registration succeeded with uri: " . $res->{"uri"} );
@@ -223,7 +226,7 @@ Service.
 =cut
 sub keepalive {
     my ( $self ) = @_;
-    my ($resCode, $res) = $client->renew({ uri => $self->{KEY}, base => $self->{CONF}->{ls_instance} });
+    my ($resCode, $res) = $self->{LS_CLIENT}->renew({ uri => $self->{KEY}, base => $self->{CONF}->{ls_instance} });
     if ( $resCode == 0 ) {
         $self->{NEXT_REFRESH} = $res->{"expires_unixtime"} - 300; # renew 5 minutes before expiration
     }
@@ -246,7 +249,7 @@ Service.
 sub unregister {
     my ( $self ) = @_;
 
-    $client->unregister({ uri => $self->{KEY}, base => $self->{CONF}->{ls_instance} });
+    $self->{LS_CLIENT}->unregister({ uri => $self->{KEY}, base => $self->{CONF}->{ls_instance} });
     $self->{STATUS} = "UNREGISTERED";
     
     return;

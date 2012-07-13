@@ -21,6 +21,7 @@ BuildArch:      noarch
 # Requires:		perl(Config::General)
 Requires:       perl
 Requires: 		perl(Config::General)
+Requires:       perl(DateTime::Format::ISO8601)
 Requires: 		perl(English)
 Requires: 		perl(Exporter)
 Requires: 		perl(Fcntl)

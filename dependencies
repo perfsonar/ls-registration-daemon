@@ -1,6 +1,7 @@
 Config::General
 Data::Dumper
 Data::UUID
+DateTime::Format::ISO8601
 Digest::MD5
 English
 Exporter
