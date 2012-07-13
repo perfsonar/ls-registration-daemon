@@ -63,7 +63,7 @@ sub init {
 
     $self->{CONF}   = $conf;
     $self->{STATUS} = "UNREGISTERED";
-    $self->{LS_CLIENT} = perfSONAR_PS::Client::LS->new( { instance => $conf->{ls_instance} } );
+    $self->{LS_CLIENT} = new perfSONAR_PS::Client::LS::REST();
 
     if ($self->{CONF}->{require_site_name} and not $self->{CONF}->{site_name}) {
     	$self->{LOGGER}->error("site_name is a required configuration option");
@@ -173,85 +173,59 @@ sub refresh {
 
 =head2 register ($self)
 
-This function is called by the refresh function. It creates an XML description
-of the service. It then registers that service and saves the KEY for when a
-keepalive needs to be done.
+This function is called by the refresh function. This creates
+a brand new registration in the Lookup Service
 
 =cut
-
 sub register {
     my ( $self ) = @_;
 
     my $addresses = $self->get_service_addresses();
-
-    my @metadata = ();
-    my %service  = ();
-    $service{nonPerfSONARService} = 1;
-    $service{name}                = $self->service_name();
-    $service{description}         = $self->service_desc();
-    $service{type}                = $self->service_type();
-    $service{addresses}           = $addresses;
-
-    my $ev       = $self->event_type();
     my $projects = $self->{CONF}->{site_project};
-
-    my $node_addresses = $self->get_node_addresses();
-
-    my $md = q{};
-    $md .= "<nmwg:metadata id=\"" . int( rand( 9000000 ) ) . "\">\n";
-    $md .= "  <nmwg:subject>\n";
-    $md .= $self->create_node( $node_addresses );
-    $md .= "  </nmwg:subject>\n";
-    $md .= "  <nmwg:eventType>$ev</nmwg:eventType>\n";
+    
+    #convert projects to an array
     if ( $projects ) {
-        $md .= "  <nmwg:parameters>\n";
-        if ( ref( $projects ) eq "ARRAY" ) {
-            foreach my $project ( @$projects ) {
-                $md .= "    <nmwg:parameter name=\"keyword\">project:" . $project . "</nmwg:parameter>\n";
-            }
+        unless ( ref( $projects ) eq "ARRAY" ) {
+            $projects = [ $projects ];
         }
-        else {
-            $md .= "    <nmwg:parameter name=\"keyword\">project:" . $projects . "</nmwg:parameter>\n";
-        }
-        $md .= "  </nmwg:parameters>\n";
     }
-    $md .= "</nmwg:metadata>\n";
+    
+    my $reg = new perfSONAR_PS::Client::LS::Requests::Registration();
+    $reg->init({
+        domain => $projects
+        locator => $addresses,
+        type => $self->service_type()
+    });
+    $reg->setServiceName($self->service_name());
+    $reg->setServiceDescription($self->service_desc());
 
-    push @metadata, $md;
+    #Register
+    my ($resCode, $res) = $client->register({ registration => $reg, uri => $self->{CONF}->{ls_instance} });
 
-    my $res = $self->{LS_CLIENT}->registerRequestLS( service => \%service, data => \@metadata );
-    if ( $res and $res->{"key"} ) {
-        $self->{LOGGER}->debug( "Registration succeeded with key: " . $res->{"key"} );
+    if($resCode == 0){
+        $self->{LOGGER}->debug( "Registration succeeded with uri: " . $res->{"uri"} );
         $self->{STATUS}       = "REGISTERED";
-        $self->{KEY}          = $res->{"key"};
-        $self->{NEXT_REFRESH} = time + $self->{CONF}->{"ls_interval"};
+        $self->{KEY}          = $res->{"uri"};
+        $self->{NEXT_REFRESH} = $res->{"expires_unixtime"} - 300; # renew 5 minutes before expiration
+    }else{
+        $self->{LOGGER}->error( "Problem registering service. Will retry full registration next time: " . $res->{message} );
     }
-    else {
-        my $error;
-        if ( $res and $res->{error} ) {
-            $self->{LOGGER}->error( "Problem registering service. Will retry full registration next time: " . $res->{error} );
-        }
-        else {
-            $self->{LOGGER}->error( "Problem registering service. Will retry full registration next time." );
-        }
-    }
-
+    
     return;
 }
 
 =head2 keepalive ($self)
 
 This function is called by the refresh function. It uses the saved KEY from the
-Lookup Service registration, and sends a refresh to the Lookup Service.
+Lookup Service registration, and sends an renew request to the Lookup
+Service.
 
 =cut
-
 sub keepalive {
     my ( $self ) = @_;
-
-    my $res = $self->{LS_CLIENT}->keepaliveRequestLS( key => $self->{KEY} );
-    if ( $res->{eventType} and $res->{eventType} eq "success.ls.keepalive" ) {
-        $self->{NEXT_REFRESH} = time + $self->{CONF}->{"ls_interval"};
+    my ($resCode, $res) = $client->renew({ uri => $self->{KEY}, base => $self->{CONF}->{ls_instance} });
+    if ( $resCode == 0 ) {
+        $self->{NEXT_REFRESH} = $res->{"expires_unixtime"} - 300; # renew 5 minutes before expiration
     }
     else {
         $self->{STATUS} = "UNREGISTERED";
@@ -261,6 +235,7 @@ sub keepalive {
     return;
 }
 
+
 =head2 unregister ($self)
 
 This function is called by the refresh function. It uses the saved KEY from the
@@ -268,47 +243,13 @@ Lookup Service registration, and sends an unregister request to the Lookup
 Service.
 
 =cut
-
 sub unregister {
     my ( $self ) = @_;
 
-    $self->{LS_CLIENT}->deregisterRequestLS( key => $self->{KEY} );
+    $client->unregister({ uri => $self->{KEY}, base => $self->{CONF}->{ls_instance} });
     $self->{STATUS} = "UNREGISTERED";
-
+    
     return;
-}
-
-=head2 create_node ($self, $addresses)
-
-This internal function is called by the register function. It uses the passed
-in set of addresses to construct the node that is registered along with the
-lookup service registration.
-
-=cut
-
-sub create_node {
-    my ( $self, $addresses ) = @_;
-    my $node = q{};
-
-    my $nmtb  = "http://ogf.org/schema/network/topology/base/20070828/";
-    my $nmtl3 = "http://ogf.org/schema/network/topology/l3/20070828/";
-
-    $node .= "<nmtb:node xmlns:nmtb=\"$nmtb\" xmlns:nmtl3=\"$nmtl3\">\n";
-    foreach my $addr ( @$addresses ) {
-        my $name = reverse_dns( $addr->{value} );
-        if ( $name ) {
-            $node .= " <nmtb:name type=\"dns\">$name</nmtb:name>\n";
-        }
-    }
-
-    foreach my $addr ( @$addresses ) {
-        $node .= " <nmtl3:port>\n";
-        $node .= "   <nmtl3:address type=\"" . $addr->{type} . "\">" . $addr->{value} . "</nmtl3:address>\n";
-        $node .= " </nmtl3:port>\n";
-    }
-    $node .= "</nmtb:node>\n";
-
-    return $node;
 }
 
 1;
