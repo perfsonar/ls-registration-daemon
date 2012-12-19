@@ -32,6 +32,7 @@ use perfSONAR_PS::LSRegistrationDaemon::GridFTP;
 use perfSONAR_PS::LSRegistrationDaemon::Ping;
 use perfSONAR_PS::LSRegistrationDaemon::Traceroute;
 
+use DBI;
 use Getopt::Long;
 use Config::General;
 use Log::Log4perl qw/:easy/;
@@ -182,6 +183,20 @@ if ( not $conf{"check_interval"} ) {
 # the interval is configured in hours
 $conf{"ls_interval"} = $conf{"ls_interval"} * 60 * 60;
 
+#initialize the key database
+if ( not $conf{"ls_key_db"} ) {
+    $logger->info( "No LS key database found" );
+    $conf{"ls_key_db"} = '/var/lib/ls_registration_daemon/lsKey.db';
+}
+my $ls_key_dbh = DBI->connect('dbi:SQLite:dbname=' . $conf{"ls_key_db"}, '', '');
+my $ls_key_create  = $ls_key_dbh->prepare('CREATE TABLE IF NOT EXISTS lsKeys (regHash VARCHAR(255) PRIMARY KEY, uri VARCHAR(255) NOT NULL, update_id BIGINT NOT NULL)');
+$ls_key_create->execute();
+if($ls_key_create->err){
+    $logger->error( "Error creating key database: " . $ls_key_create->errstr );
+    exit( -1 );
+}
+$ls_key_dbh->disconnect();
+
 my $site_confs = $conf{"site"};
 if ( not $site_confs ) {
     $logger->error( "No sites defined in configuration file" );
@@ -198,11 +213,11 @@ my @site_params = ();
 
 foreach my $site_conf ( @$site_confs ) {
     my $site_merge_conf = mergeConfig( \%conf, $site_conf );
-
+    $site_merge_conf->{'ls_key_db'} = $conf{'ls_key_db'};
     my $services = init_site( $site_merge_conf );
 
     if ( not $services ) {
-        print "Couldn't initialize site. Exitting.";
+        print "Couldn't initialize site. Exiting.";
         exit( -1 );
     }
 
@@ -241,13 +256,14 @@ unlockPIDFile( $fileHandle );
 foreach my $params ( @site_params ) {
 
     # every site will register separately
+    my $update_id = time .'';
     my $pid = fork();
     if ( $pid != 0 ) {
         push @child_pids, $pid;
         next;
     }
     else {
-        handle_site( $params->{conf}, $params->{services} );
+        handle_site( $params->{conf}, $params->{services}, $update_id );
     }
 }
 
@@ -395,11 +411,11 @@ through and refreshes the services, and pauses for "check_interval" seconds.
 =cut
 
 sub handle_site {
-    my ( $site_conf, $services ) = @_;
+    my ( $site_conf, $services, $update_id ) = @_;
 
     while ( 1 ) {
         foreach my $service ( @$services ) {
-            $service->refresh();
+            $service->refresh($update_id);
         }
 
         sleep( $site_conf->{"check_interval"} );

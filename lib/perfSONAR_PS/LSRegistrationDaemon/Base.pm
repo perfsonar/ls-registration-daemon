@@ -24,8 +24,9 @@ use Log::Log4perl qw/get_logger/;
 use perfSONAR_PS::Utils::DNS qw(reverse_dns);
 use perfSONAR_PS::Client::LS::REST;
 use perfSONAR_PS::Client::LS::Requests::Registration;
+use Digest::MD5 qw(md5_base64);
 
-use fields 'CONF', 'STATUS', 'LOGGER', 'KEY', 'NEXT_REFRESH', 'LS_CLIENT';
+use fields 'CONF', 'STATUS', 'LOGGER', 'KEY', 'KEY_DB_HASH', 'NEXT_REFRESH', 'LS_CLIENT';
 
 =head1 API
 
@@ -75,8 +76,81 @@ sub init {
     	$self->{LOGGER}->error("site_location is a required configuration option");
     	return -1;
     }
-
+    
+    #calculate hash
+    my $reg_hash = $self->_buildRegistration()->getRegHash();
+    my $hash_input = '';
+    foreach my $regFieldName(keys %{$reg_hash}){
+        $hash_input .= $regFieldName . "__" . $reg_hash->{$regFieldName};
+    }
+    $self->{KEY_DB_HASH} = md5_base64($hash_input);
+    $self->{LOGGER}->info("KEY_DB_HASH = " . $self->{KEY_DB_HASH} . "\n");
+    
+    #check if in database
+    my $dbh = DBI->connect('dbi:SQLite:dbname=' . $conf->{"ls_key_db"}, '', '');
+    $self->{KEY} = $self->find_key($dbh);
+    #if not in DB, determine if already registered˙
+    if(!$self->{KEY}){
+        my($returnCode, $searchResults) = $self->{LS_CLIENT}->query({
+            uri => $self->{CONF}->{ls_instance},
+            search_params => $self->_buildRegistration()->getRegHash(),
+        });
+        if($returnCode == 0 && $searchResults && $searchResults->{'results'} && 
+            @{$searchResults->{'results'}} > 0 && $searchResults->{'results'}->[0]->{'record-uri'}){
+            $self->{LOGGER}->info("Service already in LS, saving key: " . $searchResults->{'results'}->[0]->{'record-uri'} . "\n");
+            $self->{STATUS} = "REGISTERED";
+            $self->{KEY} = $searchResults->{'results'}->[0]->{'record-uri'};
+            $self->save_key($dbh, $self->{KEY}, 0);
+            $self->{NEXT_REFRESH} = 0;
+        }else{
+            $self->{LOGGER}->info("Service not yet registered in LS\n");
+        }
+    }
+    #close db
+    $dbh->disconnect();
+    
     return 0;
+}
+
+sub find_key {
+    my ($self, $dbh) = @_;
+    my $uri = '';
+    my $sth  = $dbh->prepare('SELECT uri FROM lsKeys WHERE regHash=?');
+    $sth->bind_param(1, $self->{KEY_DB_HASH});
+    $sth->execute();
+    if($sth->err){
+        $self->{LOGGER}->warn( "Error looking for key: " . $sth->errstr );
+    }
+    while( my @row = $sth->fetchrow_array){
+        $uri = $row[0];
+        $self->{LOGGER}->info("find_key.key: " .  $self->{KEY});
+        last;
+    }
+    
+    return $uri;
+}
+
+sub save_key {
+    my ($self, $dbh, $key, $update_id) = @_;
+    
+    #check if key exists
+    my $sth = '';
+    #save key to database
+    if($update_id && $self->find_key($dbh)){
+        $sth = $dbh->prepare('UPDATE lsKeys SET uri=?, update_id=? WHERE lsRegKey=?');
+        $sth->bind_param(1, $key);
+        $sth->bind_param(2, $update_id);
+        $sth->bind_param(3, $self->{KEY_DB_HASH});
+    }else{
+        $sth = $dbh->prepare('INSERT INTO lsKeys VALUES(?, ?, ?)');
+        $sth->bind_param(1, $self->{KEY_DB_HASH});
+        $sth->bind_param(2, $key);
+        $sth->bind_param(3, $update_id);
+    }
+    $sth->execute();
+    if($sth->err){
+        $self->{LOGGER}->warn( "Error saving key: " . $sth->errstr );
+    }
 }
 
 =head2 service_name ($self)
@@ -138,7 +212,7 @@ Service. If not, it unregisters the service from the Lookup Service.
 =cut
 
 sub refresh {
-    my ( $self ) = @_;
+    my ( $self, $update_id ) = @_;
 
     if ( $self->{STATUS} eq "BROKEN" ) {
         $self->{LOGGER}->error( "Refreshing misconfigured service: ".$self->service_desc );
@@ -146,16 +220,16 @@ sub refresh {
     }
 
     $self->{LOGGER}->debug( "Refreshing: " . $self->service_desc );
-
+    my $dbh = DBI->connect('dbi:SQLite:dbname=' . $self->{CONF}->{"ls_key_db"}, '', '');
     if ( $self->is_up ) {
         $self->{LOGGER}->debug( "Service is up" );
         if ( $self->{STATUS} ne "REGISTERED" ) {
             $self->{LOGGER}->info( "Service '".$self->service_desc."' is up, registering" );
-            $self->register();
+            $self->register($dbh, $update_id );
         }
         elsif ( time >= $self->{NEXT_REFRESH} ) {
             $self->{LOGGER}->info( "Service '".$self->service_desc."' is up, refreshing registration" );
-            $self->keepalive();
+            $self->keepalive($dbh, $update_id );
         }
         else {
             $self->{LOGGER}->debug( "No need to refresh" );
@@ -168,7 +242,8 @@ sub refresh {
     else {
         $self->{LOGGER}->info( "Service '".$self->service_desc."' is down" );
     }
-
+    $dbh->disconnect();
+    
     return;
 }
 
@@ -179,37 +254,19 @@ a brand new registration in the Lookup Service
 
 =cut
 sub register {
-    my ( $self ) = @_;
-
-    my $addresses = $self->get_service_addresses();
-    my $projects = $self->{CONF}->{site_project};
-    
-    #convert projects to an array
-    if ( $projects ) {
-        unless ( ref( $projects ) eq "ARRAY" ) {
-            $projects = [ $projects ];
-        }
-    }
-    
-    my @addressList = map { $_->{value} } @{$addresses};
-    
-    my $reg = new perfSONAR_PS::Client::LS::Requests::Registration();
-    $reg->init({
-        domain => $projects,
-        locator => \@addressList,
-        type => $self->service_type()
-    });
-    $reg->setServiceName([$self->service_name()]);
-    $reg->setServiceSiteLocation([$self->service_desc()]);
+    my ( $self, $dbh, $update_id ) = @_;
 
     #Register
+    my $reg = $self->_buildRegistration();
     my ($resCode, $res) = $self->{LS_CLIENT}->register({ registration => $reg, uri => $self->{CONF}->{ls_instance} });
 
     if($resCode == 0){
         $self->{LOGGER}->debug( "Registration succeeded with uri: " . $res->{"uri"} );
         $self->{STATUS}       = "REGISTERED";
         $self->{KEY}          = $res->{"uri"};
-        $self->{NEXT_REFRESH} = $res->{"expires_unixtime"} - 300; # renew 5 minutes before expiration
+        $self->{NEXT_REFRESH} = int($res->{"expires_unixtime"} - .05*($res->{"expires_unixtime"} - time)); 
+        $self->{LOGGER}->info("Next Refresh: " . $self->{NEXT_REFRESH});
+        $self->save_key($dbh, $res->{"uri"}, $update_id );
     }else{
         $self->{LOGGER}->error( "Problem registering service. Will retry full registration next time: " . $res->{message} );
     }
@@ -225,10 +282,11 @@ Service.
 
 =cut
 sub keepalive {
-    my ( $self ) = @_;
+    my ( $self, $dbh, $update_id  ) = @_;
     my ($resCode, $res) = $self->{LS_CLIENT}->renew({ uri => $self->{KEY}, base => $self->{CONF}->{ls_instance} });
     if ( $resCode == 0 ) {
         $self->{NEXT_REFRESH} = $res->{"expires_unixtime"} - 300; # renew 5 minutes before expiration
+        $self->save_key($dbh, $self->{KEY}, $update_id );
     }
     else {
         $self->{STATUS} = "UNREGISTERED";
@@ -256,6 +314,36 @@ sub unregister {
 }
 
 1;
+
+=head2 _buildRegistration ($self)
+
+This function is called to build the registration object
+=cut
+sub _buildRegistration {
+    my ($self) = @_;
+    my $addresses = $self->get_service_addresses();
+    my $projects = $self->{CONF}->{site_project};
+    
+    #convert projects to an array
+    if ( $projects ) {
+        unless ( ref( $projects ) eq "ARRAY" ) {
+            $projects = [ $projects ];
+        }
+    }
+    
+    my @addressList = map { $_->{value} } @{$addresses};
+    
+    my $reg = new perfSONAR_PS::Client::LS::Requests::Registration();
+    $reg->init({
+        domain => $projects,
+        locator => \@addressList,
+        type => $self->service_type()
+    });
+    $reg->setServiceName([$self->service_name()]);
+    $reg->setServiceSiteLocation([$self->service_desc()]);
+    
+    return $reg;
+}
 
 __END__
 
