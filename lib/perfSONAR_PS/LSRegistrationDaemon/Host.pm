@@ -33,7 +33,7 @@ sub init_children {
         $self->{CONF}->{interface} = \@tmp;
     }
     foreach my $iface(@{$self->{CONF}->{interface}}){
-        my $iface_reg = perfSONAR_PS::LSRegistrationDaemon::Interface->new();
+        my $iface_reg = $self->create_interface($iface->{type});
         $iface_reg->init(mergeConfig($self->{CONF}, $iface));
         push @interfaces, $iface_reg;
     }
@@ -42,17 +42,17 @@ sub init_children {
     $self->{CHILD_REGISTRATIONS} = $self->{INTERFACES};
 }
 
+sub create_interface {
+    my ($self, $type) = @_;
+    
+    return perfSONAR_PS::LSRegistrationDaemon::Interface->new();
+}
+
 sub is_up {
     #die "Subclass must implement is_up"; 
     return 1;
 }
 
-=head2 service_name ($self)
-
-This internal function generates the name to register this service as. It calls
-the object-specific function "type" when creating the function.
-
-=cut
 
 sub description {
     my ( $self ) = @_;
@@ -141,7 +141,7 @@ sub domain {
 
 sub toolkit_version {
     my ( $self ) = @_;
-
+    
     return $self->{CONF}->{toolkit_version};
 }
 
@@ -226,7 +226,9 @@ sub build_registration {
     	latitude => $self->latitude(), 
     	longitude => $self->longitude(),
     );
-    $service->setToolkitVersion($self->toolkit_version());
+    if(defined $self->toolkit_version()){
+        $service->setToolkitVersion($self->toolkit_version());
+    }
     $service->setCommunities($self->site_project());
     
     return $service;

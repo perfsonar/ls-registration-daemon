@@ -2,6 +2,7 @@ Config::General
 Data::Dumper
 Data::UUID
 DateTime::Format::ISO8601
+DBD::SQLite
 Digest::MD5
 English
 Exporter
@@ -24,6 +25,7 @@ NetAddr::IP
 POSIX
 Params::Validate
 Regexp::Common
+Sys::MemInfo
 Time::HiRes
 XML::LibXML
 base

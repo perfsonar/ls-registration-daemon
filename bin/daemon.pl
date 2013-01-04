@@ -32,7 +32,7 @@ use perfSONAR_PS::LSRegistrationDaemon::GridFTP;
 use perfSONAR_PS::LSRegistrationDaemon::Ping;
 use perfSONAR_PS::LSRegistrationDaemon::Traceroute;
 use perfSONAR_PS::LSRegistrationDaemon::Host;
-
+use perfSONAR_PS::LSRegistrationDaemon::ToolkitHost;
 use DBI;
 use Getopt::Long;
 use Config::General;
@@ -433,6 +433,16 @@ sub init_site {
 
                 # complain
                 $logger->error( "Error: Couldn't initialize host watcher" );
+                exit( -1 );
+            }
+            push @services, $host;
+        }
+        elsif ( lc( $host_conf->{type} ) eq "toolkit" ) {
+            my $host = perfSONAR_PS::LSRegistrationDaemon::ToolkitHost->new();
+            if ( $host->init( $host_conf ) != 0 ) {
+
+                # complain
+                $logger->error( "Error: Couldn't initialize toolkit host watcher" );
                 exit( -1 );
             }
             push @services, $host;

@@ -66,7 +66,7 @@ sub capacity {
 sub if_type {
     my ( $self ) = @_;
 
-    return $self->{CONF}->{type};
+    return $self->{CONF}->{if_type};
 }
 
 sub urn {
@@ -93,8 +93,8 @@ sub build_registration {
         macAddress=> $self->mac_address(), 
         domains=> $self->domain(),
     );
-    $iface->setInterfaceType($self->if_type());
-    $iface->setUrns($self->urn());
+    $iface->setInterfaceType($self->if_type()) if(defined $self->if_type());
+    $iface->setUrns($self->urn()) if(defined $self->urn());
     
     return $iface;
 }
