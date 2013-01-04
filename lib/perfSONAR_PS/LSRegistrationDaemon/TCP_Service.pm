@@ -25,7 +25,7 @@ use perfSONAR_PS::Utils::Host qw(get_ips);
 
 our $VERSION = 3.2;
 
-use base 'perfSONAR_PS::LSRegistrationDaemon::Base';
+use base 'perfSONAR_PS::LSRegistrationDaemon::Service';
 
 use fields 'ADDRESSES', 'PORT';
 
@@ -201,6 +201,13 @@ sub get_node_addresses {
     }
 
     return \@addrs;
+}
+
+sub service_locator {
+    my ( $self ) = @_;
+    
+    my @urls = map {$_->{"value"}} @{$self->get_service_addresses()};
+    return \@urls;
 }
 
 1;

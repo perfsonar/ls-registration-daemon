@@ -25,7 +25,7 @@ use Net::IP;
 use perfSONAR_PS::Utils::DNS qw(reverse_dns resolve_address);
 use perfSONAR_PS::Utils::Host qw(get_ips);
 
-use base 'perfSONAR_PS::LSRegistrationDaemon::Base';
+use base 'perfSONAR_PS::LSRegistrationDaemon::Service';
 
 use fields 'ADDRESSES';
 
@@ -155,6 +155,13 @@ sub is_up {
     }
 
     return 0;
+}
+
+sub service_locator {
+    my ( $self ) = @_;
+    
+    my @urls = map {$_->{"value"}} @{$self->get_service_addresses()};
+    return \@urls;
 }
 
 1;

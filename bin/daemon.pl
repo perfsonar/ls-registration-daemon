@@ -31,6 +31,7 @@ use perfSONAR_PS::LSRegistrationDaemon::NPAD;
 use perfSONAR_PS::LSRegistrationDaemon::GridFTP;
 use perfSONAR_PS::LSRegistrationDaemon::Ping;
 use perfSONAR_PS::LSRegistrationDaemon::Traceroute;
+use perfSONAR_PS::LSRegistrationDaemon::Host;
 
 use DBI;
 use Getopt::Long;
@@ -189,10 +190,17 @@ if ( not $conf{"ls_key_db"} ) {
     $conf{"ls_key_db"} = '/var/lib/ls_registration_daemon/lsKey.db';
 }
 my $ls_key_dbh = DBI->connect('dbi:SQLite:dbname=' . $conf{"ls_key_db"}, '', '');
-my $ls_key_create  = $ls_key_dbh->prepare('CREATE TABLE IF NOT EXISTS lsKeys (regHash VARCHAR(255) PRIMARY KEY, uri VARCHAR(255) NOT NULL, update_id BIGINT NOT NULL)');
+my $ls_key_create  = $ls_key_dbh->prepare('CREATE TABLE IF NOT EXISTS lsKeys (uri VARCHAR(255) PRIMARY KEY, expires BIGINT NOT NULL, checksum VARCHAR(255) NOT NULL, duplicateChecksum VARCHAR(255) NOT NULL)');
 $ls_key_create->execute();
 if($ls_key_create->err){
     $logger->error( "Error creating key database: " . $ls_key_create->errstr );
+    exit( -1 );
+}
+#delete expired entries from local db
+my $ls_key_clean_expired  = $ls_key_dbh->prepare('DELETE FROM lsKeys WHERE expires < ?');
+$ls_key_clean_expired->execute(time);
+if($ls_key_clean_expired->err){
+    $logger->error( "Error cleaning out expired keys: " . $ls_key_clean_expired->errstr );
     exit( -1 );
 }
 $ls_key_dbh->disconnect();
@@ -396,6 +404,43 @@ sub init_site {
 
             # error
             $logger->error( "Error: Unknown service type: " . $conf{type} );
+            exit( -1 );
+        }
+    }
+    
+    ##
+    # Parse host configurations
+    my $hosts_conf = $site_conf->{host};
+    if ($hosts_conf && ref( $hosts_conf ) ne "ARRAY" ) {
+        my @tmp = ();
+        push @tmp, $hosts_conf;
+        $hosts_conf = \@tmp;
+    }
+    
+    foreach my $curr_host_conf ( @$hosts_conf ) {
+
+        my $host_conf = mergeConfig( $site_conf, $curr_host_conf );
+        
+        if ( not $host_conf->{'type'} ) {
+
+            # complain
+            $logger->error( "Error: No host type specified: " . $host_conf->{type} );
+            exit( -1 );
+        }
+        elsif ( lc( $host_conf->{type} ) eq "manual" ) {
+            my $host = perfSONAR_PS::LSRegistrationDaemon::Host->new();
+            if ( $host->init( $host_conf ) != 0 ) {
+
+                # complain
+                $logger->error( "Error: Couldn't initialize host watcher" );
+                exit( -1 );
+            }
+            push @services, $host;
+        }
+        else {
+
+            # error
+            $logger->error( "Error: Unknown host type: " . $conf{type} );
             exit( -1 );
         }
     }

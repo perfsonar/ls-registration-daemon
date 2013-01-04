@@ -20,13 +20,15 @@ use warnings;
 our $VERSION = 3.2;
 
 use Log::Log4perl qw/get_logger/;
+use URI;
+use Data::Dumper;
 
 use perfSONAR_PS::Utils::DNS qw(reverse_dns);
-use perfSONAR_PS::Client::LS::REST;
-use perfSONAR_PS::Client::LS::Requests::Registration;
 use Digest::MD5 qw(md5_base64);
+use SimpleLookupService::Client::Registration;
+use SimpleLookupService::Client::RecordManager;
 
-use fields 'CONF', 'STATUS', 'LOGGER', 'KEY', 'KEY_DB_HASH', 'NEXT_REFRESH', 'LS_CLIENT';
+use fields 'CONF', 'STATUS', 'LOGGER', 'KEY', 'NEXT_REFRESH', 'LS_CLIENT', 'CHILD_REGISTRATIONS';
 
 =head1 API
 
@@ -65,8 +67,7 @@ sub init {
 
     $self->{CONF}   = $conf;
     $self->{STATUS} = "UNREGISTERED";
-    $self->{LS_CLIENT} = new perfSONAR_PS::Client::LS::REST();
-
+    
     if ($self->{CONF}->{require_site_name} and not $self->{CONF}->{site_name}) {
     	$self->{LOGGER}->error("site_name is a required configuration option");
     	return -1;
@@ -77,130 +78,56 @@ sub init {
     	return -1;
     }
     
-    #calculate hash
-    my $reg_hash = $self->_buildRegistration()->getRegHash();
-    my $hash_input = '';
-    foreach my $regFieldName(keys %{$reg_hash}){
-        $hash_input .= $regFieldName . "__" . $reg_hash->{$regFieldName};
+    #setup ls client
+    $self->{LS_CLIENT} = SimpleLookupService::Client::SimpleLS->new();
+    my $uri = URI->new($self->{CONF}->{ls_instance}); 
+    my $ls_port =$uri->port();
+    if(!$ls_port &&  $uri->scheme() eq 'https'){
+        $ls_port = 443;
+    }elsif(!$ls_port){
+        $ls_port = 80;
     }
-    $self->{KEY_DB_HASH} = md5_base64($hash_input);
-    $self->{LOGGER}->info("KEY_DB_HASH = " . $self->{KEY_DB_HASH} . "\n");
+    $self->{LS_CLIENT}->init( host=> $uri->host(), port=> $ls_port );
     
-    #check if in database
-    my $dbh = DBI->connect('dbi:SQLite:dbname=' . $conf->{"ls_key_db"}, '', '');
-    $self->{KEY} = $self->find_key($dbh);
-    #if not in DB, determine if already registered˙
-    if(!$self->{KEY}){
-        my($returnCode, $searchResults) = $self->{LS_CLIENT}->query({
-            uri => $self->{CONF}->{ls_instance},
-            search_params => $self->_buildRegistration()->getRegHash(),
-        });
-        if($returnCode == 0 && $searchResults && $searchResults->{'results'} && 
-            @{$searchResults->{'results'}} > 0 && $searchResults->{'results'}->[0]->{'record-uri'}){
-            $self->{LOGGER}->info("Service already in LS, saving key: " . $searchResults->{'results'}->[0]->{'record-uri'} . "\n");
-            $self->{STATUS} = "REGISTERED";
-            $self->{KEY} = $searchResults->{'results'}->[0]->{'record-uri'};
-            $self->save_key($dbh, $self->{KEY}, 0);
-            $self->{NEXT_REFRESH} = 0;
-        }else{
-            $self->{LOGGER}->info("Service not yet registered in LS\n");
-        }
+    #initialize children registrations
+    $self->init_children();
+    
+    #determine if entry that would cause 403 error, cause LS considers a duplicate
+    # if its not there is nothing to do
+    my $duplicate_uri = $self->find_duplicate();
+    if(!$duplicate_uri){
+        $self->{LOGGER}->info("No duplicate found for " . $self->description());
+        return 0;    
     }
-    #close db
-    $dbh->disconnect();
+    $self->{LOGGER}->info("Duplicate $duplicate_uri found for " . $self->description());
+    
+    # if it is a duplicate, determine if anything has changed in the fields the LS
+    # does not use to compare records...
+    my ($existing_key, $next_refresh) = $self->find_key();
+    if($existing_key){
+        # no changes, so just renew
+        $self->{STATUS} = "REGISTERED";
+        $self->{KEY} = $existing_key;
+        $self->{NEXT_REFRESH} = $next_refresh;
+        $self->{LOGGER}->info("No changes, will renew " . $self->description());
+    }else{
+        #changes so unregister old one
+        $self->{LOGGER}->info("Changes, will delete " . $duplicate_uri);
+        my $ls_client = new SimpleLookupService::Client::RecordManager();
+        $ls_client->init({ server => $self->{LS_CLIENT}, record_id => $duplicate_uri });
+        $ls_client->delete();
+    }
     
     return 0;
 }
 
-sub find_key {
-    my ($self, $dbh) = @_;
-    my $uri = '';
-    my $sth  = $dbh->prepare('SELECT uri FROM lsKeys WHERE regHash=?');
-    $sth->bind_param(1, $self->{KEY_DB_HASH});
-    $sth->execute();
-    if($sth->err){
-        $self->{LOGGER}->warn( "Error looking for key: " . $sth->errstr );
-    }
-    while( my @row = $sth->fetchrow_array){
-        $uri = $row[0];
-        $self->{LOGGER}->info("find_key.key: " .  $self->{KEY});
-        last;
-    }
-    
-    return $uri;
-}
-
-sub save_key {
-    my ($self, $dbh, $key, $update_id) = @_;
-    
-    #check if key exists
-    my $sth = '';
-    #save key to database
-    if($update_id && $self->find_key($dbh)){
-        $sth = $dbh->prepare('UPDATE lsKeys SET uri=?, update_id=? WHERE lsRegKey=?');
-        $sth->bind_param(1, $key);
-        $sth->bind_param(2, $update_id);
-        $sth->bind_param(3, $self->{KEY_DB_HASH});
-    }else{
-        $sth = $dbh->prepare('INSERT INTO lsKeys VALUES(?, ?, ?)');
-        $sth->bind_param(1, $self->{KEY_DB_HASH});
-        $sth->bind_param(2, $key);
-        $sth->bind_param(3, $update_id);
-    }
-    $sth->execute();
-    if($sth->err){
-        $self->{LOGGER}->warn( "Error saving key: " . $sth->errstr );
-    }
-}
-
-=head2 service_name ($self)
-
-This internal function generates the name to register this service as. It calls
-the object-specific function "type" when creating the function.
-
-=cut
-
-sub service_name {
+sub init_children {
     my ( $self ) = @_;
-
-    if ( $self->{CONF}->{service_name} ) {
-        return $self->{CONF}->{service_name};
-    }
-
-    my $retval = q{};
-    if ( $self->{CONF}->{site_name} ) {
-        $retval .= $self->{CONF}->{site_name} . " ";
-    }
-    $retval .= $self->type();
-
-    return $retval;
-}
-
-=head2 service_name ($self)
-
-This internal function generates the human-readable description of the service
-to register. It calls the object-specific function "type" when creating the
-function.
-
-=cut
-
-sub service_desc {
-    my ( $self ) = @_;
-
-    if ( $self->{CONF}->{service_name} ) {
-        return $self->{CONF}->{service_name};
-    }
-
-    my $retval = $self->type();
-    if ( $self->{CONF}->{site_name} ) {
-        $retval .= " at " . $self->{CONF}->{site_name};
-    }
-
-    if ( $self->{CONF}->{site_location} ) {
-        $retval .= " in " . $self->{CONF}->{site_location};
-    }
-
-    return $retval;
+    my @childRegs = ();
+    
+    $self->{CHILD_REGISTRATIONS} = \@childRegs;
+    
+    return;
 }
 
 =head2 refresh ($self)
@@ -212,37 +139,49 @@ Service. If not, it unregisters the service from the Lookup Service.
 =cut
 
 sub refresh {
-    my ( $self, $update_id ) = @_;
+    my ( $self ) = @_;
 
     if ( $self->{STATUS} eq "BROKEN" ) {
-        $self->{LOGGER}->error( "Refreshing misconfigured service: ".$self->service_desc );
+        $self->{LOGGER}->error( "Refreshing misconfigured record: ".$self->description() );
         return;
     }
-
-    $self->{LOGGER}->debug( "Refreshing: " . $self->service_desc );
-    my $dbh = DBI->connect('dbi:SQLite:dbname=' . $self->{CONF}->{"ls_key_db"}, '', '');
+    
+    #Refresh children first
+    foreach my $child_reg(@{$self->{CHILD_REGISTRATIONS}}){
+        $child_reg->refresh();
+    }
+    
+    #Refresh current registration    
+    $self->{LOGGER}->debug( "Refreshing: " . $self->description() );
     if ( $self->is_up ) {
         $self->{LOGGER}->debug( "Service is up" );
+        
+        #check if record has changed, if it has then need to re-register
+        my ($existing_key, $next_refresh) = $self->find_key();
+        if(!$existing_key){
+            $self->unregister();
+        }
+        
+        #perform needed LS operation
         if ( $self->{STATUS} ne "REGISTERED" ) {
-            $self->{LOGGER}->info( "Service '".$self->service_desc."' is up, registering" );
-            $self->register($dbh, $update_id );
+            $self->{LOGGER}->info( "Record '".$self->description()."' is up, registering" );
+            $self->register();
         }
         elsif ( time >= $self->{NEXT_REFRESH} ) {
-            $self->{LOGGER}->info( "Service '".$self->service_desc."' is up, refreshing registration" );
-            $self->keepalive($dbh, $update_id );
+            $self->{LOGGER}->info( "Record '".$self->description()."' is up, refreshing registration" );
+            $self->keepalive();
         }
         else {
             $self->{LOGGER}->debug( "No need to refresh" );
         }
     }
     elsif ( $self->{STATUS} eq "REGISTERED" ) {
-        $self->{LOGGER}->info( "Service '".$self->service_desc."' is down, unregistering" );
+        $self->{LOGGER}->info( "Record '".$self->description()."' is down, unregistering" );
         $self->unregister();
     }
     else {
-        $self->{LOGGER}->info( "Service '".$self->service_desc."' is down" );
+        $self->{LOGGER}->info( "Record '".$self->description()."' is down" );
     }
-    $dbh->disconnect();
     
     return;
 }
@@ -254,19 +193,21 @@ a brand new registration in the Lookup Service
 
 =cut
 sub register {
-    my ( $self, $dbh, $update_id ) = @_;
+    my ( $self ) = @_;
 
     #Register
-    my $reg = $self->_buildRegistration();
-    my ($resCode, $res) = $self->{LS_CLIENT}->register({ registration => $reg, uri => $self->{CONF}->{ls_instance} });
+    my $reg = $self->build_registration();
+    my $ls_client = new SimpleLookupService::Client::Registration();
+    $ls_client->init({server => $self->{LS_CLIENT}, record => $reg});
+    my ($resCode, $res) = $ls_client->register();
 
     if($resCode == 0){
-        $self->{LOGGER}->debug( "Registration succeeded with uri: " . $res->{"uri"} );
+        $self->{LOGGER}->debug( "Registration succeeded with uri: " . $res->getRecordUri() );
         $self->{STATUS}       = "REGISTERED";
-        $self->{KEY}          = $res->{"uri"};
-        $self->{NEXT_REFRESH} = int($res->{"expires_unixtime"} - .05*($res->{"expires_unixtime"} - time)); 
+        $self->{KEY}          = $res->getRecordUri();
+        $self->{NEXT_REFRESH} = $res->getRecordExpiresAsUnixTS()->[0] - $self->{CONF}->{check_interval}; 
         $self->{LOGGER}->info("Next Refresh: " . $self->{NEXT_REFRESH});
-        $self->save_key($dbh, $res->{"uri"}, $update_id );
+        $self->add_key();
     }else{
         $self->{LOGGER}->error( "Problem registering service. Will retry full registration next time: " . $res->{message} );
     }
@@ -282,15 +223,16 @@ Service.
 
 =cut
 sub keepalive {
-    my ( $self, $dbh, $update_id  ) = @_;
-    my ($resCode, $res) = $self->{LS_CLIENT}->renew({ uri => $self->{KEY}, base => $self->{CONF}->{ls_instance} });
+    my ( $self ) = @_;
+    my $ls_client = new SimpleLookupService::Client::RecordManager();
+    $ls_client->init({ server => $self->{LS_CLIENT}, record_id => $self->{KEY} });
+    my ($resCode, $res) = $ls_client->renew();
     if ( $resCode == 0 ) {
-        $self->{NEXT_REFRESH} = $res->{"expires_unixtime"} - 300; # renew 5 minutes before expiration
-        $self->save_key($dbh, $self->{KEY}, $update_id );
+        $self->{NEXT_REFRESH} = $res->getRecordExpiresAsUnixTS()->[0] - $self->{CONF}->{check_interval};
     }
     else {
         $self->{STATUS} = "UNREGISTERED";
-        $self->{LOGGER}->error( "Couldn't send Keepalive. Will send full registration next time." );
+        $self->{LOGGER}->error( "Couldn't send Keepalive. Will send full registration next time. Error was: " . $res->{message} );
     }
 
     return;
@@ -306,45 +248,96 @@ Service.
 =cut
 sub unregister {
     my ( $self ) = @_;
-
-    $self->{LS_CLIENT}->unregister({ uri => $self->{KEY}, base => $self->{CONF}->{ls_instance} });
+    
+    my $ls_client = new SimpleLookupService::Client::RecordManager();
+    $ls_client->init({ server => $self->{LS_CLIENT}, record_id => $self->{KEY} });
+    $ls_client->delete();
     $self->{STATUS} = "UNREGISTERED";
     
     return;
 }
 
-1;
-
-=head2 _buildRegistration ($self)
-
-This function is called to build the registration object
-=cut
-sub _buildRegistration {
-    my ($self) = @_;
-    my $addresses = $self->get_service_addresses();
-    my $projects = $self->{CONF}->{site_project};
+sub find_key {
+    my ( $self ) = @_;
     
-    #convert projects to an array
-    if ( $projects ) {
-        unless ( ref( $projects ) eq "ARRAY" ) {
-            $projects = [ $projects ];
-        }
+    my $key = '';
+    my $expires = 0;
+    my $checksum = $self->build_checksum();
+    my $dbh = DBI->connect('dbi:SQLite:dbname=' . $self->{CONF}->{"ls_key_db"}, '', '');
+    my $stmt  = $dbh->prepare('SELECT uri, expires FROM lsKeys WHERE checksum=?');
+    $stmt->execute($checksum);
+    if($stmt->err){
+        $self->{LOGGER}->warn( "Error finding key: " . $stmt->errstr );
+        $dbh->disconnect();
+        return '';
     }
+    while(my @row = $stmt->fetchrow_array()){
+        $key = $row[0];
+        $expires = $row[1];
+        $self->{LOGGER}->info( "Found key $key with $checksum for " . $self->description() . "that expires $expires" );
+    }
+    $dbh->disconnect();
     
-    my @addressList = map { $_->{value} } @{$addresses};
-    
-    my $reg = new perfSONAR_PS::Client::LS::Requests::Registration();
-    $reg->init({
-        domain => $projects,
-        locator => \@addressList,
-        type => $self->service_type()
-    });
-    $reg->setServiceName([$self->service_name()]);
-    $reg->setServiceSiteLocation([$self->service_desc()]);
-    
-    return $reg;
+    return ($key, $expires);
 }
 
+sub find_duplicate {
+    my ( $self ) = @_;
+    
+    my $key = '';
+    my $expires = 0;
+    my $checksum = $self->build_duplicate_checksum();
+    my $dbh = DBI->connect('dbi:SQLite:dbname=' . $self->{CONF}->{"ls_key_db"}, '', '');
+    my $stmt  = $dbh->prepare('SELECT uri FROM lsKeys WHERE duplicateChecksum=?');
+    $stmt->execute($checksum);
+    if($stmt->err){
+        $self->{LOGGER}->warn( "Error finding duplicate checksum: " . $stmt->errstr );
+        $dbh->disconnect();
+        return '';
+    }
+    while(my @row = $stmt->fetchrow_array()){
+        $key = $row[0];
+        $self->{LOGGER}->info( "Found duplicate checksum $key with $checksum for " . $self->description());
+    }
+    $dbh->disconnect();
+    
+    return $key;
+}
+
+sub add_key {
+    my ( $self ) = @_;
+    
+    my $dbh = DBI->connect('dbi:SQLite:dbname=' . $self->{CONF}->{"ls_key_db"}, '', '');
+    my $stmt  = $dbh->prepare('INSERT INTO lsKeys VALUES(?, ?, ?, ?)');
+    $stmt->execute($self->{KEY}, $self->{NEXT_REFRESH}, $self->build_checksum(), $self->build_duplicate_checksum());
+    if($stmt->err){
+        $self->{LOGGER}->warn( "Error adding key: " . $stmt->errstr );
+        $dbh->disconnect();
+        return '';
+    }
+    $dbh->disconnect();
+}
+
+
+sub build_registration {
+    my ( $self ) = @_;
+    
+    die "Subclass class must implement build_registration"
+}
+
+sub build_checksum {
+    my ( $self ) = @_;
+    
+    die "Subclass class must implement build_checksum"
+}
+
+sub build_duplicate_checksum {
+    my ( $self ) = @_;
+    
+    die "Subclass class must implement build_duplicate_checksum"
+}
+
+1;
 __END__
 
 =head1 SEE ALSO
