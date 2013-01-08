@@ -187,7 +187,7 @@ $conf{"ls_interval"} = $conf{"ls_interval"} * 60 * 60;
 #initialize the key database
 if ( not $conf{"ls_key_db"} ) {
     $logger->info( "No LS key database found" );
-    $conf{"ls_key_db"} = '/var/lib/ls_registration_daemon/lsKey.db';
+    $conf{"ls_key_db"} = '/var/lib/perfsonar/ls_registration_daemon/lsKey.db';
 }
 my $ls_key_dbh = DBI->connect('dbi:SQLite:dbname=' . $conf{"ls_key_db"}, '', '');
 my $ls_key_create  = $ls_key_dbh->prepare('CREATE TABLE IF NOT EXISTS lsKeys (uri VARCHAR(255) PRIMARY KEY, expires BIGINT NOT NULL, checksum VARCHAR(255) NOT NULL, duplicateChecksum VARCHAR(255) NOT NULL)');

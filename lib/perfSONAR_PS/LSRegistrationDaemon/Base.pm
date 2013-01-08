@@ -229,11 +229,14 @@ sub keepalive {
     my ($resCode, $res) = $ls_client->renew();
     if ( $resCode == 0 ) {
         $self->{NEXT_REFRESH} = $res->getRecordExpiresAsUnixTS()->[0] - $self->{CONF}->{check_interval};
+        $self->update_key();
     }
     else {
         $self->{STATUS} = "UNREGISTERED";
         $self->{LOGGER}->error( "Couldn't send Keepalive. Will send full registration next time. Error was: " . $res->{message} );
+        $self->delete_key();
     }
+    
 
     return;
 }
@@ -253,6 +256,7 @@ sub unregister {
     $ls_client->init({ server => $self->{LS_CLIENT}, record_id => $self->{KEY} });
     $ls_client->delete();
     $self->{STATUS} = "UNREGISTERED";
+    $self->delete_key();
     
     return;
 }
@@ -317,6 +321,35 @@ sub add_key {
     }
     $dbh->disconnect();
 }
+
+sub update_key {
+    my ( $self ) = @_;
+    
+    my $dbh = DBI->connect('dbi:SQLite:dbname=' . $self->{CONF}->{"ls_key_db"}, '', '');
+    my $stmt  = $dbh->prepare('UPDATE lsKeys SET expires=? WHERE uri=?');
+    $stmt->execute($self->{NEXT_REFRESH}, $self->{KEY});
+    if($stmt->err){
+        $self->{LOGGER}->warn( "Error updating key: " . $stmt->errstr );
+        $dbh->disconnect();
+        return '';
+    }
+    $dbh->disconnect();
+}
+
+sub delete_key {
+    my ( $self ) = @_;
+    
+    my $dbh = DBI->connect('dbi:SQLite:dbname=' . $self->{CONF}->{"ls_key_db"}, '', '');
+    my $stmt  = $dbh->prepare('DELETE FROM lsKeys WHERE uri=?');
+    $stmt->execute($self->{KEY});
+    if($stmt->err){
+        $self->{LOGGER}->warn( "Error deleting key: " . $stmt->errstr );
+        $dbh->disconnect();
+        return '';
+    }
+    $dbh->disconnect();
+}
+
 
 
 sub build_registration {

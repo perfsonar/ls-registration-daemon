@@ -187,12 +187,12 @@ sub _add_checksum_val {
     
     my $result = '';
     
-    if(!defined val){
+    if(!defined $val){
         return $result;
     }
     
     if(ref($val) eq 'ARRAY'){
-        $result = join ',', @{$val};
+        $result = join ',', sort @{$val};
     }else{
         $result = $val;
     }
