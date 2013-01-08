@@ -124,6 +124,7 @@ sub build_duplicate_checksum {
     my $checksum = 'interface::';
     $checksum .= $self->_add_checksum_val($self->if_name()); 
     $checksum .= $self->_add_checksum_val($self->address()); 
+    $checksum = md5_base64($checksum);
     
     return $checksum;
 }
@@ -133,7 +134,7 @@ sub _add_checksum_val {
     
     my $result = '';
     
-    if(!defined val){
+    if(!defined $val){
         return $result;
     }
     

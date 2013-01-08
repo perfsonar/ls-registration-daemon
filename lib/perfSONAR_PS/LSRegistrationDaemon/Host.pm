@@ -16,10 +16,9 @@ in the $conf hash.
 sub init {
     my ( $self, $conf ) = @_;
     
-    $self->SUPER::init( $conf );
-    
-    return 0;
+    return $self->SUPER::init( $conf );
 }
+
 
 sub init_children {
     my ( $self ) = @_;
@@ -273,6 +272,7 @@ sub build_duplicate_checksum {
     
     my $checksum = 'host::';
     $checksum .= $self->_add_checksum_val($self->host_name()); 
+    $checksum = md5_base64($checksum);
     
     return $checksum;
 }
@@ -282,7 +282,7 @@ sub _add_checksum_val {
     
     my $result = '';
     
-    if(!defined val){
+    if(!defined $val){
         return $result;
     }
     

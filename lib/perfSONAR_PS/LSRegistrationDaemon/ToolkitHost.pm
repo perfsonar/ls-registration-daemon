@@ -17,64 +17,76 @@ in the $conf hash.
 sub init {
     my ( $self, $conf ) = @_;
     
-    $self->SUPER::init( $conf );
-    
     #set name
-    if(!$self->{CONF}->{name} && !$self->{CONF}->{external_address}){
+    if(!$conf->{name} && !$conf->{external_address}){
         die "No host_name or external address specified for host";
-    }elsif(!$self->{CONF}->{name}){
-        $self->{CONF}->{name} = $self->{CONF}->{external_address};
+    }elsif(!$conf->{name}){
+        $conf->{name} = $conf->{external_address};
     }
     
     #auto detect memory if not specified
-    if(!$self->{CONF}->{memory}){
-        $self->{CONF}->{memory} = (&totalmem()/(1024*1024)) . ' MB';
+    if(!$conf->{memory}){
+        $conf->{memory} = (&totalmem()/(1024*1024)) . ' MB';
     }
     
     #auto detect os info if not specified
     my ($os_name, $os_version) = ('','');
-    unless($self->{CONF}->{os_name} && $self->{CONF}->{os_version}){
+    unless($conf->{os_name} && $conf->{os_version}){
         ($os_name, $os_version) = $self->_osinfo();
     }
-    if(!$self->{CONF}->{os_name}){
-        $self->{CONF}->{os_name} = $os_name;
+    if(!$conf->{os_name}){
+        $conf->{os_name} = $os_name;
     }
-    if(!$self->{CONF}->{os_version}){
-        $self->{CONF}->{os_version} = $os_version;
+    if(!$conf->{os_version}){
+        $conf->{os_version} = $os_version;
     }
     
     #determine kernel info
-    if(!$self->{CONF}->{os_kernel}){
-        $self->{CONF}->{os_kernel} = $self->_os_kernel();
+    if(!$conf->{os_kernel}){
+        $conf->{os_kernel} = $self->_os_kernel();
     }
     
     #determine processor info
     my ($proc_speed, $proc_count, $proc_cores) = ('','','');
-    unless($self->{CONF}->{processor_speed} && $self->{CONF}->{processor_count} && $self->{CONF}->{processor_cores}){
+    unless($conf->{processor_speed} && $conf->{processor_count} && $conf->{processor_cores}){
         ($proc_speed, $proc_count, $proc_cores) = $self->_cpuinfo();
     }
-    if(!$self->{CONF}->{processor_speed}){
-        $self->{CONF}->{processor_speed} = $proc_speed . ' MHz';
+    if(!$conf->{processor_speed}){
+        $conf->{processor_speed} = $proc_speed . ' MHz';
     }
-    if(!$self->{CONF}->{processor_count}){
-        $self->{CONF}->{processor_count} = $proc_count;
+    if(!$conf->{processor_count}){
+        $conf->{processor_count} = $proc_count;
     }
-    if(!$self->{CONF}->{processor_cores}){
-        $self->{CONF}->{processor_cores} = $proc_cores;
+    if(!$conf->{processor_cores}){
+        $conf->{processor_cores} = $proc_cores;
     }
     
     #determine TCP settings
-    if(!$self->{CONF}->{tcp_cc_algorithm}){
-        $self->{CONF}->{tcp_cc_algorithm} = $self->_call_sysctl("net.ipv4.tcp_congestion_control");
+    if(!$conf->{tcp_cc_algorithm}){
+        $conf->{tcp_cc_algorithm} = $self->_call_sysctl("net.ipv4.tcp_congestion_control");
     }
-    if(!$self->{CONF}->{tcp_max_buffer}){
-        $self->{CONF}->{tcp_max_buffer} = $self->_call_sysctl("net.core.wmem_max") . ' bytes';
+    if(!$conf->{tcp_max_buffer}){
+        $conf->{tcp_max_buffer} = $self->_call_sysctl("net.core.wmem_max") . ' bytes';
     }
-    if(!$self->{CONF}->{tcp_autotune_max_buffer}){
-        $self->{CONF}->{tcp_autotune_max_buffer} = $self->_max_buffer_auto() . ' bytes';
+    if(!$conf->{tcp_autotune_max_buffer}){
+        $conf->{tcp_autotune_max_buffer} = $self->_max_buffer_auto() . ' bytes';
     }
     
-    return 0;
+    #determine toolkit version
+    if(!$conf->{toolkit_version_file}){
+        #set default
+        $conf->{toolkit_version_file} = "/opt/perfsonar_ps/toolkit/scripts/NPToolkit.version";
+    }
+    if ( open( OUTPUT, "-|", $conf->{toolkit_version_file} ) ) {
+        $version = <OUTPUT>;
+        close( OUTPUT );
+        if($version){
+            chomp( $version );
+            $conf->{toolkit_version} = $version;
+        }
+    }
+    
+    return $self->SUPER::init( $conf );
 }
 
 sub create_interface {
@@ -86,14 +98,6 @@ sub create_interface {
     
     return perfSONAR_PS::LSRegistrationDaemon::Interface->new();
 }
-
-#sub toolkit_version {
-#    my ( $self ) = @_;
-#
-#    return $self->{CONF}->{toolkit_version};
-#}
-
-
 
 sub _osinfo(){
     my($self) = @_;

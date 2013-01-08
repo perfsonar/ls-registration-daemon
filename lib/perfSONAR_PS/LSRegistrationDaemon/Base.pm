@@ -278,7 +278,7 @@ sub find_key {
     while(my @row = $stmt->fetchrow_array()){
         $key = $row[0];
         $expires = $row[1];
-        $self->{LOGGER}->info( "Found key $key with $checksum for " . $self->description() . "that expires $expires" );
+        $self->{LOGGER}->info( "Found key $key with $checksum for " . $self->description() . " that expires $expires" );
     }
     $dbh->disconnect();
     

@@ -84,6 +84,12 @@ sub site_name {
     return $self->{CONF}->{site_name};
 }
 
+sub communities {
+    my ( $self ) = @_;
+
+    return $self->{CONF}->{site_project};
+}
+
 sub city {
     my ( $self ) = @_;
 
@@ -140,6 +146,7 @@ sub build_registration {
     	longitude => $self->longitude(),
     );
     $service->setServiceEventType($self->event_type());
+    $service->setCommunities($self->communities());
     
     return $service;
 }
@@ -155,6 +162,7 @@ sub build_checksum {
     $checksum .= $self->_add_checksum_val($self->domain());
     $checksum .= $self->_add_checksum_val($self->administrator()); 
     $checksum .= $self->_add_checksum_val($self->site_name());
+    $checksum .= $self->_add_checksum_val($self->communities());
     $checksum .= $self->_add_checksum_val($self->city());
     $checksum .= $self->_add_checksum_val($self->region());
     $checksum .= $self->_add_checksum_val($self->country());
