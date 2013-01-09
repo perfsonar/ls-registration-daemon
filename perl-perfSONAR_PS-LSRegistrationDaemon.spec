@@ -47,6 +47,7 @@ Requires: 		perl(Sys::MemInfo)
 Requires: 		perl(Time::HiRes)
 Requires: 		perl(XML::LibXML)
 Requires: 		perl(base)
+Requires:       perl-perfSONAR_PS-SimpleLS-BootStrap-client
 Requires: 		shadow-utils
 Requires: 		coreutils
 Requires: 		chkconfig
