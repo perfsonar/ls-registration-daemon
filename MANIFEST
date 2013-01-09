@@ -63,6 +63,7 @@ lib/SimpleLookupService/Records/Network/Host.pm
 lib/SimpleLookupService/Records/Directory/Person.pm
 lib/SimpleLookupService/Records/Record.pm
 lib/SimpleLookupService/Records/RecordFactory.pm
+lib/SimpleLookupService/Client/Bootstrap.pm
 lib/SimpleLookupService/Client/RecordManager.pm
 lib/SimpleLookupService/Client/SimpleLS.pm
 lib/SimpleLookupService/Client/Query.pm

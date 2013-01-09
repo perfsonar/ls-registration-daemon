@@ -33,6 +33,7 @@ use perfSONAR_PS::LSRegistrationDaemon::Ping;
 use perfSONAR_PS::LSRegistrationDaemon::Traceroute;
 use perfSONAR_PS::LSRegistrationDaemon::Host;
 use perfSONAR_PS::LSRegistrationDaemon::ToolkitHost;
+use SimpleLookupService::Client::Bootstrap;
 use DBI;
 use Getopt::Long;
 use Config::General;
@@ -163,12 +164,19 @@ else {
     $logger->level( $output_level ) if $output_level;
 }
 
-if ( not $conf{"ls_instance"} ) {
-    $logger->error( "You must specify which LS Registration Daemon to register with." );
-    exit(-1);
-} elsif (ref $conf{"ls_instance"} eq "ARRAY" or $conf{"ls_instance"} =~ /,/ or $conf{"ls_instance"} =~ / /) {
-    $logger->error( "You can only specify a single LS Registration Daemon to register with.");
-    exit(-1);
+#determine URL
+if(!$conf{ls_instance}){
+    my $ls_bootstrap = SimpleLookupService::Client::Bootstrap->new();
+    if($conf{ls_bootstrap_file}){
+        $ls_bootstrap->init(file => $conf{ls_bootstrap_file});
+    }else{
+        $ls_bootstrap->init();
+    }
+    $conf{ls_instance} = $ls_bootstrap->register_url();
+}
+if(!$conf{ls_instance}){
+    $logger->error("Unable to determine ls_instance");
+    return -1;
 }
 
 if ( not $conf{"ls_interval"} ) {
