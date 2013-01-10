@@ -7,50 +7,48 @@
 %define relnum 1
 %define disttag pSPS
 
-Name:           perl-perfSONAR_PS-LSRegistrationDaemon
-Version:        3.3
-Release:        %{relnum}.%{disttag}
-Summary:        perfSONAR_PS Lookup Service Registration Daemon
-License:        distributable, see LICENSE
-Group:          Development/Libraries
-URL:            http://search.cpan.org/dist/perfSONAR_PS-LSRegistrationDaemon/
-Source0:        perfSONAR_PS-LSRegistrationDaemon-%{version}.%{relnum}.tar.gz
-BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-BuildArch:      noarch
-# XXX Add your perl requirements here. e.g.
-# Requires:		perl(Config::General)
-Requires:       perl
-Requires: 		perl(Config::General)
-Requires:       perl(DateTime::Format::ISO8601)
-Requires:       perl(DBD::SQLite)
-Requires: 		perl(English)
-Requires: 		perl(Exporter)
-Requires: 		perl(Fcntl)
-Requires: 		perl(File::Basename)
-Requires: 		perl(Getopt::Long)
-Requires: 		perl(IO::File)
-Requires: 		perl(IO::Socket)
-Requires: 		perl(IO::Socket::INET)
-Requires: 		perl(IO::Socket::INET6)
-Requires: 		perl(LWP::UserAgent)
-Requires: 		perl(Log::Log4perl)
-Requires: 		perl(Log::Dispatch::FileRotate)
-Requires: 		perl(Net::DNS)
-Requires: 		perl(Net::Ping)
-Requires: 		perl(Net::Ping::External)
-Requires: 		perl(NetAddr::IP)
-Requires: 		perl(POSIX)
-Requires: 		perl(Params::Validate)
-Requires: 		perl(Regexp::Common)
-Requires: 		perl(Socket)
-Requires: 		perl(Sys::MemInfo)
-Requires: 		perl(Time::HiRes)
-Requires: 		perl(XML::LibXML)
-Requires: 		perl(base)
-Requires:       perl-perfSONAR_PS-SimpleLS-BootStrap-client
-Requires: 		shadow-utils
-Requires: 		coreutils
-Requires: 		chkconfig
+Name:			perl-perfSONAR_PS-LSRegistrationDaemon
+Version:		3.3
+Release:		%{relnum}.%{disttag}
+Summary:		perfSONAR_PS Lookup Service Registration Daemon
+License:		Distributable, see LICENSE
+Group:			Development/Libraries
+URL:			http://psps.perfsonar.net/lsregistration/
+Source0:		perfSONAR_PS-LSRegistrationDaemon-%{version}.%{relnum}.tar.gz
+BuildRoot:		%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
+BuildArch:		noarch
+Requires:		perl
+Requires:		perl(Config::General)
+Requires:		perl(DateTime::Format::ISO8601)
+Requires:		perl(DBD::SQLite)
+Requires:		perl(English)
+Requires:		perl(Exporter)
+Requires:		perl(Fcntl)
+Requires:		perl(File::Basename)
+Requires:		perl(Getopt::Long)
+Requires:		perl(IO::File)
+Requires:		perl(IO::Socket)
+Requires:		perl(IO::Socket::INET)
+Requires:		perl(IO::Socket::INET6)
+Requires:		perl(LWP::UserAgent)
+Requires:		perl(Log::Log4perl)
+Requires:		perl(Log::Dispatch::FileRotate)
+Requires:		perl(Net::DNS)
+Requires:		perl(Net::Ping)
+Requires:		perl(Net::Ping::External)
+Requires:		perl(NetAddr::IP)
+Requires:		perl(POSIX)
+Requires:		perl(Params::Validate)
+Requires:		perl(Regexp::Common)
+Requires:		perl(Socket)
+Requires:		perl(Sys::MemInfo)
+Requires:		perl(Time::HiRes)
+Requires:		perl(XML::LibXML)
+Requires:		perl-perfSONAR_PS-SimpleLS-BootStrap-client
+Requires:		perl(base)
+Requires:		chkconfig
+Requires:		coreutils
+Requires:		shadow-utils
 
 %description
 The LS Registration Daemon is used to register service instances for services
@@ -67,30 +65,20 @@ themselves.
 %build
 
 %install
-rm -rf $RPM_BUILD_ROOT
+rm -rf %{buildroot}
 
-make ROOTPATH=$RPM_BUILD_ROOT/%{install_base} rpminstall
+make ROOTPATH=%{buildroot}/%{install_base} rpminstall
 
-mkdir -p $RPM_BUILD_ROOT/etc/init.d
+mkdir -p %{buildroot}/etc/init.d
 
 awk "{gsub(/^PREFIX=.*/,\"PREFIX=%{install_base}\"); print}" scripts/%{init_script_1} > scripts/%{init_script_1}.new
-install -D -m 755 scripts/%{init_script_1}.new $RPM_BUILD_ROOT/etc/init.d/%{init_script_1}
+install -D -m 0755 scripts/%{init_script_1}.new %{buildroot}/etc/init.d/%{init_script_1}
 
 #awk "{gsub(/^PREFIX=.*/,\"PREFIX=%{install_base}\"); print}" scripts/%{init_script_2} > scripts/%{init_script_2}.new
-#install -D -m 755 scripts/%{init_script_2}.new $RPM_BUILD_ROOT/etc/init.d/%{init_script_2}
+#install -D -m 0755 scripts/%{init_script_2}.new %{buildroot}/etc/init.d/%{init_script_2}
 
 %clean
-rm -rf $RPM_BUILD_ROOT
-
-%files
-%defattr(0644,perfsonar,perfsonar,0755)
-%doc %{install_base}/doc/*
-%config %{install_base}/etc/*
-%attr(0755,perfsonar,perfsonar) %{install_base}/bin/*
-%attr(0755,perfsonar,perfsonar) %{install_base}/scripts/*
-%{install_base}/lib/*
-%attr(0755,perfsonar,perfsonar) /etc/init.d/*
-%{install_base}/dependencies
+rm -rf %{buildroot}
 
 %post
 mkdir -p /var/log/perfsonar
@@ -117,6 +105,16 @@ if [ "$1" != "0" ]; then
 	/etc/init.d/%{init_script_1} restart
 #	/etc/init.d/%{init_script_2} restart
 fi
+
+%files
+%defattr(0644,perfsonar,perfsonar,0755)
+%doc %{install_base}/doc/*
+%config %{install_base}/etc/*
+%attr(0755,perfsonar,perfsonar) %{install_base}/bin/*
+%attr(0755,perfsonar,perfsonar) %{install_base}/scripts/*
+%{install_base}/lib/*
+%attr(0755,perfsonar,perfsonar) /etc/init.d/*
+%{install_base}/dependencies
 
 %changelog
 * Thu Feb 25 2010 zurawski@internet2.edu 3.1-5
