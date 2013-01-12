@@ -117,6 +117,9 @@ fi
 %{install_base}/dependencies
 
 %changelog
+* Fri Jan 11 2013 asides@es.net 3.3-1
+- 3.3 beta release
+
 * Thu Feb 25 2010 zurawski@internet2.edu 3.1-5
 - Support for REDDnet depots
 - Increase time between when keepalives are sent
