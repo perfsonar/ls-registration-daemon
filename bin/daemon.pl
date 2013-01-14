@@ -176,7 +176,7 @@ if(!$conf{ls_instance}){
 }
 if(!$conf{ls_instance}){
     $logger->error("Unable to determine ls_instance");
-    return -1;
+    exit( -1 ); 
 }
 
 if ( not $conf{"ls_interval"} ) {
