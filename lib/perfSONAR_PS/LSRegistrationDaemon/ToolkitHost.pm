@@ -65,11 +65,20 @@ sub init {
     if(!$conf->{tcp_cc_algorithm}){
         $conf->{tcp_cc_algorithm} = $self->_call_sysctl("net.ipv4.tcp_congestion_control");
     }
-    if(!$conf->{tcp_max_buffer}){
-        $conf->{tcp_max_buffer} = $self->_call_sysctl("net.core.wmem_max") . ' bytes';
+    if(!$conf->{tcp_max_buffer_send}){
+        $conf->{tcp_max_buffer_send} = $self->_call_sysctl("net.core.wmem_max") . ' bytes';
     }
-    if(!$conf->{tcp_autotune_max_buffer}){
-        $conf->{tcp_autotune_max_buffer} = $self->_max_buffer_auto() . ' bytes';
+    if(!$conf->{tcp_max_buffer_recv}){
+        $conf->{tcp_max_buffer_recv} = $self->_call_sysctl("net.core.rmem_max") . ' bytes';
+    }
+    if(!$conf->{tcp_autotune_max_buffer_send}){
+        $conf->{tcp_autotune_max_buffer_send} = $self->_max_buffer_auto("net.ipv4.tcp_wmem") . ' bytes';
+    }
+    if(!$conf->{tcp_autotune_max_buffer_recv}){
+        $conf->{tcp_autotune_max_buffer_recv} = $self->_max_buffer_auto("net.ipv4.tcp_rmem") . ' bytes';
+    }
+    if(!$conf->{tcp_max_backlog}){
+        $conf->{tcp_max_backlog} = $self->_call_sysctl("net.core.netdev_max_backlog");
     }
     
     #determine toolkit version
@@ -166,9 +175,9 @@ sub _os_kernel {
 }
 
 sub _max_buffer_auto {
-    my($self) = @_;
+    my($self, $sysctl_var) = @_;
     
-    my $sysctl_val = $self->_call_sysctl("net.ipv4.tcp_wmem");
+    my $sysctl_val = $self->_call_sysctl($sysctl_var);
     if(!$sysctl_val){
         return '';
     }

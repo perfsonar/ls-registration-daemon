@@ -120,16 +120,34 @@ sub tcp_cc_algorithm {
     return $self->{CONF}->{tcp_cc_algorithm};
 }
 
-sub tcp_max_buffer {
+sub tcp_max_buffer_send {
     my ( $self ) = @_;
 
-    return $self->{CONF}->{tcp_max_buffer};
+    return $self->{CONF}->{tcp_max_buffer_send};
 }
 
-sub tcp_autotune_max_buffer {
+sub tcp_max_buffer_recv {
     my ( $self ) = @_;
 
-    return $self->{CONF}->{tcp_autotune_max_buffer};
+    return $self->{CONF}->{tcp_max_buffer_recv};
+}
+
+sub tcp_autotune_max_buffer_send {
+    my ( $self ) = @_;
+
+    return $self->{CONF}->{tcp_autotune_max_buffer_send};
+}
+
+sub tcp_autotune_max_buffer_recv {
+    my ( $self ) = @_;
+
+    return $self->{CONF}->{tcp_autotune_max_buffer_recv};
+}
+
+sub tcp_max_backlog {
+    my ( $self ) = @_;
+
+    return $self->{CONF}->{tcp_max_backlog};
 }
 
 sub domain {
@@ -213,8 +231,11 @@ sub build_registration {
     	osVersion=> $self->os_version(), 
     	osKernel => $self->os_kernel(), 
     	tcpCongestionAlgorithm => $self->tcp_cc_algorithm(),
-    	tcpMaxBuffer => $self->tcp_max_buffer(), 
-    	tcpAutoMaxBuffer => $self->tcp_autotune_max_buffer(), 
+    	tcpMaxBufferSend => $self->tcp_max_buffer_send(), 
+    	tcpMaxBufferRecv => $self->tcp_max_buffer_recv(), 
+    	tcpAutoMaxBufferSend => $self->tcp_autotune_max_buffer_send(), 
+    	tcpAutoMaxBufferRecv => $self->tcp_autotune_max_buffer_recv(), 
+    	tcpMaxBacklog => $self->tcp_max_backlog(), 
         administrators=> $self->administrator(), 
         domains => $self->domain(),
     	siteName => $self->site_name(), 
@@ -247,8 +268,11 @@ sub build_checksum {
     $checksum .= $self->_add_checksum_val($self->os_version());
     $checksum .= $self->_add_checksum_val($self->os_kernel());
     $checksum .= $self->_add_checksum_val($self->tcp_cc_algorithm());
-    $checksum .= $self->_add_checksum_val($self->tcp_max_buffer());
-    $checksum .= $self->_add_checksum_val($self->tcp_autotune_max_buffer());
+    $checksum .= $self->_add_checksum_val($self->tcp_max_buffer_send());
+    $checksum .= $self->_add_checksum_val($self->tcp_max_buffer_recv());
+    $checksum .= $self->_add_checksum_val($self->tcp_autotune_max_buffer_send());
+    $checksum .= $self->_add_checksum_val($self->tcp_autotune_max_buffer_recv());
+    $checksum .= $self->_add_checksum_val($self->tcp_max_backlog());
     $checksum .= $self->_add_checksum_val($self->domain());
     $checksum .= $self->_add_checksum_val($self->toolkit_version());
     $checksum .= $self->_add_checksum_val($self->administrator()); 
