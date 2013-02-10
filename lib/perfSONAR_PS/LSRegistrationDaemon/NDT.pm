@@ -16,7 +16,7 @@ instance.
 use strict;
 use warnings;
 
-our $VERSION = 3.2;
+our $VERSION = 3.3;
 
 use base 'perfSONAR_PS::LSRegistrationDaemon::TCP_Service';
 

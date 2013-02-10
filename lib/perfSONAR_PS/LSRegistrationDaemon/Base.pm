@@ -17,7 +17,7 @@ service status checking or event type.
 use strict;
 use warnings;
 
-our $VERSION = 3.2;
+our $VERSION = 3.3;
 
 use Log::Log4perl qw/get_logger/;
 use URI;

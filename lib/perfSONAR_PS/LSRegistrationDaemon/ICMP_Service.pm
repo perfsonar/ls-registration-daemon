@@ -15,7 +15,7 @@ a simple is_up routine that checks if a service is responding to pings.
 use strict;
 use warnings;
 
-our $VERSION = 3.2;
+our $VERSION = 3.3;
 
 use Net::Ping;
 

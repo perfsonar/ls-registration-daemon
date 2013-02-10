@@ -23,7 +23,7 @@ use Net::IP;
 use perfSONAR_PS::Utils::DNS qw(resolve_address reverse_dns);
 use perfSONAR_PS::Utils::Host qw(get_ips);
 
-our $VERSION = 3.2;
+our $VERSION = 3.3;
 
 use base 'perfSONAR_PS::LSRegistrationDaemon::Service';
 
