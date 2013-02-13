@@ -27,6 +27,7 @@ use perfSONAR_PS::Utils::DNS qw(reverse_dns);
 use Digest::MD5 qw(md5_base64);
 use SimpleLookupService::Client::Registration;
 use SimpleLookupService::Client::RecordManager;
+use Digest::MD5 qw(md5_base64);
 
 use fields 'CONF', 'STATUS', 'LOGGER', 'KEY', 'NEXT_REFRESH', 'LS_CLIENT', 'CHILD_REGISTRATIONS';
 
@@ -139,7 +140,7 @@ Service. If not, it unregisters the service from the Lookup Service.
 =cut
 
 sub refresh {
-    my ( $self ) = @_;
+    my ( $self, $update_id ) = @_;
 
     if ( $self->{STATUS} eq "BROKEN" ) {
         $self->{LOGGER}->error( "Refreshing misconfigured record: ".$self->description() );
@@ -165,11 +166,11 @@ sub refresh {
         #perform needed LS operation
         if ( $self->{STATUS} ne "REGISTERED" ) {
             $self->{LOGGER}->info( "Record '".$self->description()."' is up, registering" );
-            $self->register();
+            $self->register($dbh, $update_id );
         }
         elsif ( time >= $self->{NEXT_REFRESH} ) {
             $self->{LOGGER}->info( "Record '".$self->description()."' is up, refreshing registration" );
-            $self->keepalive();
+            $self->keepalive($dbh, $update_id );
         }
         else {
             $self->{LOGGER}->debug( "No need to refresh" );
@@ -193,7 +194,7 @@ a brand new registration in the Lookup Service
 
 =cut
 sub register {
-    my ( $self ) = @_;
+    my ( $self, $dbh, $update_id ) = @_;
 
     #Register
     my $reg = $self->build_registration();
@@ -223,13 +224,14 @@ Service.
 
 =cut
 sub keepalive {
-    my ( $self ) = @_;
+    my ( $self, $dbh, $update_id  ) = @_;
     my $ls_client = new SimpleLookupService::Client::RecordManager();
     $ls_client->init({ server => $self->{LS_CLIENT}, record_id => $self->{KEY} });
     my ($resCode, $res) = $ls_client->renew();
     if ( $resCode == 0 ) {
         $self->{NEXT_REFRESH} = $res->getRecordExpiresAsUnixTS()->[0] - $self->{CONF}->{check_interval};
         $self->update_key();
+        $self->save_key($dbh, $self->{KEY}, $update_id );
     }
     else {
         $self->{STATUS} = "UNREGISTERED";
@@ -371,6 +373,36 @@ sub build_duplicate_checksum {
 }
 
 1;
+=head2 _buildRegistration ($self)
+
+This function is called to build the registration object
+=cut
+sub _buildRegistration {
+    my ($self) = @_;
+    my $addresses = $self->get_service_addresses();
+    my $projects = $self->{CONF}->{site_project};
+    
+    #convert projects to an array
+    if ( $projects ) {
+        unless ( ref( $projects ) eq "ARRAY" ) {
+            $projects = [ $projects ];
+        }
+    }
+    
+    my @addressList = map { $_->{value} } @{$addresses};
+    
+    my $reg = new perfSONAR_PS::Client::LS::Requests::Registration();
+    $reg->init({
+        domain => $projects,
+        locator => \@addressList,
+        type => $self->service_type()
+    });
+    $reg->setServiceName([$self->service_name()]);
+    $reg->setServiceSiteLocation([$self->service_desc()]);
+    
+    return $reg;
+}
+
 __END__
 
 =head1 SEE ALSO
