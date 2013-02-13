@@ -35,7 +35,6 @@ use perfSONAR_PS::LSRegistrationDaemon::Host;
 use perfSONAR_PS::LSRegistrationDaemon::ToolkitHost;
 use SimpleLookupService::Client::Bootstrap;
 use DBI;
-use DBI;
 use Getopt::Long;
 use Config::General;
 use Log::Log4perl qw/:easy/;
