@@ -139,7 +139,7 @@ sub _add_checksum_val {
     }
     
     if(ref($val) eq 'ARRAY'){
-        $result = join ',', @{$val};
+        $result = join ',', sort @{$val};
     }else{
         $result = $val;
     }

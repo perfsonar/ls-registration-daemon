@@ -26,9 +26,11 @@ use perfSONAR_PS::LSRegistrationDaemon::Phoebus;
 use perfSONAR_PS::LSRegistrationDaemon::REDDnet;
 use perfSONAR_PS::LSRegistrationDaemon::BWCTL;
 use perfSONAR_PS::LSRegistrationDaemon::OWAMP;
+use perfSONAR_PS::LSRegistrationDaemon::MA;
 use perfSONAR_PS::LSRegistrationDaemon::NDT;
 use perfSONAR_PS::LSRegistrationDaemon::NPAD;
 use perfSONAR_PS::LSRegistrationDaemon::GridFTP;
+use perfSONAR_PS::LSRegistrationDaemon::Person;
 use perfSONAR_PS::LSRegistrationDaemon::Ping;
 use perfSONAR_PS::LSRegistrationDaemon::Traceroute;
 use perfSONAR_PS::LSRegistrationDaemon::Host;
@@ -298,9 +300,72 @@ service it finds. It returns that as an array of service agents.
 
 sub init_site {
     my ( $site_conf ) = @_;
-
+    
+    # List that will hold all objects to be registered
     my @services = ();
+    
+    ##
+    # Add person records to registration list first - We add these before hosts
+    # and services so they can be referenced
+    if($site_conf->{full_name} || $site_conf->{administrator_email}){
+        my $person = perfSONAR_PS::LSRegistrationDaemon::Person->new();
+        if ( $person->init( $site_conf ) != 0 ) {
+            $logger->error( "Error: Couldn't initialize person record" );
+            exit( -1 );
+        }
+        push @services, $person;
+    }
+    
+    ##
+    # Parse host configurations - We add these before services 
+    # so they can be referenced
+    my $hosts_conf = $site_conf->{host};
+    if ($hosts_conf && ref( $hosts_conf ) ne "ARRAY" ) {
+        my @tmp = ();
+        push @tmp, $hosts_conf;
+        $hosts_conf = \@tmp;
+    }
+    foreach my $curr_host_conf ( @$hosts_conf ) {
 
+        my $host_conf = mergeConfig( $site_conf, $curr_host_conf );
+        
+        if ( not $host_conf->{'type'} ) {
+
+            # complain
+            $logger->error( "Error: No host type specified: " . $host_conf->{type} );
+            exit( -1 );
+        }
+        elsif ( lc( $host_conf->{type} ) eq "manual" ) {
+            my $host = perfSONAR_PS::LSRegistrationDaemon::Host->new();
+            if ( $host->init( $host_conf ) != 0 ) {
+
+                # complain
+                $logger->error( "Error: Couldn't initialize host watcher" );
+                exit( -1 );
+            }
+            push @services, $host;
+        }
+        elsif ( lc( $host_conf->{type} ) eq "toolkit" ) {
+            my $host = perfSONAR_PS::LSRegistrationDaemon::ToolkitHost->new();
+            if ( $host->init( $host_conf ) != 0 ) {
+
+                # complain
+                $logger->error( "Error: Couldn't initialize toolkit host watcher" );
+                exit( -1 );
+            }
+            push @services, $host;
+        }
+        else {
+
+            # error
+            $logger->error( "Error: Unknown host type: " . $conf{type} );
+            exit( -1 );
+        }
+    }
+    
+    ##
+    # Parse service configurations - We add these after hosts so they can 
+    # reference host objects at registration time 
     my $services_conf = $site_conf->{service};
     if ( ref( $services_conf ) ne "ARRAY" ) {
         my @tmp = ();
@@ -408,57 +473,20 @@ sub init_site {
             }
             push @services, $service;
         }
+        elsif ( lc( $service_conf->{type} ) eq "ma" ) {
+            my $service = perfSONAR_PS::LSRegistrationDaemon::MA->new();
+            if ( $service->init( $service_conf ) != 0 ) {
+
+                # complain
+                $logger->error( "Error: Couldn't initialize MA watcher" );
+                exit( -1 );
+            }
+            push @services, $service;
+        }
         else {
 
             # error
             $logger->error( "Error: Unknown service type: " . $conf{type} );
-            exit( -1 );
-        }
-    }
-    
-    ##
-    # Parse host configurations
-    my $hosts_conf = $site_conf->{host};
-    if ($hosts_conf && ref( $hosts_conf ) ne "ARRAY" ) {
-        my @tmp = ();
-        push @tmp, $hosts_conf;
-        $hosts_conf = \@tmp;
-    }
-    
-    foreach my $curr_host_conf ( @$hosts_conf ) {
-
-        my $host_conf = mergeConfig( $site_conf, $curr_host_conf );
-        
-        if ( not $host_conf->{'type'} ) {
-
-            # complain
-            $logger->error( "Error: No host type specified: " . $host_conf->{type} );
-            exit( -1 );
-        }
-        elsif ( lc( $host_conf->{type} ) eq "manual" ) {
-            my $host = perfSONAR_PS::LSRegistrationDaemon::Host->new();
-            if ( $host->init( $host_conf ) != 0 ) {
-
-                # complain
-                $logger->error( "Error: Couldn't initialize host watcher" );
-                exit( -1 );
-            }
-            push @services, $host;
-        }
-        elsif ( lc( $host_conf->{type} ) eq "toolkit" ) {
-            my $host = perfSONAR_PS::LSRegistrationDaemon::ToolkitHost->new();
-            if ( $host->init( $host_conf ) != 0 ) {
-
-                # complain
-                $logger->error( "Error: Couldn't initialize toolkit host watcher" );
-                exit( -1 );
-            }
-            push @services, $host;
-        }
-        else {
-
-            # error
-            $logger->error( "Error: Unknown host type: " . $conf{type} );
             exit( -1 );
         }
     }

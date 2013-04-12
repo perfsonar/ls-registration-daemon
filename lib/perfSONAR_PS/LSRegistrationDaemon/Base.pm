@@ -78,6 +78,11 @@ sub init {
     	return -1;
     }
     
+    #if disabled then return
+    if($self->{CONF}->{disabled}){
+        return 0;
+    }
+    
     #setup ls client
     $self->{LS_CLIENT} = SimpleLookupService::Client::SimpleLS->new();
     my $uri = URI->new($self->{CONF}->{ls_instance}); 
@@ -140,7 +145,12 @@ Service. If not, it unregisters the service from the Lookup Service.
 
 sub refresh {
     my ( $self ) = @_;
-
+    
+    #if disabled then return
+    if($self->{CONF}->{disabled}){
+        return 0;
+    }
+    
     if ( $self->{STATUS} eq "BROKEN" ) {
         $self->{LOGGER}->error( "Refreshing misconfigured record: ".$self->description() );
         return;
@@ -158,7 +168,8 @@ sub refresh {
         
         #check if record has changed, if it has then need to re-register
         my ($existing_key, $next_refresh) = $self->find_key();
-        if(!$existing_key){
+        if($self->{KEY} && !$existing_key){
+            $self->{LOGGER}->info( "didn't find existing key " . $self->{KEY} );
             $self->unregister();
         }
         
@@ -206,6 +217,9 @@ sub register {
         $self->{STATUS}       = "REGISTERED";
         $self->{KEY}          = $res->getRecordUri();
         $self->{NEXT_REFRESH} = $res->getRecordExpiresAsUnixTS()->[0] - $self->{CONF}->{check_interval}; 
+        if($self->{NEXT_REFRESH} < time){
+             $self->{LOGGER}->warn( "You may want to decrease the check_interval option as the registered record will expire before the next run");
+        }
         $self->{LOGGER}->info("Next Refresh: " . $self->{NEXT_REFRESH});
         $self->add_key();
     }else{

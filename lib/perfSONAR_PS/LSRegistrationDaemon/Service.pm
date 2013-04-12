@@ -12,6 +12,11 @@ in the $conf hash.
 sub init {
     my ( $self, $conf ) = @_;
     
+    #Set the host to the value of external address if available
+    if(!$conf{host} && $conf{external_address}){
+        $conf{host} = $conf{external_address}
+    }
+    
     return $self->SUPER::init( $conf );
 }
 
@@ -53,6 +58,28 @@ sub description {
     return $self->service_name();
 }
 
+sub service_host {
+    my ( $self ) = @_;
+    
+    #Skip host registration if value not set
+    if( !$self->{CONF}->{host} || $self->{CONF}->{host} eq 'disabled' ){
+        return '';
+    }
+    
+    my $host = perfSONAR_PS::LSRegistrationDaemon::Host->new();
+    my $host_conf = { 
+        name => $self->{CONF}->{host}, 
+        disabled => 1,
+        ls_key_db => $self->{CONF}->{ls_key_db}
+    };
+    if($host->init( $host_conf ) != 0) {
+        $logger->error( "Error: Couldn't create host object" );
+        return '';
+    }
+    
+    return $host->find_duplicate();
+}
+
 sub service_version {
     my ( $self ) = @_;
 
@@ -74,8 +101,25 @@ sub domain {
 
 sub administrator {
     my ( $self ) = @_;
-
-    return $self->{CONF}->{administrator};
+    
+    #Skip host registration if value not set
+    if( !$self->{CONF}->{full_name} && !$self->{CONF}->{administrator_email} ){
+        return '';
+    }
+    
+    my $admin = perfSONAR_PS::LSRegistrationDaemon::Person->new();
+    my $admin_conf = { 
+        full_name => $self->{CONF}->{full_name}, 
+        administrator_email => $self->{CONF}->{administrator_email}, 
+        disabled => 1,
+        ls_key_db => $self->{CONF}->{ls_key_db}
+    };
+    if($admin->init( $admin_conf ) != 0) {
+        $logger->error( "Error: Couldn't create person object for service admin" );
+        return '';
+    }
+    
+    return $admin->find_duplicate();
 }
 
 sub site_name {
@@ -135,6 +179,7 @@ sub build_registration {
         serviceType => $self->service_type(), 
         serviceName => $self->service_name(), 
         serviceVersion => $self->service_version(), 
+        serviceHost => $self->service_host(),
     	domains => $self->domain(),
     	administrators => $self->administrator(), 
     	siteName => $self->site_name(),
@@ -145,8 +190,8 @@ sub build_registration {
     	latitude => $self->latitude(),
     	longitude => $self->longitude(),
     );
-    $service->setServiceEventType($self->event_type());
-    $service->setCommunities($self->communities());
+    $service->setServiceEventType($self->event_type()) if($self->event_type());
+    $service->setCommunities($self->communities()) if($self->communities());
     
     return $service;
 }

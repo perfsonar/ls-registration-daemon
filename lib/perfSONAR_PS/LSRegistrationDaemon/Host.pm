@@ -164,8 +164,25 @@ sub toolkit_version {
 
 sub administrator {
     my ( $self ) = @_;
-
-    return $self->{CONF}->{administrator};
+    
+    #Skip host registration if value not set
+    if( !$self->{CONF}->{full_name} && !$self->{CONF}->{administrator_email} ){
+        return '';
+    }
+    
+    my $admin = perfSONAR_PS::LSRegistrationDaemon::Person->new();
+    my $admin_conf = { 
+        full_name => $self->{CONF}->{full_name}, 
+        administrator_email => $self->{CONF}->{administrator_email}, 
+        disabled => 1,
+        ls_key_db => $self->{CONF}->{ls_key_db}
+    };
+    if($admin->init( $admin_conf ) != 0) {
+        $logger->error( "Error: Couldn't create person object for service admin" );
+        return '';
+    }
+    
+    return $admin->find_duplicate();
 }
 
 sub site_name {
@@ -249,7 +266,7 @@ sub build_registration {
     if(defined $self->toolkit_version()){
         $service->setToolkitVersion($self->toolkit_version());
     }
-    $service->setCommunities($self->site_project());
+    $service->setCommunities($self->site_project()) if($self->site_project());
     
     return $service;
 }
@@ -311,7 +328,7 @@ sub _add_checksum_val {
     }
     
     if(ref($val) eq 'ARRAY'){
-        $result = join ',', @{$val};
+        $result = join ',', sort @{$val};
     }else{
         $result = $val;
     }
