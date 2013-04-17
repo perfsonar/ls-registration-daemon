@@ -1,6 +1,7 @@
 MANIFEST
 Makefile
 bin/daemon.pl
+bin/daemon_compat.pl
 dependencies
 doc/Changes
 doc/INSTALL
@@ -30,11 +31,14 @@ lib/perfSONAR_PS/LSRegistrationDaemon/GridFTP.pm
 lib/perfSONAR_PS/LSRegistrationDaemon/Host.pm
 lib/perfSONAR_PS/LSRegistrationDaemon/ICMP_Service.pm
 lib/perfSONAR_PS/LSRegistrationDaemon/Interface.pm
+lib/perfSONAR_PS/LSRegistrationDaemon/MA.pm
 lib/perfSONAR_PS/LSRegistrationDaemon/NDT.pm
 lib/perfSONAR_PS/LSRegistrationDaemon/NPAD.pm
 lib/perfSONAR_PS/LSRegistrationDaemon/OWAMP.pm
+lib/perfSONAR_PS/LSRegistrationDaemon/Person.pm
 lib/perfSONAR_PS/LSRegistrationDaemon/Phoebus.pm
 lib/perfSONAR_PS/LSRegistrationDaemon/Ping.pm
+lib/perfSONAR_PS/LSRegistrationDaemon/PSTest.pm
 lib/perfSONAR_PS/LSRegistrationDaemon/REDDnet.pm
 lib/perfSONAR_PS/LSRegistrationDaemon/Service.pm
 lib/perfSONAR_PS/LSRegistrationDaemon/TCP_Service.pm
