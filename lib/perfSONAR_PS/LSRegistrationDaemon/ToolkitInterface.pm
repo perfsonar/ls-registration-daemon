@@ -26,6 +26,14 @@ sub init {
         $conf->{if_name} = $conf->{external_address_if_name};
     }
     
+    if(!$conf->{mac_address}){
+        $conf->{mac_address} = $self->_discover_mac_address($conf->{if_name});
+    }
+    
+    if(!$conf{capacity}){
+        $conf->{capacity} = $conf->{external_address_if_speed};
+    }
+    
     if(!$conf->{address}){
         my $addr_map = {};
         $self->_add_address($addr_map, $conf->{external_address});
@@ -51,6 +59,31 @@ sub _add_address(){
     foreach my $a(@{$address}){
         $map->{$a} = 1;
     }
+}
+
+sub _discover_mac_address(){
+    my ( $self, $iface ) = @_;
+    if(!$iface){
+        return;
+    }
+    
+    my $mac_address = '';
+    open( $IFCONFIG, "-|", "/sbin/ifconfig $iface" ) or return;
+    while ( <$IFCONFIG> ) {
+        if ( /^(\S+)\s*Link encap:([^ ]+)/ ) {
+            if ( lc( $2 ) ne "ethernet" ) {
+                next;
+            }
+        }
+
+        if ( /HWaddr ([a-fA-F0-9]+\:[a-fA-F0-9]+\:[a-fA-F0-9]+\:[a-fA-F0-9]+\:[a-fA-F0-9]+\:[a-fA-F0-9]+)/ ) {
+            $mac_address = $1;
+            last;
+        }
+    }
+    close( $IFCONFIG );
+    
+    return $mac_address;
 }
 
 1;
