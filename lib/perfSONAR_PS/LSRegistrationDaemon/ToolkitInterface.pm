@@ -26,8 +26,18 @@ sub init {
         $conf->{if_name} = $conf->{external_address_if_name};
     }
     
+    #lookup mtu and mac
+    my $ethernet_info = {};
+    if(!$conf->{mac_address} || !$conf->{mtu}){
+        $ethernet_info = $self->_discover_ethernet_info($conf->{if_name});
+    }
+    
     if(!$conf->{mac_address}){
-        $conf->{mac_address} = $self->_discover_mac_address($conf->{if_name});
+        $conf->{mac_address} = $ethernet_info->{mac_address};
+    }
+    
+    if(!$conf->{mtu}){
+        $conf->{mtu} = $ethernet_info->{mtu};
     }
     
     if(!$conf{capacity}){
@@ -61,13 +71,13 @@ sub _add_address(){
     }
 }
 
-sub _discover_mac_address(){
+sub _discover_ethernet_info(){
     my ( $self, $iface ) = @_;
     if(!$iface){
         return;
     }
     
-    my $mac_address = '';
+    my $ethernet_info = {};
     open( $IFCONFIG, "-|", "/sbin/ifconfig $iface" ) or return;
     while ( <$IFCONFIG> ) {
         if ( /^(\S+)\s*Link encap:([^ ]+)/ ) {
@@ -77,13 +87,15 @@ sub _discover_mac_address(){
         }
 
         if ( /HWaddr ([a-fA-F0-9]+\:[a-fA-F0-9]+\:[a-fA-F0-9]+\:[a-fA-F0-9]+\:[a-fA-F0-9]+\:[a-fA-F0-9]+)/ ) {
-            $mac_address = $1;
-            last;
+            $ethernet_info->{mac_address} = $1;
+        }
+        if ( /MTU:(\d+)/ ) {
+            $ethernet_info->{mtu} = $1;
         }
     }
     close( $IFCONFIG );
     
-    return $mac_address;
+    return $ethernet_info;
 }
 
 1;

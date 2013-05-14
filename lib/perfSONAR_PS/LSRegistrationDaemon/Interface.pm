@@ -51,6 +51,12 @@ sub mac_address {
     return $self->{CONF}->{mac_address};
 }
 
+sub mtu {
+    my ( $self ) = @_;
+
+    return $self->{CONF}->{mtu};
+}
+
 sub subnet {
     my ( $self ) = @_;
 
@@ -93,6 +99,7 @@ sub build_registration {
         macAddress=> $self->mac_address(), 
         domains=> $self->domain(),
     );
+    $iface->setInterfaceMTU($self->mtu()) if(defined $self->mtu());
     $iface->setInterfaceType($self->if_type()) if(defined $self->if_type());
     $iface->setUrns($self->urn()) if(defined $self->urn());
     
@@ -109,6 +116,7 @@ sub build_checksum {
     $checksum .= $self->_add_checksum_val($self->capacity()); 
     $checksum .= $self->_add_checksum_val($self->mac_address());
     $checksum .= $self->_add_checksum_val($self->domain());
+    $checksum .= $self->_add_checksum_val($self->mtu());
     $checksum .= $self->_add_checksum_val($self->if_type());
     $checksum .= $self->_add_checksum_val($self->urn());
     
