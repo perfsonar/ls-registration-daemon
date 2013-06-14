@@ -163,7 +163,7 @@ sub refresh {
     
     #Refresh current registration    
     $self->{LOGGER}->debug( "Refreshing: " . $self->description() );
-    if ( $self->is_up ) {
+    if ( $self->{CONF}->{force_up_status} || $self->is_up ) {
         $self->{LOGGER}->debug( "Service is up" );
         
         #check if record has changed, if it has then need to re-register
