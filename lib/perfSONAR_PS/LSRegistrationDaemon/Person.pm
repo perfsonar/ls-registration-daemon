@@ -165,7 +165,7 @@ sub build_registration {
         $person->setCity($self->city());
     }
     if(defined $self->region()){
-        $person->setRegions($self->region());
+        $person->setRegion($self->region());
     }
     if(defined $self->country()){
         $person->setCountry($self->country());

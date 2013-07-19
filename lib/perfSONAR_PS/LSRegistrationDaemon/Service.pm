@@ -13,8 +13,8 @@ sub init {
     my ( $self, $conf ) = @_;
     
     #Set the host to the value of external address if available
-    if(!$conf{host} && $conf{external_address}){
-        $conf{host} = $conf{external_address}
+    if(!$conf->{host_name} && $conf->{external_address}){
+        $conf->{host_name} = $conf->{external_address}
     }
     
     return $self->SUPER::init( $conf );
@@ -62,13 +62,13 @@ sub service_host {
     my ( $self ) = @_;
     
     #Skip host registration if value not set
-    if( !$self->{CONF}->{host} || $self->{CONF}->{host} eq 'disabled' ){
+    if(!$self->{CONF}->{host_name}  || ($self->{CONF}->{host_name} eq 'disabled') ){
         return '';
     }
     
     my $host = perfSONAR_PS::LSRegistrationDaemon::Host->new();
     my $host_conf = { 
-        name => $self->{CONF}->{host}, 
+        name => $self->{CONF}->{host_name}, 
         disabled => 1,
         ls_key_db => $self->{CONF}->{ls_key_db}
     };
@@ -204,6 +204,7 @@ sub build_checksum {
     $checksum .= $self->_add_checksum_val($self->service_type()); 
     $checksum .= $self->_add_checksum_val($self->service_name()); 
     $checksum .= $self->_add_checksum_val($self->service_version()); 
+    $checksum .= $self->_add_checksum_val($self->service_host());
     $checksum .= $self->_add_checksum_val($self->domain());
     $checksum .= $self->_add_checksum_val($self->administrator()); 
     $checksum .= $self->_add_checksum_val($self->site_name());

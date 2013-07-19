@@ -49,15 +49,17 @@ sub init {
 
     my @addresses;
 
-    if ( $conf->{address} ) {
+    if ( $conf->{address} || $conf->{external_address}) {
         @addresses = ();
-
+        
+        my $address = $conf->{address} ? $conf->{address} : $conf->{external_address};
+        
         my @tmp = ();
-        if ( ref( $conf->{address} ) eq "ARRAY" ) {
-            @tmp = @{ $conf->{address} };
+        if ( ref( $address ) eq "ARRAY" ) {
+            @tmp = @{ $address };
         }
         else {
-            push @tmp, $conf->{address};
+            push @tmp, $address;
         }
 
         my %addr_map = ();
@@ -69,7 +71,6 @@ sub init {
             #                $addr_map{$addr} = 1;
             #            }
         }
-
         @addresses = keys %addr_map;
     }
     else {
