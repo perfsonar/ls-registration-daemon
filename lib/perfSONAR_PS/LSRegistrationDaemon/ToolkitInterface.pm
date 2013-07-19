@@ -43,7 +43,7 @@ sub init {
         $conf->{mtu} = $ethernet_info->{mtu};
     }
     
-    if(!$conf{capacity}){
+    if(!$conf->{capacity}){
         $conf->{capacity} = $conf->{external_address_if_speed};
     }
     

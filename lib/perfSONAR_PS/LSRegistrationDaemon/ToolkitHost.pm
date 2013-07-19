@@ -90,7 +90,7 @@ sub init {
         $conf->{toolkit_version_file} = "/opt/perfsonar_ps/toolkit/scripts/NPToolkit.version";
     }
     if ( open( OUTPUT, "-|", $conf->{toolkit_version_file} ) ) {
-        $version = <OUTPUT>;
+        my $version = <OUTPUT>;
         close( OUTPUT );
         if($version){
             chomp( $version );

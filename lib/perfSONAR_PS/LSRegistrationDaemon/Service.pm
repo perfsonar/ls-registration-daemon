@@ -118,7 +118,7 @@ sub administrator {
         ls_key_db => $self->{CONF}->{ls_key_db}
     };
     if($admin->init( $admin_conf ) != 0) {
-        $logger->error( "Error: Couldn't create person object for service admin" );
+        $self->{LOGGER}->error( "Error: Couldn't create person object for service admin" );
         return '';
     }
     
