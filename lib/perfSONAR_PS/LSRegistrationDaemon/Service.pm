@@ -1,5 +1,8 @@
 package perfSONAR_PS::LSRegistrationDaemon::Service;
 
+use strict;
+use warnings;
+
 use base 'perfSONAR_PS::LSRegistrationDaemon::Base';
 use Digest::MD5 qw(md5_base64);
 use perfSONAR_PS::Client::LS::PSRecords::PSService;
@@ -73,7 +76,7 @@ sub service_host {
         ls_key_db => $self->{CONF}->{ls_key_db}
     };
     if($host->init( $host_conf ) != 0) {
-        $logger->error( "Error: Couldn't create host object" );
+        $self->{LOGGER}->error( "Error: Couldn't create host object" );
         return '';
     }
     

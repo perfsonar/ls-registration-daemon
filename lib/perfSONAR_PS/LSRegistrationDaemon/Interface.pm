@@ -1,5 +1,8 @@
 package perfSONAR_PS::LSRegistrationDaemon::Interface;
 
+use strict;
+use warnings;
+
 use base 'perfSONAR_PS::LSRegistrationDaemon::Base';
 use Digest::MD5 qw(md5_base64);
 use perfSONAR_PS::Client::LS::PSRecords::PSInterface;

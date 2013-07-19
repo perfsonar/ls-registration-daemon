@@ -1,5 +1,8 @@
 package perfSONAR_PS::LSRegistrationDaemon::Person;
 
+use strict;
+use warnings;
+
 use base 'perfSONAR_PS::LSRegistrationDaemon::Base';
 use perfSONAR_PS::Client::LS::PSRecords::PSPerson;
 use perfSONAR_PS::Client::LS::PSQueryObjects::PSPersonQueryObject;

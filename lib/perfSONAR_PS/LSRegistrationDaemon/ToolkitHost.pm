@@ -1,5 +1,8 @@
 package perfSONAR_PS::LSRegistrationDaemon::ToolkitHost;
 
+use strict;
+use warnings;
+
 use base 'perfSONAR_PS::LSRegistrationDaemon::Host';
 use Digest::MD5 qw(md5_base64);
 use Sys::MemInfo qw(totalmem);

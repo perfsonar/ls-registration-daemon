@@ -1,5 +1,8 @@
 package perfSONAR_PS::LSRegistrationDaemon::ToolkitInterface;
 
+use strict;
+use warnings;
+
 use base 'perfSONAR_PS::LSRegistrationDaemon::Interface';
 use Digest::MD5 qw(md5_base64);
 
@@ -78,7 +81,7 @@ sub _discover_ethernet_info(){
     }
     
     my $ethernet_info = {};
-    open( $IFCONFIG, "-|", "/sbin/ifconfig $iface" ) or return;
+    open( my $IFCONFIG, "-|", "/sbin/ifconfig $iface" ) or return;
     while ( <$IFCONFIG> ) {
         if ( /^(\S+)\s*Link encap:([^ ]+)/ ) {
             if ( lc( $2 ) ne "ethernet" ) {
