@@ -46,6 +46,11 @@ sub init {
     if(!$conf->{capacity}){
         $conf->{capacity} = $conf->{external_address_if_speed};
     }
+    #lookup interface speed if not set elsewhere
+    if(!$conf->{capacity}){
+       my $speed = $self->_discover_interface_speed($conf->{if_name});
+       $conf->{capacity} = $speed if($speed);
+    }
     
     if(!$conf->{address}){
         my $addr_map = {};
@@ -99,6 +104,31 @@ sub _discover_ethernet_info(){
     close( $IFCONFIG );
     
     return $ethernet_info;
+}
+
+sub _discover_interface_speed {
+    my ($self, $interface_name) = @_;
+    
+    my $speed = 0;
+    my $ETHTOOL;
+    open( $ETHTOOL, "-|", "/sbin/ethtool $interface_name" ) or return;
+    while ( <$ETHTOOL> ) {
+        if ( /^\s*Speed:\s+(\d+)\s*(\w)/ ) {
+            $speed = $1;
+            my $units = $2;
+            if($units eq 'M'){
+                $speed *= 10**6;
+            }elsif($units eq 'G'){
+                $speed *= 10**9;
+            }elsif($units eq 'T'){
+                $speed *= 10**12;
+            }
+            last;
+        }
+    }
+    close( $ETHTOOL );
+    
+    return $speed;
 }
 
 1;
