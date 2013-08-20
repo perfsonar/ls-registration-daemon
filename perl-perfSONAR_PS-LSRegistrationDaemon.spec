@@ -4,7 +4,7 @@
 %define init_script_1 ls_registration_daemon
 # %define init_script_2 ls_registration_daemon
 
-%define relnum 1 
+%define relnum 2 
 %define disttag pSPS
 
 Name:			perl-perfSONAR_PS-LSRegistrationDaemon
@@ -109,7 +109,7 @@ fi
 %files
 %defattr(0644,perfsonar,perfsonar,0755)
 %doc %{install_base}/doc/*
-%config %{install_base}/etc/*
+%config(noreplace) %{install_base}/etc/*
 %attr(0755,perfsonar,perfsonar) %{install_base}/bin/*
 %attr(0755,perfsonar,perfsonar) %{install_base}/scripts/*
 %{install_base}/lib/*
