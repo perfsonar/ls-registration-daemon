@@ -71,6 +71,9 @@ do
     restart)
     	$0 stop; echo "waiting..."; sleep 10; $0 start;
 	;;
+    status)
+	echo $STATUS
+	;;
     *)
 	echo "usage: $0 (start|stop|restart|help)"
 	cat <<EOF
@@ -79,6 +82,7 @@ start      - start LS Registration Daemon
 stop       - stop LS Registration Daemon
 restart    - restart LS Registration Daemon if running by sending a SIGHUP or start if 
              not running
+status     - Indicates if the service is running
 help       - this screen
 
 EOF
