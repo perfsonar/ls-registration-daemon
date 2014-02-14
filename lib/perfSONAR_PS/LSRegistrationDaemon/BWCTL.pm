@@ -20,7 +20,20 @@ our $VERSION = 3.3;
 
 use base 'perfSONAR_PS::LSRegistrationDaemon::TCP_Service';
 
+use fields 'TOOLS';
+
 use constant DEFAULT_PORT => 4823;
+
+my @known_tools = (
+    { id=>0x01, name => "iperf" },
+    { id=>0x02, name => "nuttcp" },
+    { id=>0x04, name => "thrulay" },
+    { id=>0x08, name => "iperf3" },
+    { id=>0x10, name => "ping" },
+    { id=>0x20, name => "traceroute" },
+    { id=>0x40, name => "tracepath" },
+    { id=>0x80, name => "owamp" },
+);
 
 =head2 init($self, $conf)
 
@@ -157,6 +170,87 @@ sub event_type {
     my ( $self ) = @_;
 
     return "http://ggf.org/ns/nmwg/tools/bwctl/1.0";
+}
+
+sub build_registration {
+    my ( $self ) = @_;
+
+    my $service = $self->SUPER::build_registration();
+
+    $service->setBWCTLTools($self->{TOOLS}) if $self->{TOOLS};
+
+    return $service;
+}
+
+sub connected_cb {
+    my ( $self, $sock ) = @_;
+
+    my $res = __bwctl_read_server_greeting($sock);
+
+    if ($res and $res->{protocol}) {
+        __bwctl_write_client_greeting($sock, $res->{protocol});
+
+        $res = __bwctl_read_server_ok($sock);
+
+        my $tool_mask = $res->{tools};
+
+        my @avail_tools = ();
+        foreach my $tool (@known_tools) {
+            if ($tool_mask & $tool->{id}) {
+                push @avail_tools, $tool->{name};
+            }
+        }
+
+        $self->{TOOLS} = \@avail_tools;
+    }
+
+    return 1;   
+}
+
+sub __bwctl_read_server_greeting {
+    my ($sock) = @_;
+
+    my $data;
+
+    unless (defined $sock->recv($data, 32)) {
+        return;
+    }
+
+    my ($unused, $protocol_modes, $challenge) = unpack("a12 N a16", $data);
+
+    my $protocol = $protocol_modes >> 24;
+    my $mode = $protocol_modes << 8 >> 8;
+
+    return { protocol => $protocol, mode => $mode, challenge => $challenge };
+}
+
+sub __bwctl_write_client_greeting {
+    my ($sock, $protocol) = @_;
+
+    # 1 is "open"
+    my $protocol_mode = 1 | ($protocol << 24);
+
+    my $data = pack("N x64", $protocol_mode);
+
+    unless (defined $sock->send($data, 68)) {
+        return;
+    }
+}
+
+sub __bwctl_read_server_ok {
+    my ($sock) = @_;
+
+    my $data;
+
+    unless (defined $sock->recv($data, 48)) {
+        return;
+    }
+
+    my ($tools, $unused, $accept, $server_iv, $uptime, $iv) = unpack("N a11 C a16 a8 a8", $data);
+
+    #$tools = unpack('B32', $tools);
+
+    return { tools => $tools, accept => $accept, server_iv => $server_iv, uptime => $uptime, iv => $iv };
 }
 
 1;

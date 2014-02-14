@@ -114,21 +114,26 @@ sub is_up {
 
         $self->{LOGGER}->debug( "Connecting to: " . $addr . ":" . $self->{PORT} );
 
-        if ( $addr =~ /:/ ) {
-            $sock = IO::Socket::INET6->new( PeerAddr => $addr, PeerPort => $self->{PORT}, Proto => 'tcp', Timeout => 5 );
-        }
-        else {
-            $sock = IO::Socket::INET->new( PeerAddr => $addr, PeerPort => $self->{PORT}, Proto => 'tcp', Timeout => 5 );
-        }
+        $sock = IO::Socket::INET6->new( PeerAddr => $addr, PeerPort => $self->{PORT}, Proto => 'tcp', Timeout => 5 );
 
         if ( $sock ) {
-            $sock->close;
+            if ($self->connected_cb($sock)) {
+                $sock->close;
 
-            return 1;
+                return 1;
+            }
+
+            $sock->close;
         }
     }
 
     return 0;
+}
+
+sub connected_cb {
+     my ( $self, $sock ) = @_;
+
+     return 1;
 }
 
 =head2 get_service_addresses ($self)
