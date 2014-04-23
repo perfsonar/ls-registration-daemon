@@ -367,7 +367,10 @@ sub init_site {
     # Parse service configurations - We add these after hosts so they can 
     # reference host objects at registration time 
     my $services_conf = $site_conf->{service};
-    if ( ref( $services_conf ) ne "ARRAY" ) {
+    if(!defined $services_conf) {
+        $services_conf = [];
+    } 
+    elsif ( ref( $services_conf ) ne "ARRAY" ) {
         my @tmp = ();
         push @tmp, $services_conf;
         $services_conf = \@tmp;
