@@ -95,39 +95,43 @@ sub init_children {
         $filters->time_range($self->{CONF}->{'auto_config_time_range'});
         my $client = new perfSONAR_PS::Client::Esmond::ApiConnect(url => $auto_url, filters => $filters );
         my $md = $client->get_metadata();
-        foreach my $m(@{$md}){
-            #index results if possible            
-            my @indices = ();
-            if($self->{CONF}->{'auto_config_indices'}){
-                foreach my $event_type(@{$m->event_types()}){
-                    my $indexer = $indexer_factory->create_indexer($event_type);
-                    next unless($indexer);
-                    my $et = $m->get_event_type($event_type);
-                    $et->filters->time_range($indexer_time_range);
-                    my $data = $et->get_data();
-                    next if($et->error);
-                    my $values = $indexer->create_index($data);
-                    push @indices, {
-                        type => $event_type,
-                        value => $values
-                    };
+        if($client->error){
+            $self->{LOGGER}->warn("Unable to get MA tests " . $client->error);
+        }else{
+            foreach my $m(@{$md}){
+                #index results if possible            
+                my @indices = ();
+                if($self->{CONF}->{'auto_config_indices'}){
+                    foreach my $event_type(@{$m->event_types()}){
+                        my $indexer = $indexer_factory->create_indexer($event_type);
+                        next unless($indexer);
+                        my $et = $m->get_event_type($event_type);
+                        $et->filters->time_range($indexer_time_range);
+                        my $data = $et->get_data();
+                        next if($et->error);
+                        my $values = $indexer->create_index($data);
+                        push @indices, {
+                            type => $event_type,
+                            value => $values
+                        };
+                    }
                 }
-            }
-            #create new test
-            push @{$self->{CONF}->{test}}, {
-                'ma_locator' => $self->service_locator(),
-                'metadata_uri' => $m->uri(),
-                'source' => $m->source(),
-                'destination' => $m->destination(),
-                'measurement_agent' => $m->measurement_agent(),
-                'tool_name' => $m->tool_name(),
-                'event_type' => $m->event_types(),
-                'result_index' => \@indices,
-            };
-        } 
-        
+                #add new test
+                push @{$self->{CONF}->{test}}, {
+                    'ma_locator' => $self->service_locator(),
+                    'metadata_uri' => $m->uri(),
+                    'source' => $m->source(),
+                    'destination' => $m->destination(),
+                    'measurement_agent' => $m->measurement_agent(),
+                    'tool_name' => $m->tool_name(),
+                    'event_type' => $m->event_types(),
+                    'result_index' => \@indices,
+                };
+            } 
+        }
     }
     
+    #Create metadata registrations
     foreach my $ma_test(@{$self->{CONF}->{test}}){
         my $ma_test_reg = perfSONAR_PS::LSRegistrationDaemon::PSMetadata->new();
         if( $ma_test_reg->init(mergeConfig($self->{CONF}, $ma_test)) == 0){
