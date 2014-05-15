@@ -89,7 +89,10 @@ sub init_children {
             ca_certificate_path => $self->{CONF}->{'auto_config_ca_path'},
             verify_hostname => $self->{CONF}->{'auto_config_verify_hostname'},
         );
-        $filters->time_range($self->{CONF}->{'auto_config_time_range'}) if($self->{CONF}->{'auto_config_time_range'});
+        if(!defined $self->{CONF}->{'auto_config_time_range'}){
+            $self->{CONF}->{'auto_config_time_range'} = 86400*7; #default to 1 week
+        }
+        $filters->time_range($self->{CONF}->{'auto_config_time_range'});
         my $client = new perfSONAR_PS::Client::Esmond::ApiConnect(url => $auto_url, filters => $filters );
         my $md = $client->get_metadata();
         foreach my $m(@{$md}){
