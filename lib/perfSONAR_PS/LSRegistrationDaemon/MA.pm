@@ -78,7 +78,12 @@ sub init_children {
     if($self->{CONF}->{'auto_config_tests'}){
         my $auto_url = $self->{CONF}->{'auto_config_url'};
         my $indexer_factory = perfSONAR_PS::LSRegistrationDaemon::EventTypeIndexer::EventTypeIndexerFactory->new();
+        my $indexer_time_range = $self->{CONF}->{'auto_config_index_time_range'};
+        $indexer_time_range = 86400 if(!$indexer_time_range); #default to 24 hours
         $auto_url = @{$self->get_service_addresses()}[0]->{'value'} if(!$auto_url);
+        if(!defined $self->{CONF}->{'auto_config_indices'}){
+            $self->{CONF}->{'auto_config_indices'} = 1; #configure indices by default
+        }
         my $filters = new perfSONAR_PS::Client::Esmond::ApiFilters(
             ca_certificate_file => $self->{CONF}->{'auto_config_ca_file'},
             ca_certificate_path => $self->{CONF}->{'auto_config_ca_path'},
@@ -87,20 +92,25 @@ sub init_children {
         $filters->time_range($self->{CONF}->{'auto_config_time_range'}) if($self->{CONF}->{'auto_config_time_range'});
         my $client = new perfSONAR_PS::Client::Esmond::ApiConnect(url => $auto_url, filters => $filters );
         my $md = $client->get_metadata();
-        my @indices = ();
-        foreach my $event_type($m->event_types()){
-            my $indexer = $indexer_factory->create_indexer($event_type);
-            next unless($indexer);
-            my $et = $m->get_event_type($event_type);
-            my $data = $et->get_data();
-            next if($et->error);
-            my $values = $indexer->create_index($data);
-            push @indices, {
-                type => $event_type,
-                value => $values
-            };
-        }
         foreach my $m(@{$md}){
+            #index results if possible            
+            my @indices = ();
+            if($self->{CONF}->{'auto_config_indices'}){
+                foreach my $event_type(@{$m->event_types()}){
+                    my $indexer = $indexer_factory->create_indexer($event_type);
+                    next unless($indexer);
+                    my $et = $m->get_event_type($event_type);
+                    $et->filters->time_range($indexer_time_range);
+                    my $data = $et->get_data();
+                    next if($et->error);
+                    my $values = $indexer->create_index($data);
+                    push @indices, {
+                        type => $event_type,
+                        value => $values
+                    };
+                }
+            }
+            #create new test
             push @{$self->{CONF}->{test}}, {
                 'ma_locator' => $self->service_locator(),
                 'metadata_uri' => $m->uri(),

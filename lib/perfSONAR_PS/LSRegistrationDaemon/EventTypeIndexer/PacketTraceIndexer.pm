@@ -24,10 +24,12 @@ sub create_index {
             next;
         }
         foreach my $hop(@{$result->val}){
-            $ip_map{$hop->ip} = 1 if($hop->ip);
+            $ip_map{$hop->{ip}} = 1 if($hop->{ip});
         }
     }
     
     my @ip_list = keys %ip_map;
     return \@ip_list;
 }
+
+1;

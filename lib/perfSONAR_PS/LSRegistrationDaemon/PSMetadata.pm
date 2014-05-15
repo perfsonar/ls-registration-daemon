@@ -11,7 +11,6 @@ use perfSONAR_PS::Common qw(mergeConfig);
 use fields 'METADATA_HASH';
 use constant RESERVED_LS_KEYS => {
     'uri' => 1,
-    ''
 };
 =head2 init($self, $conf)
 
@@ -118,15 +117,15 @@ sub build_registration {
     $psmd->init(type => 'psmetadata');
     $psmd->addField(key => 'psmetadata-ma-locator', value => $self->ma_locator()) if($self->ma_locator());
     $psmd->addField(key => 'psmetadata-uri', value => $self->metadata_uri()) if($self->metadata_uri());
-    $psmd->addField(key => 'psmetadata-source', value => $self->source()) if($self->source());
-    $psmd->addField(key => 'psmetadata-destination', value => $self->destination()) if($self->destination());
+    $psmd->addField(key => 'psmetadata-src-address', value => $self->source()) if($self->source());
+    $psmd->addField(key => 'psmetadata-dst-address', value => $self->destination()) if($self->destination());
     $psmd->addField(key => 'psmetadata-measurement-agent', value => $self->measurement_agent()) if($self->measurement_agent());
     $psmd->addField(key => 'psmetadata-tool-name', value => $self->tool_name()) if($self->tool_name());
     $psmd->addField(key => 'psmetadata-eventtypes', value => $self->event_type()) if($self->event_type());
     $psmd->addField(key => 'group-domains', value => $self->domain()) if($self->domain());
     $psmd->addField(key => 'group-communities', value => $self->communities()) if($self->communities());
     foreach my $index(@{$self->result_index()}){
-        $psmd->addField(key => 'psmetadata-index-' . $index->type , value => $index->value) if($index->type);
+        $psmd->addField(key => 'psmetadata-index-' . $index->{type} , value => $index->{value}) if($index->{type});
     }
     
     return $psmd;
@@ -146,8 +145,8 @@ sub build_checksum {
     $checksum .= $self->_add_checksum_val($self->result_index()); 
     $checksum .= $self->_add_checksum_val($self->domain()); 
     $checksum .= $self->_add_checksum_val($self->communities()); 
-    foreach my $index(sort {$a->type <=> $b->type} @{$self->result_index()}){
-        $checksum .= $self->_add_checksum_val($index->value);
+    foreach my $index(sort {$a->{type} <=> $b->{type}} @{$self->result_index()}){
+        $checksum .= $self->_add_checksum_val($index->{value});
     }
     $checksum = md5_base64($checksum);
     $self->{LOGGER}->info("Checksum is " . $checksum);
@@ -169,8 +168,8 @@ sub build_duplicate_checksum {
     $checksum .= $self->_add_checksum_val($self->result_index()); 
     $checksum .= $self->_add_checksum_val($self->domain()); 
     $checksum .= $self->_add_checksum_val($self->communities()); 
-    foreach my $index(sort {$a->type <=> $b->type} @{$self->result_index()}){
-        $checksum .= $self->_add_checksum_val($index->value);
+    foreach my $index(sort {$a->{type} <=> $b->{type}} @{$self->result_index()}){
+        $checksum .= $self->_add_checksum_val($index->{value});
     }
     $checksum = md5_base64($checksum);
     

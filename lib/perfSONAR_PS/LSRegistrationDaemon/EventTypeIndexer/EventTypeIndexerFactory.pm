@@ -29,3 +29,5 @@ sub create_indexer {
 
     return undef;
 }
+
+1;

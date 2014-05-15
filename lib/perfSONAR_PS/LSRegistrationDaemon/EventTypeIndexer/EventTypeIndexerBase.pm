@@ -22,3 +22,5 @@ sub create_index {
     #my($self, $results) = @_;
     die 'Not yet implemented';
 }
+
+1;
