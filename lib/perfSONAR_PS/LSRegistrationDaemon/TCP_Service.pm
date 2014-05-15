@@ -136,13 +136,13 @@ sub connected_cb {
      return 1;
 }
 
-=head2 get_service_addresses ($self)
+=head2 service_locator ($self)
 
 This function returns the list of addresses for the service is running on.
 
 =cut
 
-sub get_service_addresses {
+sub service_locator {
     my ( $self ) = @_;
 
     my @addresses = ();
@@ -153,8 +153,8 @@ sub get_service_addresses {
         my $dns = reverse_dns( $addr );
 
         $uri = "tcp://";
-		if ( $dns ) {
-			$uri .= "$dns";
+        if ( $dns ) {
+            $uri .= "$dns";
         }
         elsif ( $addr =~ /:/ ) {
             $uri .= "[$addr]";
@@ -165,55 +165,10 @@ sub get_service_addresses {
 
         $uri .= ":" . $self->{PORT};
 
-        my %addr = ();
-        $addr{"value"} = $uri;
-        $addr{"type"}  = "uri";
-
-        push @addresses, \%addr;
+        push @addresses, $uri;
     }
 
     return \@addresses;
-}
-
-=head2 get_service_addresses ($self)
-
-This function returns the list of addresses for the service is running on.
-
-=cut
-
-sub get_node_addresses {
-    my ( $self ) = @_;
-
-    my @addrs = ();
-
-    foreach my $addr ( @{ $self->{ADDRESSES} } ) {
-        unless ( $addr =~ /:/ or $addr =~ /\d+\.\d+\.\d+\.\d+/ ) {
-
-            # it's probably a hostname, try looking it up.
-        }
-
-        if ( $addr =~ /:/ ) {
-            my %addr = ();
-            $addr{"value"} = $addr;
-            $addr{"type"}  = "ipv6";
-            push @addrs, \%addr;
-        }
-        elsif ( $addr =~ /\d+\.\d+\.\d+\.\d+/ ) {
-            my %addr = ();
-            $addr{"value"} = $addr;
-            $addr{"type"}  = "ipv4";
-            push @addrs, \%addr;
-        }
-    }
-
-    return \@addrs;
-}
-
-sub service_locator {
-    my ( $self ) = @_;
-    
-    my @urls = map {$_->{"value"}} @{$self->get_service_addresses()};
-    return \@urls;
 }
 
 1;

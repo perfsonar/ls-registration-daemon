@@ -84,15 +84,15 @@ sub read_npad_config {
     return \%conf;
 }
 
-=head2 get_service_addresses ($self)
+=head2 service_locator ($self)
 
 This function returns the list of addresses for this service. This overrides
-the TCP_Service get_service_addresses function so that NPAD URLs are returned as
+the TCP_Service service_locator function so that NPAD URLs are returned as
 URLs.
 
 =cut
 
-sub get_service_addresses {
+sub service_locator {
     my ( $self ) = @_;
 
     # we override the TCP_Service addresses function so that we can generate
@@ -113,11 +113,7 @@ sub get_service_addresses {
 
         $uri .= ":" . $self->{PORT};
 
-        my %addr = ();
-        $addr{"value"} = $uri;
-        $addr{"type"}  = "url";
-
-        push @addresses, \%addr;
+        push @addresses, $uri;
     }
 
     return \@addresses;

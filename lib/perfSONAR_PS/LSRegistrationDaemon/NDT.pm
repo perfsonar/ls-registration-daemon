@@ -40,15 +40,15 @@ sub init {
     return $self->SUPER::init( $conf );
 }
 
-=head2 get_service_addresses ($self)
+=head2 service_locator ($self)
 
 This function returns the list of addresses for this service. This overrides
-the TCP_Service get_service_addresses function so that NDT URLs are returned as
+the TCP_Service service_locator function so that NDT URLs are returned as
 URLs.
 
 =cut
 
-sub get_service_addresses {
+sub service_locator {
     my ( $self ) = @_;
 
     my @addresses = ();
@@ -66,11 +66,7 @@ sub get_service_addresses {
 
         $uri .= ":" . $self->{PORT};
 
-        my %addr = ();
-        $addr{"value"} = $uri;
-        $addr{"type"}  = "url";
-
-        push @addresses, \%addr;
+        push @addresses, $uri;
     }
 
     return \@addresses;

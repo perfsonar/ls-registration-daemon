@@ -89,46 +89,16 @@ sub init {
     return $self->SUPER::init( $conf );
 }
 
-=head2 get_service_addresses ($self)
+=head2 service_locator ($self)
 
 This function returns the list of addresses for this service.
 
 =cut
 
-sub get_service_addresses {
+sub service_locator {
     my ( $self ) = @_;
 
-    my @addrs = ();
-
-    foreach my $addr ( @{ $self->{ADDRESSES} } ) {
-        my %addr = ();
-        $addr{"value"} = $addr;
-
-        # XXX: this should check if it's a hostname as well
-
-        if ( $addr =~ /:/ ) {
-            $addr{"type"} = "ipv6";
-        }
-        else {
-            $addr{"type"} = "ipv4";
-        }
-
-        push @addrs, \%addr;
-    }
-
-    return \@addrs;
-}
-
-=head2 get_node_addresses ($self)
-
-This function returns the list of addresses for the node the service is running on.
-
-=cut
-
-sub get_node_addresses {
-    my ( $self ) = @_;
-
-    return $self->get_service_addresses();
+    return $self->{ADDRESSES};
 }
 
 =head2 is_up ($self)
@@ -155,13 +125,6 @@ sub is_up {
     }
 
     return 0;
-}
-
-sub service_locator {
-    my ( $self ) = @_;
-    
-    my @urls = map {$_->{"value"}} @{$self->get_service_addresses()};
-    return \@urls;
 }
 
 1;

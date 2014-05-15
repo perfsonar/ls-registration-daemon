@@ -80,7 +80,7 @@ sub init_children {
         my $indexer_factory = perfSONAR_PS::LSRegistrationDaemon::EventTypeIndexer::EventTypeIndexerFactory->new();
         my $indexer_time_range = $self->{CONF}->{'auto_config_index_time_range'};
         $indexer_time_range = 86400 if(!$indexer_time_range); #default to 24 hours
-        $auto_url = @{$self->get_service_addresses()}[0]->{'value'} if(!$auto_url);
+        $auto_url = @{$self->service_locator()}[0] if(!$auto_url);
         if(!defined $self->{CONF}->{'auto_config_indices'}){
             $self->{CONF}->{'auto_config_indices'} = 1; #configure indices by default
         }
@@ -197,15 +197,15 @@ sub event_type {
     return "";
 }
 
-=head2 get_service_addresses ($self)
+=head2 service_locator ($self)
 
 This function returns the list of addresses for this service. This overrides
-the TCP_Service get_service_addresses function so that MA URLs are returned as
+the TCP_Service service_locator function so that MA URLs are returned as
 URLs.
 
 =cut
 
-sub get_service_addresses {
+sub service_locator {
     my ( $self ) = @_;
 
     my @addresses = ();
@@ -235,11 +235,8 @@ sub _generate_service_url {
 
         $uri .= ":" . $port if($port != $default_port);
         $uri .= $self->{CONF}->{url_path} if($self->{CONF}->{url_path});
-        my %addr = ();
-        $addr{"value"} = $uri;
-        $addr{"type"}  = "url";
 
-        push @{$addresses}, \%addr;
+        push @{$addresses}, $uri;
     }
 }
 
