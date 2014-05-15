@@ -22,9 +22,13 @@ use base 'perfSONAR_PS::LSRegistrationDaemon::TCP_Service';
 
 use Digest::MD5 qw(md5_base64);
 use perfSONAR_PS::Common qw(mergeConfig);
-use perfSONAR_PS::LSRegistrationDaemon::PSTest;
+use perfSONAR_PS::Client::Esmond::ApiFilters;
+use perfSONAR_PS::Client::Esmond::ApiConnect;
+use perfSONAR_PS::Client::Esmond::Metadata;
+use perfSONAR_PS::LSRegistrationDaemon::PSMetadata;
+use perfSONAR_PS::LSRegistrationDaemon::EventTypeIndexer::EventTypeIndexerFactory;
 
-use constant DEFAULT_PORT => 8085;
+use constant DEFAULT_PORT => 80;
 
 use fields 'MA_TESTS', 'SERVICE_EVENT_TYPES';
 
@@ -35,10 +39,16 @@ Sets the default port and provides generic service initializations
 
 sub init {
     my ( $self, $conf ) = @_;
-
-    my $port = $conf->{port};
-    if ( not $port ) {
+    
+    if(!$conf->{port} && !$conf->{http_port} && !$conf->{https_port}){
         $conf->{port} = DEFAULT_PORT;
+        $conf->{http_port} = DEFAULT_PORT;
+    }elsif(!$conf->{port} && !$conf->{http_port}){
+        $conf->{port} = $conf->{https_port};
+    }elsif(!$conf->{port}){
+        $conf->{port} = $conf->{http_port};
+    }elsif(!$conf->{http_port}){
+        $conf->{http_port} = $conf->{port};
     }
 
     return $self->SUPER::init( $conf );
@@ -54,15 +64,59 @@ sub init_children {
     
     $self->SUPER::init_children();
     
-    #create tests
+    #load tests
     my @ma_tests = ();
-    if($self->{CONF}->{test} && ref($self->{CONF}->{test}) ne 'ARRAY'){
+    if(!$self->{CONF}->{test}){
+        $self->{CONF}->{test} = [];
+    }elsif($self->{CONF}->{test} && ref($self->{CONF}->{test}) ne 'ARRAY'){
         my @tmp = ();
         push @tmp, $self->{CONF}->{test};
         $self->{CONF}->{test} = \@tmp;
     }
+    
+    #auto grab MA tests
+    if($self->{CONF}->{'auto_config_tests'}){
+        my $auto_url = $self->{CONF}->{'auto_config_url'};
+        my $indexer_factory = perfSONAR_PS::LSRegistrationDaemon::EventTypeIndexer::EventTypeIndexerFactory->new();
+        $auto_url = @{$self->get_service_addresses()}[0]->{'value'} if(!$auto_url);
+        my $filters = new perfSONAR_PS::Client::Esmond::ApiFilters(
+            ca_certificate_file => $self->{CONF}->{'auto_config_ca_file'},
+            ca_certificate_path => $self->{CONF}->{'auto_config_ca_path'},
+            verify_hostname => $self->{CONF}->{'auto_config_verify_hostname'},
+        );
+        $filters->time_range($self->{CONF}->{'auto_config_time_range'}) if($self->{CONF}->{'auto_config_time_range'});
+        my $client = new perfSONAR_PS::Client::Esmond::ApiConnect(url => $auto_url, filters => $filters );
+        my $md = $client->get_metadata();
+        my @indices = ();
+        foreach my $event_type($m->event_types()){
+            my $indexer = $indexer_factory->create_indexer($event_type);
+            next unless($indexer);
+            my $et = $m->get_event_type($event_type);
+            my $data = $et->get_data();
+            next if($et->error);
+            my $values = $indexer->create_index($data);
+            push @indices, {
+                type => $event_type,
+                value => $values
+            };
+        }
+        foreach my $m(@{$md}){
+            push @{$self->{CONF}->{test}}, {
+                'ma_locator' => $self->service_locator(),
+                'metadata_uri' => $m->uri(),
+                'source' => $m->source(),
+                'destination' => $m->destination(),
+                'measurement_agent' => $m->measurement_agent(),
+                'tool_name' => $m->tool_name(),
+                'event_type' => $m->event_types(),
+                'result_index' => \@indices,
+            };
+        } 
+        
+    }
+    
     foreach my $ma_test(@{$self->{CONF}->{test}}){
-        my $ma_test_reg = perfSONAR_PS::LSRegistrationDaemon::PSTest->new();
+        my $ma_test_reg = perfSONAR_PS::LSRegistrationDaemon::PSMetadata->new();
         if( $ma_test_reg->init(mergeConfig($self->{CONF}, $ma_test)) == 0){
             push @ma_tests, $ma_test_reg;
         }
@@ -95,65 +149,6 @@ sub service_event_type {
     my ( $self ) = @_;
 
     return $self->{'SERVICE_EVENT_TYPES'};
-}
-
-=head2 service_event_type($self)
-
-Returns the MA types
-=cut
-sub ma_type {
-    my ( $self ) = @_;
-
-    return $self->{CONF}->{ma_type};
-}
-
-=head2 service_event_type($self)
-
-Returns the MA types
-=cut
-sub ma_tests {
-    my ( $self ) = @_;
-
-    my @tests = map {$_->{"KEY"}} @{$self->{MA_TESTS}};
-    return \@tests; 
-}
-
-
-
-=head2 get_service_addresses ($self)
-
-This function returns the list of addresses for this service. This overrides
-the TCP_Service get_service_addresses function so that MA URLs are returned as
-URLs.
-
-=cut
-
-sub get_service_addresses {
-    my ( $self ) = @_;
-
-    my @addresses = ();
-
-    foreach my $addr ( @{ $self->{ADDRESSES} } ) {
-        my $uri;
-
-        $uri = "http://";
-        if ( $addr =~ /:/ ) {
-            $uri .= "[$addr]";
-        }
-        else {
-            $uri .= "$addr";
-        }
-
-        $uri .= ":" . $self->{PORT};
-
-        my %addr = ();
-        $addr{"value"} = $uri;
-        $addr{"type"}  = "url";
-
-        push @addresses, \%addr;
-    }
-
-    return \@addresses;
 }
 
 =head2 type($self)
@@ -192,13 +187,58 @@ sub event_type {
     return "";
 }
 
+=head2 get_service_addresses ($self)
+
+This function returns the list of addresses for this service. This overrides
+the TCP_Service get_service_addresses function so that MA URLs are returned as
+URLs.
+
+=cut
+
+sub get_service_addresses {
+    my ( $self ) = @_;
+
+    my @addresses = ();
+    
+    #http port addrs
+    if($self->{CONF}->{http_port} || ! $self->{CONF}->{https_port}){
+        $self->_generate_service_url('http', $self->{CONF}->{http_port}, 80, \@addresses);
+    }
+    
+    #https addrs
+    if($self->{CONF}->{https_port}){
+        $self->_generate_service_url('https', $self->{CONF}->{https_port}, 443, \@addresses);
+    }
+
+    return \@addresses;
+}
+
+sub _generate_service_url {
+    my ($self, $proto, $port, $default_port, $addresses) = @_;
+    foreach my $addr ( @{ $self->{ADDRESSES} } ) {
+        my $uri = "${proto}://";
+        if ( $addr =~ /:/ ) {
+            $uri .= "[$addr]";
+        } else {
+            $uri .= "$addr";
+        }
+
+        $uri .= ":" . $port if($port != $default_port);
+        $uri .= $self->{CONF}->{url_path} if($self->{CONF}->{url_path});
+        my %addr = ();
+        $addr{"value"} = $uri;
+        $addr{"type"}  = "url";
+
+        push @{$addresses}, \%addr;
+    }
+}
+
+
 sub build_registration {
     my ( $self ) = @_;
     
     my $service = $self->SUPER::build_registration();
     $service->setServiceEventType($self->service_event_type());
-    $service->setMAType($self->ma_type());
-    $service->setMATests($self->ma_tests());
 
     return $service;
 }
@@ -211,8 +251,6 @@ sub build_checksum {
     $checksum .= $self->_add_checksum_val($self->service_type()); 
     $checksum .= $self->_add_checksum_val($self->service_name()); 
     $checksum .= $self->_add_checksum_val($self->service_event_type()); 
-    $checksum .= $self->_add_checksum_val($self->ma_type()); 
-    $checksum .= $self->_add_checksum_val($self->ma_tests()); 
     $checksum .= $self->_add_checksum_val($self->service_version()); 
     $checksum .= $self->_add_checksum_val($self->domain());
     $checksum .= $self->_add_checksum_val($self->administrator()); 
