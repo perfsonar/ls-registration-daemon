@@ -1,4 +1,4 @@
-package perfSONAR_PS::LSRegistrationDaemon::GridFTP;
+package perfSONAR_PS::LSRegistrationDaemon::Services::GridFTP;
 
 =head1 NAME
 
@@ -18,7 +18,7 @@ use warnings;
 
 our $VERSION = 3.3;
 
-use base 'perfSONAR_PS::LSRegistrationDaemon::TCP_Service';
+use base 'perfSONAR_PS::LSRegistrationDaemon::Services::TCP_Service';
 
 use constant DEFAULT_PORT => 2811;
 

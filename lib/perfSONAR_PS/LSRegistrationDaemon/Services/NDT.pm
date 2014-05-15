@@ -1,14 +1,14 @@
-package perfSONAR_PS::LSRegistrationDaemon::Phoebus;
+package perfSONAR_PS::LSRegistrationDaemon::Services::NDT;
 
 =head1 NAME
 
-perfSONAR_PS::LSRegistrationDaemon::Phoebus - The Phoebus class provides checks for
-Phoebus services.
+perfSONAR_PS::LSRegistrationDaemon::NDT - The NDT class provides checks for
+NDT services.
 
 =head1 DESCRIPTION
 
-This module provides the request functions to check an Phoebus service, and the
-information necessary for the Base module to construct an Phoebus service
+This module provides the request functions to check an NDT service, and the
+information necessary for the Base module to construct an NDT service
 instance.
 
 =cut
@@ -18,14 +18,14 @@ use warnings;
 
 our $VERSION = 3.3;
 
-use base 'perfSONAR_PS::LSRegistrationDaemon::TCP_Service';
+use base 'perfSONAR_PS::LSRegistrationDaemon::Services::TCP_Service';
 
-use constant DEFAULT_PORT => 5006;
+use constant DEFAULT_PORT => 7123;
 
 =head2 init($self, $conf)
 
-This function doesn't yet read the Phoebus configuration file, so it simply
-sets the default port values unless it has been set in the config file.
+Since NDT doesn't have a configuration file like the others, this function
+simply sets the default port values unless it has been set in the config file.
 
 =cut
 
@@ -40,40 +40,72 @@ sub init {
     return $self->SUPER::init( $conf );
 }
 
+=head2 service_locator ($self)
+
+This function returns the list of addresses for this service. This overrides
+the TCP_Service service_locator function so that NDT URLs are returned as
+URLs.
+
+=cut
+
+sub service_locator {
+    my ( $self ) = @_;
+
+    my @addresses = ();
+
+    foreach my $addr ( @{ $self->{ADDRESSES} } ) {
+        my $uri;
+
+        $uri = "http://";
+        if ( $addr =~ /:/ ) {
+            $uri .= "[$addr]";
+        }
+        else {
+            $uri .= "$addr";
+        }
+
+        $uri .= ":" . $self->{PORT};
+
+        push @addresses, $uri;
+    }
+
+    return \@addresses;
+}
+
 =head2 type($self)
 
-Returns the human readable description of the service "Phoebus Gateway".
+Returns the human readable description of the service "NDT Server".
 
 =cut
 
 sub type {
     my ( $self ) = @_;
 
-    return "Phoebus Gateway";
+    return "NDT Server";
 }
 
 =head2 service_type($self)
 
-Returns the Phoebus service type.
+Returns the NDT service type.
 
 =cut
 
 sub service_type {
     my ( $self ) = @_;
 
-    return "phoebus";
+    return "ndt";
 }
 
 =head2 event_type($self)
 
-Returns the Phoebus event type.
+Returns the NDT event type.
 
 =cut
 
 sub event_type {
     my ( $self ) = @_;
 
-    return "http://ggf.org/ns/nmwg/tools/phoebus/1.0";
+    return "http://ggf.org/ns/nmwg/tools/ndt/1.0";
 }
 
 1;

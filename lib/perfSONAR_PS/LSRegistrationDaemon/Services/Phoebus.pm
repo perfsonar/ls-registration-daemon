@@ -1,14 +1,14 @@
-package perfSONAR_PS::LSRegistrationDaemon::REDDnet;
+package perfSONAR_PS::LSRegistrationDaemon::Services::Phoebus;
 
 =head1 NAME
 
-perfSONAR_PS::LSRegistrationDaemon::REDDnet - The REDDnet class provides checks for
-REDDnet depots.
+perfSONAR_PS::LSRegistrationDaemon::Phoebus - The Phoebus class provides checks for
+Phoebus services.
 
 =head1 DESCRIPTION
 
-This module provides the request functions to check a REDDnet depot, and the
-information necessary for the Base module to construct an REDDnet service
+This module provides the request functions to check an Phoebus service, and the
+information necessary for the Base module to construct an Phoebus service
 instance.
 
 =cut
@@ -18,13 +18,13 @@ use warnings;
 
 our $VERSION = 3.3;
 
-use base 'perfSONAR_PS::LSRegistrationDaemon::TCP_Service';
+use base 'perfSONAR_PS::LSRegistrationDaemon::Services::TCP_Service';
 
-use constant DEFAULT_PORT => 6714;
+use constant DEFAULT_PORT => 5006;
 
 =head2 init($self, $conf)
 
-This function doesn't yet read the REDDnet configuration file, so it simply
+This function doesn't yet read the Phoebus configuration file, so it simply
 sets the default port values unless it has been set in the config file.
 
 =cut
@@ -42,38 +42,38 @@ sub init {
 
 =head2 type($self)
 
-Returns the human readable description of the service "REDDnet Depot".
+Returns the human readable description of the service "Phoebus Gateway".
 
 =cut
 
 sub type {
     my ( $self ) = @_;
 
-    return "REDDnet Depot";
+    return "Phoebus Gateway";
 }
 
 =head2 service_type($self)
 
-Returns the REDDnet service type.
+Returns the Phoebus service type.
 
 =cut
 
 sub service_type {
     my ( $self ) = @_;
 
-    return "reddnet";
+    return "phoebus";
 }
 
 =head2 event_type($self)
 
-Returns the REDDnet event type.
+Returns the Phoebus event type.
 
 =cut
 
 sub event_type {
     my ( $self ) = @_;
 
-    return "http://ggf.org/ns/nmwg/tools/reddnet/1.0";
+    return "http://ggf.org/ns/nmwg/tools/phoebus/1.0";
 }
 
 1;
@@ -104,7 +104,6 @@ $Id$
 =head1 AUTHOR
 
 Aaron Brown, aaron@internet2.edu
-Jason Zurawski, zurawski@internet2.edu
 
 =head1 LICENSE
 

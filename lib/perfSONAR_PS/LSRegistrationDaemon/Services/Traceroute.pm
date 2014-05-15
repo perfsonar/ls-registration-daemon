@@ -1,4 +1,4 @@
-package perfSONAR_PS::LSRegistrationDaemon::Traceroute;
+package perfSONAR_PS::LSRegistrationDaemon::Services::Traceroute;
 
 =head1 NAME
 
@@ -18,7 +18,7 @@ use warnings;
 
 our $VERSION = 3.3;
 
-use base 'perfSONAR_PS::LSRegistrationDaemon::ICMP_Service';
+use base 'perfSONAR_PS::LSRegistrationDaemon::Services::ICMP_Service';
 
 =head2 type($self)
 
