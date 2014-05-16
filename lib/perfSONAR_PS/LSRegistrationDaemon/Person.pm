@@ -19,13 +19,11 @@ in the $conf hash.
 =cut
 sub init {
     my ( $self, $conf ) = @_;
-    if(!$conf->{full_name} && $conf->{administrator_email}){
-        $conf->{full_name} = $conf->{administrator_email};
-    }elsif(!$conf->{full_name}){
-        $self->{LOGGER}->error("full_name or administrator_email is a required configuration option");
+    unless ($conf->{name} or $conf->{email}){
+        $self->{LOGGER}->error("name or email is a required for administrator");
     	return -1;
     }
-    
+
     return $self->SUPER::init( $conf );
 }
 
@@ -37,8 +35,8 @@ sub refresh {
     #lookup host
     my $person_query = perfSONAR_PS::Client::LS::PSQueryObjects::PSPersonQueryObject->new();
     $person_query->init();
-    $person_query->setPersonName($self->name());
-    $person_query->setEmailAddresses($self->email());
+    $person_query->setPersonName($self->name()) if $self->name();
+    $person_query->setEmailAddresses($self->email()) if $self->email();
     
     my $query_client = SimpleLookupService::Client::Query->new();
     $query_client->init(server => $self->{LS_CLIENT}, query => $person_query);
@@ -77,32 +75,34 @@ sub is_up {
 sub description {
     my ( $self ) = @_;
 
-    return $self->name() . '';
+    return $self->name() if $self->name();
+
+    return $self->email();
 }
 
 sub name {
     my ( $self ) = @_;
 
-    return $self->{CONF}->{full_name};
+    return $self->{CONF}->{name};
 }
 
 
 sub email {
     my ( $self ) = @_;
 
-    return $self->{CONF}->{administrator_email};
+    return $self->{CONF}->{email};
 }
 
 sub phone_numbers {
     my ( $self ) = @_;
 
-    return $self->{CONF}->{administrator_phone};
+    return $self->{CONF}->{phone};
 }
 
 sub organization {
     my ( $self ) = @_;
 
-    return $self->{CONF}->{administrator_organization};
+    return $self->{CONF}->{organization};
 }
 
 sub site_name {

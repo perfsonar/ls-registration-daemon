@@ -22,18 +22,17 @@ use lib "$Bin/../lib";
 use perfSONAR_PS::Common;
 use perfSONAR_PS::Utils::Daemon qw/daemonize setids lockPIDFile unlockPIDFile/;
 use perfSONAR_PS::Utils::Host qw(get_ips);
-use perfSONAR_PS::LSRegistrationDaemon::Phoebus;
-use perfSONAR_PS::LSRegistrationDaemon::REDDnet;
-use perfSONAR_PS::LSRegistrationDaemon::BWCTL;
-use perfSONAR_PS::LSRegistrationDaemon::OWAMP;
-use perfSONAR_PS::LSRegistrationDaemon::MA;
-use perfSONAR_PS::LSRegistrationDaemon::NDT;
-use perfSONAR_PS::LSRegistrationDaemon::NPAD;
-use perfSONAR_PS::LSRegistrationDaemon::GridFTP;
-use perfSONAR_PS::LSRegistrationDaemon::Ping;
-use perfSONAR_PS::LSRegistrationDaemon::Traceroute;
+use perfSONAR_PS::LSRegistrationDaemon::Services::Phoebus;
+use perfSONAR_PS::LSRegistrationDaemon::Services::REDDnet;
+use perfSONAR_PS::LSRegistrationDaemon::Services::BWCTL;
+use perfSONAR_PS::LSRegistrationDaemon::Services::OWAMP;
+use perfSONAR_PS::LSRegistrationDaemon::Services::MA;
+use perfSONAR_PS::LSRegistrationDaemon::Services::NDT;
+use perfSONAR_PS::LSRegistrationDaemon::Services::NPAD;
+use perfSONAR_PS::LSRegistrationDaemon::Services::GridFTP;
+use perfSONAR_PS::LSRegistrationDaemon::Services::Ping;
+use perfSONAR_PS::LSRegistrationDaemon::Services::Traceroute;
 use perfSONAR_PS::LSRegistrationDaemon::Host;
-use perfSONAR_PS::LSRegistrationDaemon::ToolkitHost;
 use SimpleLookupService::Client::Bootstrap;
 use DBI;
 use Getopt::Long;
@@ -302,38 +301,14 @@ sub init_site {
 
         my $host_conf = mergeConfig( $site_conf, $curr_host_conf );
         
-        if ( not $host_conf->{'type'} ) {
+        my $host = perfSONAR_PS::LSRegistrationDaemon::Host->new();
+        if ( $host->init( $host_conf ) != 0 ) {
 
             # complain
-            $logger->error( "Error: No host type specified: " . $host_conf->{type} );
+            $logger->error( "Error: Couldn't initialize host watcher" );
             exit( -1 );
         }
-        elsif ( lc( $host_conf->{type} ) eq "manual" ) {
-            my $host = perfSONAR_PS::LSRegistrationDaemon::Host->new();
-            if ( $host->init( $host_conf ) != 0 ) {
-
-                # complain
-                $logger->error( "Error: Couldn't initialize host watcher" );
-                exit( -1 );
-            }
-            push @services, $host;
-        }
-        elsif ( lc( $host_conf->{type} ) eq "toolkit" ) {
-            my $host = perfSONAR_PS::LSRegistrationDaemon::ToolkitHost->new();
-            if ( $host->init( $host_conf ) != 0 ) {
-
-                # complain
-                $logger->error( "Error: Couldn't initialize toolkit host watcher" );
-                exit( -1 );
-            }
-            push @services, $host;
-        }
-        else {
-
-            # error
-            $logger->error( "Error: Unknown host type: " . $conf{type} );
-            exit( -1 );
-        }
+        push @services, $host;
     }
     
     ##

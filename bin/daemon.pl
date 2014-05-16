@@ -34,7 +34,6 @@ use perfSONAR_PS::LSRegistrationDaemon::Services::Ping;
 use perfSONAR_PS::LSRegistrationDaemon::Services::Traceroute;
 use perfSONAR_PS::LSRegistrationDaemon::Person;
 use perfSONAR_PS::LSRegistrationDaemon::Host;
-use perfSONAR_PS::LSRegistrationDaemon::ToolkitHost;
 use SimpleLookupService::Client::Bootstrap;
 use DBI;
 use Getopt::Long;
@@ -307,9 +306,10 @@ sub init_site {
     ##
     # Add person records to registration list first - We add these before hosts
     # and services so they can be referenced
-    if($site_conf->{full_name} || $site_conf->{administrator_email}){
+    if($site_conf->{administrator}) {
+        my $admin_conf = mergeConfig( $site_conf, $site_conf->{administrator} );
         my $person = perfSONAR_PS::LSRegistrationDaemon::Person->new();
-        if ( $person->init( $site_conf ) != 0 ) {
+        if ( $person->init( $admin_conf ) != 0 ) {
             $logger->error( "Error: Couldn't initialize person record" );
             exit( -1 );
         }
@@ -319,65 +319,30 @@ sub init_site {
     ##
     # Parse host configurations - We add these before services 
     # so they can be referenced
-    my $hosts_conf = $site_conf->{host};
-    if ($hosts_conf && ref( $hosts_conf ) ne "ARRAY" ) {
-        my @tmp = ();
-        push @tmp, $hosts_conf;
-        $hosts_conf = \@tmp;
-    }
-    foreach my $curr_host_conf ( @$hosts_conf ) {
+    $site_conf->{host} = [] unless $site_conf->{host};
+    $site_conf->{host} = [ $site_conf->{host} ] unless ref($site_conf->{host}) eq "ARRAY";
+
+    foreach my $curr_host_conf ( @{ $site_conf->{host} } ) {
 
         my $host_conf = mergeConfig( $site_conf, $curr_host_conf );
         
-        if ( not $host_conf->{'type'} ) {
+        my $host = perfSONAR_PS::LSRegistrationDaemon::Host->new();
+        if ( $host->init( $host_conf ) != 0 ) {
 
             # complain
-            $logger->error( "Error: No host type specified: " . $host_conf->{type} );
+            $logger->error( "Error: Couldn't initialize host watcher" );
             exit( -1 );
         }
-        elsif ( lc( $host_conf->{type} ) eq "manual" ) {
-            my $host = perfSONAR_PS::LSRegistrationDaemon::Host->new();
-            if ( $host->init( $host_conf ) != 0 ) {
-
-                # complain
-                $logger->error( "Error: Couldn't initialize host watcher" );
-                exit( -1 );
-            }
-            push @services, $host;
-        }
-        elsif ( lc( $host_conf->{type} ) eq "toolkit" ) {
-            my $host = perfSONAR_PS::LSRegistrationDaemon::ToolkitHost->new();
-            if ( $host->init( $host_conf ) != 0 ) {
-
-                # complain
-                $logger->error( "Error: Couldn't initialize toolkit host watcher" );
-                exit( -1 );
-            }
-            push @services, $host;
-        }
-        else {
-
-            # error
-            $logger->error( "Error: Unknown host type: " . $conf{type} );
-            exit( -1 );
-        }
+        push @services, $host;
     }
-    
+
     ##
     # Parse service configurations - We add these after hosts so they can 
     # reference host objects at registration time 
-    my $services_conf = $site_conf->{service};
-    if(!defined $services_conf) {
-        $services_conf = [];
-    } 
-    elsif ( ref( $services_conf ) ne "ARRAY" ) {
-        my @tmp = ();
-        push @tmp, $services_conf;
-        $services_conf = \@tmp;
-    }
+    $site_conf->{service} = [] unless $site_conf->{service};
+    $site_conf->{service} = [ $site_conf->{service} ] unless ref($site_conf->{service}) eq "ARRAY";
 
-    foreach my $curr_service_conf ( @$services_conf ) {
-
+    foreach my $curr_service_conf ( @{ $site_conf->{service} } ) {
         my $service_conf = mergeConfig( $site_conf, $curr_service_conf );
 
         if ( not $service_conf->{type} ) {
@@ -387,7 +352,7 @@ sub init_site {
             exit( -1 );
         }
         elsif ( lc( $service_conf->{type} ) eq "bwctl" ) {
-            my $service = perfSONAR_PS::LSRegistrationDaemon::BWCTL->new();
+            my $service = perfSONAR_PS::LSRegistrationDaemon::Services::BWCTL->new();
             if ( $service->init( $service_conf ) != 0 ) {
 
                 # complain
@@ -397,7 +362,7 @@ sub init_site {
             push @services, $service;
         }
         elsif ( lc( $service_conf->{type} ) eq "owamp" ) {
-            my $service = perfSONAR_PS::LSRegistrationDaemon::OWAMP->new();
+            my $service = perfSONAR_PS::LSRegistrationDaemon::Services::OWAMP->new();
             if ( $service->init( $service_conf ) != 0 ) {
 
                 # complain
@@ -407,7 +372,7 @@ sub init_site {
             push @services, $service;
         }
         elsif ( lc( $service_conf->{type} ) eq "ping" ) {
-            my $service = perfSONAR_PS::LSRegistrationDaemon::Ping->new();
+            my $service = perfSONAR_PS::LSRegistrationDaemon::Services::Ping->new();
             if ( $service->init( $service_conf ) != 0 ) {
 
                 # complain
@@ -417,7 +382,7 @@ sub init_site {
             push @services, $service;
         }
         elsif ( lc( $service_conf->{type} ) eq "traceroute" ) {
-            my $service = perfSONAR_PS::LSRegistrationDaemon::Traceroute->new();
+            my $service = perfSONAR_PS::LSRegistrationDaemon::Services::Traceroute->new();
             if ( $service->init( $service_conf ) != 0 ) {
 
                 # complain
@@ -427,7 +392,7 @@ sub init_site {
             push @services, $service;
         }
         elsif ( lc( $service_conf->{type} ) eq "phoebus" ) {
-            my $service = perfSONAR_PS::LSRegistrationDaemon::Phoebus->new();
+            my $service = perfSONAR_PS::LSRegistrationDaemon::Services::Phoebus->new();
             if ( $service->init( $service_conf ) != 0 ) {
 
                 # complain
@@ -437,7 +402,7 @@ sub init_site {
             push @services, $service;
         }
         elsif ( lc( $service_conf->{type} ) eq "reddnet" ) {
-            my $service = perfSONAR_PS::LSRegistrationDaemon::REDDnet->new();
+            my $service = perfSONAR_PS::LSRegistrationDaemon::Services::REDDnet->new();
             if ( $service->init( $service_conf ) != 0 ) {
 
                 # complain
@@ -447,7 +412,7 @@ sub init_site {
             push @services, $service;
         }
         elsif ( lc( $service_conf->{type} ) eq "ndt" ) {
-            my $service = perfSONAR_PS::LSRegistrationDaemon::NDT->new();
+            my $service = perfSONAR_PS::LSRegistrationDaemon::Services::NDT->new();
             if ( $service->init( $service_conf ) != 0 ) {
 
                 # complain
@@ -457,7 +422,7 @@ sub init_site {
             push @services, $service;
         }
         elsif ( lc( $service_conf->{type} ) eq "npad" ) {
-            my $service = perfSONAR_PS::LSRegistrationDaemon::NPAD->new();
+            my $service = perfSONAR_PS::LSRegistrationDaemon::Services::NPAD->new();
             if ( $service->init( $service_conf ) != 0 ) {
 
                 # complain
@@ -467,7 +432,7 @@ sub init_site {
             push @services, $service;
         }
         elsif ( lc( $service_conf->{type} ) eq "gridftp" ) {
-            my $service = perfSONAR_PS::LSRegistrationDaemon::GridFTP->new();
+            my $service = perfSONAR_PS::LSRegistrationDaemon::Services::GridFTP->new();
             if ( $service->init( $service_conf ) != 0 ) {
 
                 # complain
@@ -477,7 +442,7 @@ sub init_site {
             push @services, $service;
         }
         elsif ( lc( $service_conf->{type} ) eq "ma" ) {
-            my $service = perfSONAR_PS::LSRegistrationDaemon::MA->new();
+            my $service = perfSONAR_PS::LSRegistrationDaemon::Services::MA->new();
             if ( $service->init( $service_conf ) != 0 ) {
 
                 # complain
@@ -551,13 +516,13 @@ __END__
 
 L<FindBin>, L<Getopt::Long>, L<Config::General>, L<Log::Log4perl>,
 L<perfSONAR_PS::Common>, L<perfSONAR_PS::Utils::Daemon>,
-L<perfSONAR_PS::Utils::Host>, L<perfSONAR_PS::LSRegistrationDaemon::Phoebus>,
-L<perfSONAR_PS::LSRegistrationDaemon::BWCTL>,
-L<perfSONAR_PS::LSRegistrationDaemon::OWAMP>,
-L<perfSONAR_PS::LSRegistrationDaemon::NDT>,
-L<perfSONAR_PS::LSRegistrationDaemon::NPAD>,
-L<perfSONAR_PS::LSRegistrationDaemon::Ping>,
-L<perfSONAR_PS::LSRegistrationDaemon::Traceroute>
+L<perfSONAR_PS::Utils::Host>, L<perfSONAR_PS::LSRegistrationDaemon::Services::Phoebus>,
+L<perfSONAR_PS::LSRegistrationDaemon::Services::BWCTL>,
+L<perfSONAR_PS::LSRegistrationDaemon::Services::OWAMP>,
+L<perfSONAR_PS::LSRegistrationDaemon::Services::NDT>,
+L<perfSONAR_PS::LSRegistrationDaemon::Services::NPAD>,
+L<perfSONAR_PS::LSRegistrationDaemon::Services::Ping>,
+L<perfSONAR_PS::LSRegistrationDaemon::Services::Traceroute>
 
 To join the 'perfSONAR Users' mailing list, please visit:
 

@@ -14,6 +14,10 @@ in the $conf hash.
 =cut
 sub init {
     my ( $self, $conf ) = @_;
+
+    if ($conf->{autodiscover} and not $conf->{is_local}) {
+        die "Non-local host defined as 'autodiscover'";
+    }
     
     return $self->SUPER::init( $conf );
 }
@@ -29,6 +33,18 @@ This internal function generates the name to register this service as. It calls
 the object-specific function "type" when creating the function.
 
 =cut
+
+sub autodiscover {
+    my ($self) = @_;
+
+    return $self->{CONF}->{autodiscover};
+}
+
+sub is_local {
+    my ($self) = @_;
+
+    return $self->{CONF}->{is_local};
+}
 
 sub description {
     my ( $self ) = @_;

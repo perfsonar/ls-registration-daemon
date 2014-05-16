@@ -43,59 +43,22 @@ local addresses, and uses those to perform the later checks.
 sub init {
     my ( $self, $conf ) = @_;
 
-    unless ( $conf->{address} ) {
-        $self->{LOGGER}->warn( "No address specified, assuming local service" );
+    # Address initialization may happen in here
+    unless ($self->SUPER::init( $conf ) == 0) {
+        return -1;
     }
 
-    my @addresses;
+    $conf->{address} = [ $conf->{address} ] unless ref($conf->{address}) eq "ARRAY";
 
-    if ( $conf->{address} || $conf->{external_address}) {
-        @addresses = ();
-        
-        my $address = $conf->{address} ? $conf->{address} : $conf->{external_address};
-        
-        my @tmp = ();
-        if ( ref( $address ) eq "ARRAY" ) {
-            @tmp = @{ $address };
-        }
-        else {
-            push @tmp, $address;
-        }
-
-        my %addr_map = ();
-        foreach my $addr ( @tmp ) {
-            $addr_map{$addr} = 1;
-
-            #            my @addrs = resolve_address($addr);
-            #            foreach my $addr (@addrs) {
-            #                $addr_map{$addr} = 1;
-            #            }
-        }
-        @addresses = keys %addr_map;
-    }
-    else {
-        my @all_addresses = get_ips();
-        foreach my $ip (@all_addresses) {
-            if (Net::IP::ip_is_ipv6( $ip )) {
-                push @addresses, $ip;
-            }
-            else {
-                my @private_list = ( '10.0.0.0/8', '172.16.0.0/12', '192.168.0.0/16' );
-
-                next unless ($conf->{allow_internal_addresses} or not Net::CIDR::cidrlookup( $ip, @private_list ));
-
-                push @addresses, $ip;
-            }
-        }
+    unless ( scalar(@{ $conf->{address} }) > 0 ) {
+        $self->{LOGGER}->error( "No address available for service" );
+        return -1;
     }
 
-    $self->{ADDRESSES} = \@addresses;
+    $self->{ADDRESSES} = $conf->{address};
+    $self->{PORT}      = $conf->{port};
 
-    if ( $conf->{port} ) {
-        $self->{PORT} = $conf->{port};
-    }
-
-    return $self->SUPER::init( $conf );
+    return 0;
 }
 
 =head2 is_up ($self)
@@ -112,7 +75,7 @@ sub is_up {
     foreach my $addr ( @{ $self->{ADDRESSES} } ) {
         my $sock;
 
-        $self->{LOGGER}->debug( "Connecting to: " . $addr . ":" . $self->{PORT} );
+        $self->{LOGGER}->debug( "Connecting to ".$self->type()." server: " . $addr . ":" . $self->{PORT} );
 
         $sock = IO::Socket::INET6->new( PeerAddr => $addr, PeerPort => $self->{PORT}, Proto => 'tcp', Timeout => 5 );
 

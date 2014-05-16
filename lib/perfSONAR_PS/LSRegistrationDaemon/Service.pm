@@ -5,6 +5,9 @@ use warnings;
 
 use base 'perfSONAR_PS::LSRegistrationDaemon::Base';
 use Digest::MD5 qw(md5_base64);
+
+use perfSONAR_PS::Common qw(mergeConfig);
+use perfSONAR_PS::Utils::Host qw(discover_primary_address);
 use perfSONAR_PS::Client::LS::PSRecords::PSService;
 
 =head2 init($self, $conf)
@@ -14,12 +17,41 @@ in the $conf hash.
 =cut
 sub init {
     my ( $self, $conf ) = @_;
-    
+
     #Set the host to the value of external address if available
     if(!$conf->{host_name} && $conf->{external_address}){
         $conf->{host_name} = $conf->{external_address}
     }
-    
+
+    if ($conf->{autodiscover_addresses} and not $conf->{is_local}) {
+        die "Non-local service set to 'autodiscover'";
+    }
+
+    $conf->{address} = [] unless $conf->{address};
+    $conf->{address} = [ $conf->{address} ] unless ref($conf->{address}) eq "ARRAY";
+
+    if ($conf->{autodiscover_addresses}) {
+        my $addresses = discover_primary_address(
+                            interface => $conf->{if_name},
+                            allow_rfc1918 => $conf->{allow_internal_addresses},
+                            disable_ipv4_reverse_lookup => $conf->{disable_ipv4_reverse_lookup},
+                            disable_ipv6_reverse_lookup => $conf->{disable_ipv6_reverse_lookup},
+                        );
+
+        push @{ $conf->{address} }, $addresses->{primary_address} if $addresses->{primary_address};
+        push @{ $conf->{address} }, $addresses->{primary_ipv4} if $addresses->{primary_ipv4};
+        push @{ $conf->{address} }, $addresses->{primary_ipv6} if $addresses->{primary_ipv6};
+    }
+
+    # Make sure that addresses are unique
+    my %addresses = ();
+    foreach my $address (@{ $conf->{address} }) {
+        $addresses{$address} = 1;
+    }
+    my @addresses = keys %addresses;
+
+    $conf->{address} = \@addresses;
+
     return $self->SUPER::init( $conf );
 }
 
@@ -106,17 +138,14 @@ sub administrator {
     my ( $self ) = @_;
     
     #Skip host registration if value not set
-    if( !$self->{CONF}->{full_name} && !$self->{CONF}->{administrator_email} ){
+    unless ($self->{CONF}->{administrator}) {
         return '';
     }
     
     my $admin = perfSONAR_PS::LSRegistrationDaemon::Person->new();
-    my $admin_conf = { 
-        full_name => $self->{CONF}->{full_name}, 
-        administrator_email => $self->{CONF}->{administrator_email}, 
-        disabled => 1,
-        ls_key_db => $self->{CONF}->{ls_key_db}
-    };
+    my $admin_conf = mergeConfig($self->{CONF}, $self->{CONF}->{administrator});
+    $admin_conf->{disabled} = 1;
+
     if($admin->init( $admin_conf ) != 0) {
         $self->{LOGGER}->error( "Error: Couldn't create person object for service admin" );
         return '';

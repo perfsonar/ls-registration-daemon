@@ -5,6 +5,13 @@ use warnings;
 
 use base 'perfSONAR_PS::LSRegistrationDaemon::Base';
 use Digest::MD5 qw(md5_base64);
+
+use Sys::Hostname;
+use Sys::MemInfo qw(totalmem);
+
+use perfSONAR_PS::NPToolkit::Config::Version;
+use perfSONAR_PS::Utils::Host qw(get_operating_system_info get_processor_info get_tcp_configuration get_ethernet_interfaces discover_primary_address);
+
 use perfSONAR_PS::Client::LS::PSRecords::PSHost;
 use perfSONAR_PS::LSRegistrationDaemon::Interface;
 use perfSONAR_PS::Common qw(mergeConfig);
@@ -18,7 +25,72 @@ in the $conf hash.
 =cut
 sub init {
     my ( $self, $conf ) = @_;
-    
+   
+    if ($conf->{autodiscover} and not $conf->{is_local}) {
+        die "Non-local host set to 'autodiscover'";
+    }
+
+    if ($conf->{autodiscover_interfaces} and not $conf->{is_local}) {
+        die "Non-local host set to 'autodiscover_interfaces'";
+    }
+
+    if ($conf->{autodiscover}) {
+        unless ($conf->{host_name}) {
+            my $primary_address_info = discover_primary_address(
+                                           interface => $conf->{primary_interface},
+                                           allow_rfc1918 => $conf->{allow_internal_addresses},
+                                           disable_ipv4_reverse_lookup => $conf->{disable_ipv4_reverse_lookup},
+                                           disable_ipv6_reverse_lookup => $conf->{disable_ipv6_reverse_lookup},
+                                       );
+            $conf->{host_name} = $primary_address_info->{primary_address};
+        }
+
+        unless ($conf->{host_name}) {
+            $conf->{host_name} = hostname;
+        }
+
+        $conf->{memory} = (&totalmem()/(1024*1024)) . ' MB' unless $conf->{memory};
+
+        my $os_info = get_operating_system_info();
+        if ($os_info) {
+            $conf->{os_name} = $os_info->{distribution_name} unless $conf->{os_name};
+            $conf->{os_version} = $os_info->{distribution_version} unless $conf->{os_version};
+            $conf->{os_kernel} = $os_info->{os_name}." ".$os_info->{kernel_version} unless $conf->{os_kernel};
+        }
+ 
+        my $cpu_info = get_processor_info();
+        if ($cpu_info) {
+            if ($cpu_info->{speed} and not $conf->{processor_speed}) {
+                $conf->{processor_speed} = $cpu_info->{speed} . ' MHz';
+            }
+            $conf->{processor_count} = $cpu_info->{count} unless $conf->{processor_count};
+            $conf->{processor_cores} = $cpu_info->{cores} unless $conf->{processor_cores};
+        }
+   
+        my $tcp_info = get_tcp_configuration(); 
+        if ($tcp_info) {
+            $conf->{tcp_cc_algorithm} = $tcp_info->{tcp_cc_algorithm} unless $conf->{tcp_cc_algorithm};
+            if($tcp_info->{tcp_max_buffer_send} and not $conf->{tcp_max_buffer_send}){
+                $conf->{tcp_max_buffer_send} = $tcp_info->{tcp_max_buffer_send} . ' bytes';
+            }
+            if($tcp_info->{tcp_max_buffer_recv} and not $conf->{tcp_max_buffer_recv}){
+                $conf->{tcp_max_buffer_recv} = $tcp_info->{tcp_max_buffer_recv} . ' bytes';
+            }
+            if($tcp_info->{tcp_autotune_max_buffer_send} and not $conf->{tcp_autotune_max_buffer_send}){
+                $conf->{tcp_autotune_max_buffer_send} = $tcp_info->{tcp_autotune_max_buffer_send} . ' bytes';
+            }
+            if($tcp_info->{tcp_autotune_max_buffer_recv} and not $conf->{tcp_autotune_max_buffer_recv}){
+                $conf->{tcp_autotune_max_buffer_recv} = $tcp_info->{tcp_autotune_max_buffer_recv} . ' bytes';
+            }
+            $conf->{tcp_cc_backlog} = $tcp_info->{tcp_cc_backlog} unless $conf->{tcp_cc_backlog};
+        }
+
+        # Grab the Toolkit version    
+        my $toolkit_version_conf = perfSONAR_PS::NPToolkit::Config::Version->new();
+        $toolkit_version_conf->init();
+        $conf->{toolkit_version} = $toolkit_version_conf->get_version() if $toolkit_version_conf->get_version();
+    }
+ 
     return $self->SUPER::init( $conf );
 }
 
@@ -26,28 +98,38 @@ sub init {
 sub init_children {
     my ( $self ) = @_;
     $self->SUPER::init_children();
-    
+
+    $self->{CONF}->{interface} = [] unless $self->{CONF}->{interface};
+    $self->{CONF}->{interface} = [ $self->{CONF}->{interface} ] unless ref($self->{CONF}->{interface}) eq "ARRAY";
+
+
+    if ($self->{CONF}->{autodiscover_interfaces}) {
+        $self->{CONF}->{interface} = [] unless $self->{CONF}->{interface};
+        $self->{CONF}->{interface} = [ $self->{CONF}->{interface} ] unless ref($self->{CONF}->{interface}) eq "ARRAY";
+
+        # XXX: handle the external address vs. internal address stuff?
+
+        my @interfaces = get_ethernet_interfaces();
+        foreach my $interface (@interfaces) {
+            push @{ $self->{CONF}->{interface} }, {
+                autodiscover => 1,
+                if_name => $interface
+            };
+        }
+    }
+
     #create interfaces
     my @interfaces = ();
-    if($self->{CONF}->{interface} && ref($self->{CONF}->{interface}) ne 'ARRAY'){
-        my @tmp = ();
-        push @tmp, $self->{CONF}->{interface};
-        $self->{CONF}->{interface} = \@tmp;
-    }
+
     foreach my $iface(@{$self->{CONF}->{interface}}){
-        my $iface_reg = $self->create_interface($iface->{type});
+        my $iface_reg = perfSONAR_PS::LSRegistrationDaemon::Interface->new();
         $iface_reg->init(mergeConfig($self->{CONF}, $iface));
         push @interfaces, $iface_reg;
     }
-    $self->{INTERFACES} = \@interfaces;
-    
-    $self->{CHILD_REGISTRATIONS} = $self->{INTERFACES};
-}
 
-sub create_interface {
-    my ($self, $type) = @_;
-    
-    return perfSONAR_PS::LSRegistrationDaemon::Interface->new();
+    $self->{INTERFACES} = \@interfaces;
+
+    $self->{CHILD_REGISTRATIONS} = $self->{INTERFACES};
 }
 
 sub is_up {
@@ -55,6 +137,17 @@ sub is_up {
     return 1;
 }
 
+sub autodiscover {
+    my ($self) = @_;
+
+    return $self->{CONF}->{autodiscover};
+}
+
+sub is_local {
+    my ($self) = @_;
+
+    return $self->{CONF}->{is_local};
+}
 
 sub description {
     my ( $self ) = @_;
@@ -65,13 +158,19 @@ sub description {
 sub host_name {
     my ( $self ) = @_;
 
+    return $self->{CONF}->{host_name} if $self->{CONF}->{host_name};
+
     return $self->{CONF}->{name};
 }
 
 sub interface {
     my ( $self ) = @_;
-    
-    my @ifaces = map {$_->{"KEY"}} @{$self->{INTERFACES}};
+   
+    my @ifaces = ();
+    foreach my $iface (@{ $self->{INTERFACES} }) { 
+        push @ifaces, $iface->{KEY} if $iface->{KEY};
+    }
+
     return \@ifaces; 
 }
 
@@ -169,19 +268,16 @@ sub administrator {
     my ( $self ) = @_;
     
     #Skip host registration if value not set
-    if( !$self->{CONF}->{full_name} && !$self->{CONF}->{administrator_email} ){
+    unless ($self->{CONF}->{administrator}) {
         return '';
     }
     
     my $admin = perfSONAR_PS::LSRegistrationDaemon::Person->new();
-    my $admin_conf = { 
-        full_name => $self->{CONF}->{full_name}, 
-        administrator_email => $self->{CONF}->{administrator_email}, 
-        disabled => 1,
-        ls_key_db => $self->{CONF}->{ls_key_db}
-    };
+    my $admin_conf = mergeConfig($self->{CONF}, $self->{CONF}->{administrator});
+    $admin_conf->{disabled} = 1;
+
     if($admin->init( $admin_conf ) != 0) {
-        $self->{LOGGER}->error( "Error: Couldn't create person object for service admin" );
+        $self->{LOGGER}->error( "Error: Couldn't create person object for host admin" );
         return '';
     }
     
@@ -338,4 +434,5 @@ sub _add_checksum_val {
     
     return $result;
 }
+
 1;
