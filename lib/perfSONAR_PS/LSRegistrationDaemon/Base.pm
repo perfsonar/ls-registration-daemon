@@ -28,7 +28,7 @@ use Digest::MD5 qw(md5_base64);
 use SimpleLookupService::Client::Registration;
 use SimpleLookupService::Client::RecordManager;
 
-use fields 'CONF', 'STATUS', 'LOGGER', 'KEY', 'NEXT_REFRESH', 'LS_CLIENT', 'CHILD_REGISTRATIONS';
+use fields 'CONF', 'STATUS', 'LOGGER', 'KEY', 'NEXT_REFRESH', 'LS_CLIENT', 'DEPENDENCIES', 'SUBORDINATES';
 
 =head1 API
 
@@ -50,6 +50,8 @@ sub new {
     my $self = fields::new( $class );
 
     $self->{LOGGER} = get_logger( $class );
+    $self->{DEPENDENCIES} = [];
+    $self->{SUBORDINATES} = [];
 
     return $self;
 }
@@ -68,16 +70,6 @@ sub init {
     $self->{CONF}   = $conf;
     $self->{STATUS} = "UNREGISTERED";
     
-    if ($self->{CONF}->{require_site_name} and not $self->{CONF}->{site_name}) {
-    	$self->{LOGGER}->error("site_name is a required configuration option");
-    	return -1;
-    }
-
-    if ($self->{CONF}->{require_site_location} and not $self->{CONF}->{site_location}) {
-    	$self->{LOGGER}->error("site_location is a required configuration option");
-    	return -1;
-    }
-    
     #if disabled then return
     if($self->{CONF}->{disabled}){
         return 0;
@@ -94,45 +86,56 @@ sub init {
     }
     $self->{LS_CLIENT}->init( host=> $uri->host(), port=> $ls_port );
     
-    #initialize children registrations
-    $self->init_children();
-    
+    # Initialize registrations that we depend on
+    if ($self->init_dependencies()) {
+        return -1;
+    }
+
     #determine if entry that would cause 403 error, cause LS considers a duplicate
     # if its not there is nothing to do
     my $duplicate_uri = $self->find_duplicate();
-    if(!$duplicate_uri){
+    unless ($duplicate_uri){
         $self->{LOGGER}->info("No duplicate found for " . $self->description());
-        return 0;    
     }
-    $self->{LOGGER}->info("Duplicate $duplicate_uri found for " . $self->description());
+    else {
+        $self->{LOGGER}->info("Duplicate $duplicate_uri found for " . $self->description());
     
-    # if it is a duplicate, determine if anything has changed in the fields the LS
-    # does not use to compare records...
-    my ($existing_key, $next_refresh) = $self->find_key();
-    if($existing_key){
-        # no changes, so just renew
-        $self->{STATUS} = "REGISTERED";
-        $self->{KEY} = $existing_key;
-        $self->{NEXT_REFRESH} = $next_refresh;
-        $self->{LOGGER}->info("No changes, will renew " . $self->description());
-    }else{
-        #changes so unregister old one
-        $self->{LOGGER}->info("Changes, will delete " . $duplicate_uri);
-        my $ls_client = new SimpleLookupService::Client::RecordManager();
-        $ls_client->init({ server => $self->{LS_CLIENT}, record_id => $duplicate_uri });
-        $ls_client->delete();
+        # if it is a duplicate, determine if anything has changed in the fields the LS
+        # does not use to compare records...
+        my ($existing_key, $next_refresh) = $self->find_key();
+        if($existing_key){
+            # no changes, so just renew
+            $self->{STATUS} = "REGISTERED";
+            $self->{KEY} = $existing_key;
+            $self->{NEXT_REFRESH} = time; # Renew it now to make sure that the LS actually has the record
+            $self->{LOGGER}->info("No changes, will renew " . $self->description());
+        }else{
+            #changes so unregister old one
+            $self->{LOGGER}->info("Changes, will delete " . $duplicate_uri);
+            my $ls_client = new SimpleLookupService::Client::RecordManager();
+            $ls_client->init({ server => $self->{LS_CLIENT}, record_id => $duplicate_uri });
+            $ls_client->delete();
+        }
     }
+
+    # Initialize registrations that depend on us
+    if ($self->init_subordinates() != 0) {
+        return -1;
+    }
+ 
+    return 0;
+}
+
+sub init_dependencies {
+    my ( $self ) = @_;
     
     return 0;
 }
 
-sub init_children {
+sub init_subordinates {
     my ( $self ) = @_;
-    my @childRegs = ();
     
-    $self->{CHILD_REGISTRATIONS} = \@childRegs;
-    
-    return;
+    return 0;
 }
 
 =head2 refresh ($self)
@@ -156,8 +159,8 @@ sub refresh {
         return;
     }
     
-    #Refresh children first
-    foreach my $child_reg(@{$self->{CHILD_REGISTRATIONS}}){
+    # Refresh the objects we depend on first
+    foreach my $child_reg(@{$self->{DEPENDENCIES}}){
         $child_reg->refresh();
     }
     
@@ -193,7 +196,12 @@ sub refresh {
     else {
         $self->{LOGGER}->info( "Record '".$self->description()."' is down" );
     }
-    
+
+    # Refresh the objects that depend on us
+    foreach my $child_reg (@{$self->{SUBORDINATES}}){
+        $child_reg->refresh();
+    }
+
     return;
 }
 
@@ -372,16 +380,75 @@ sub build_registration {
     die "Subclass class must implement build_registration"
 }
 
-sub build_checksum {
+sub checksum_fields {
     my ( $self ) = @_;
     
-    die "Subclass class must implement build_checksum"
+    die "Subclass class must implement checksum_fields"
+}
+
+sub duplicate_checksum_fields {
+    my ( $self ) = @_;
+    
+    die "Subclass class must implement duplicate_checksum_fields"
+}
+
+sub checksum_prefix {
+    my ( $self ) = @_;
+    
+    die "Subclass class must implement checksum_prefix"
+}
+
+sub build_checksum {
+    my ( $self ) = @_;
+
+    my $checksum = $self->checksum_prefix()."::";
+    foreach my $field (@{ $self->checksum_fields() }) {
+        $checksum .= $self->_add_checksum_val($self->$field());
+    }
+
+    $self->{LOGGER}->info("Checksum prior to md5 is " . $checksum);
+
+    $checksum = md5_base64($checksum);
+
+    $self->{LOGGER}->info("Checksum is " . $checksum);
+
+    return $checksum;
 }
 
 sub build_duplicate_checksum {
     my ( $self ) = @_;
     
-    die "Subclass class must implement build_duplicate_checksum"
+    my $checksum = $self->checksum_prefix()."::";
+    foreach my $field (@{ $self->duplicate_checksum_fields() }) {
+        $checksum .= $self->_add_checksum_val($self->$field());
+    }
+
+    $self->{LOGGER}->info("Duplicate checksum prior to md5 is " . $checksum);
+
+    $checksum = md5_base64($checksum);
+
+    $self->{LOGGER}->info("Duplicate checksum is " . $checksum);
+
+    return $checksum;
+
+}
+
+sub _add_checksum_val {
+    my ($self, $val) = @_;
+    
+    my $result = '';
+    
+    if(!defined $val){
+        return $result;
+    }
+    
+    if(ref($val) eq 'ARRAY'){
+        $result = join ',', sort @{$val};
+    }else{
+        $result = $val;
+    }
+    
+    return $result;
 }
 
 1;

@@ -22,16 +22,6 @@ use lib "$Bin/../lib";
 use perfSONAR_PS::Common;
 use perfSONAR_PS::Utils::Daemon qw/daemonize setids lockPIDFile unlockPIDFile/;
 use perfSONAR_PS::Utils::Host qw(get_ips);
-use perfSONAR_PS::LSRegistrationDaemon::Services::Phoebus;
-use perfSONAR_PS::LSRegistrationDaemon::Services::REDDnet;
-use perfSONAR_PS::LSRegistrationDaemon::Services::BWCTL;
-use perfSONAR_PS::LSRegistrationDaemon::Services::OWAMP;
-use perfSONAR_PS::LSRegistrationDaemon::Services::MA;
-use perfSONAR_PS::LSRegistrationDaemon::Services::NDT;
-use perfSONAR_PS::LSRegistrationDaemon::Services::NPAD;
-use perfSONAR_PS::LSRegistrationDaemon::Services::GridFTP;
-use perfSONAR_PS::LSRegistrationDaemon::Services::Ping;
-use perfSONAR_PS::LSRegistrationDaemon::Services::Traceroute;
 use perfSONAR_PS::LSRegistrationDaemon::Person;
 use perfSONAR_PS::LSRegistrationDaemon::Host;
 use SimpleLookupService::Client::Bootstrap;
@@ -315,7 +305,7 @@ sub init_site {
         }
         push @services, $person;
     }
-    
+
     ##
     # Parse host configurations - We add these before services 
     # so they can be referenced
@@ -334,129 +324,6 @@ sub init_site {
             exit( -1 );
         }
         push @services, $host;
-    }
-
-    ##
-    # Parse service configurations - We add these after hosts so they can 
-    # reference host objects at registration time 
-    $site_conf->{service} = [] unless $site_conf->{service};
-    $site_conf->{service} = [ $site_conf->{service} ] unless ref($site_conf->{service}) eq "ARRAY";
-
-    foreach my $curr_service_conf ( @{ $site_conf->{service} } ) {
-        my $service_conf = mergeConfig( $site_conf, $curr_service_conf );
-
-        if ( not $service_conf->{type} ) {
-
-            # complain
-            $logger->error( "Error: No service type specified" );
-            exit( -1 );
-        }
-        elsif ( lc( $service_conf->{type} ) eq "bwctl" ) {
-            my $service = perfSONAR_PS::LSRegistrationDaemon::Services::BWCTL->new();
-            if ( $service->init( $service_conf ) != 0 ) {
-
-                # complain
-                $logger->error( "Error: Couldn't initialize bwctl watcher" );
-                exit( -1 );
-            }
-            push @services, $service;
-        }
-        elsif ( lc( $service_conf->{type} ) eq "owamp" ) {
-            my $service = perfSONAR_PS::LSRegistrationDaemon::Services::OWAMP->new();
-            if ( $service->init( $service_conf ) != 0 ) {
-
-                # complain
-                $logger->error( "Error: Couldn't initialize owamp watcher" );
-                exit( -1 );
-            }
-            push @services, $service;
-        }
-        elsif ( lc( $service_conf->{type} ) eq "ping" ) {
-            my $service = perfSONAR_PS::LSRegistrationDaemon::Services::Ping->new();
-            if ( $service->init( $service_conf ) != 0 ) {
-
-                # complain
-                $logger->error( "Error: Couldn't initialize ping watcher" );
-                exit( -1 );
-            }
-            push @services, $service;
-        }
-        elsif ( lc( $service_conf->{type} ) eq "traceroute" ) {
-            my $service = perfSONAR_PS::LSRegistrationDaemon::Services::Traceroute->new();
-            if ( $service->init( $service_conf ) != 0 ) {
-
-                # complain
-                $logger->error( "Error: Couldn't initialize traceroute watcher" );
-                exit( -1 );
-            }
-            push @services, $service;
-        }
-        elsif ( lc( $service_conf->{type} ) eq "phoebus" ) {
-            my $service = perfSONAR_PS::LSRegistrationDaemon::Services::Phoebus->new();
-            if ( $service->init( $service_conf ) != 0 ) {
-
-                # complain
-                $logger->error( "Error: Couldn't initialize Phoebus watcher" );
-                exit( -1 );
-            }
-            push @services, $service;
-        }
-        elsif ( lc( $service_conf->{type} ) eq "reddnet" ) {
-            my $service = perfSONAR_PS::LSRegistrationDaemon::Services::REDDnet->new();
-            if ( $service->init( $service_conf ) != 0 ) {
-
-                # complain
-                $logger->error( "Error: Couldn't initialize REDDnet watcher" );
-                exit( -1 );
-            }
-            push @services, $service;
-        }
-        elsif ( lc( $service_conf->{type} ) eq "ndt" ) {
-            my $service = perfSONAR_PS::LSRegistrationDaemon::Services::NDT->new();
-            if ( $service->init( $service_conf ) != 0 ) {
-
-                # complain
-                $logger->error( "Error: Couldn't initialize NDT watcher" );
-                exit( -1 );
-            }
-            push @services, $service;
-        }
-        elsif ( lc( $service_conf->{type} ) eq "npad" ) {
-            my $service = perfSONAR_PS::LSRegistrationDaemon::Services::NPAD->new();
-            if ( $service->init( $service_conf ) != 0 ) {
-
-                # complain
-                $logger->error( "Error: Couldn't initialize NPAD watcher" );
-                exit( -1 );
-            }
-            push @services, $service;
-        }
-        elsif ( lc( $service_conf->{type} ) eq "gridftp" ) {
-            my $service = perfSONAR_PS::LSRegistrationDaemon::Services::GridFTP->new();
-            if ( $service->init( $service_conf ) != 0 ) {
-
-                # complain
-                $logger->error( "Error: Couldn't initialize GridFTP watcher" );
-                exit( -1 );
-            }
-            push @services, $service;
-        }
-        elsif ( lc( $service_conf->{type} ) eq "ma" ) {
-            my $service = perfSONAR_PS::LSRegistrationDaemon::Services::MA->new();
-            if ( $service->init( $service_conf ) != 0 ) {
-
-                # complain
-                $logger->error( "Error: Couldn't initialize MA watcher" );
-                exit( -1 );
-            }
-            push @services, $service;
-        }
-        else {
-
-            # error
-            $logger->error( "Error: Unknown service type: " . $conf{type} );
-            exit( -1 );
-        }
     }
 
     return \@services;

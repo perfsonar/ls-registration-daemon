@@ -110,6 +110,17 @@ sub result_index {
     return $self->{CONF}->{result_index};
 }
 
+sub result_index_values {
+    my ( $self ) = @_;
+
+    my @results = ();
+    foreach my $index(sort {$a->{type} <=> $b->{type}} @{$self->result_index()}){
+        push @results, $index->{value};
+    }
+
+    return \@results;
+}
+
 sub build_registration {
     my ( $self ) = @_;
     
@@ -131,66 +142,28 @@ sub build_registration {
     return $psmd;
 }
 
-sub build_checksum {
-    my ( $self ) = @_;
-    
-    my $checksum = 'psmetadata::';
-    $checksum .= $self->_add_checksum_val($self->ma_locator()); 
-    $checksum .= $self->_add_checksum_val($self->metadata_uri()); 
-    $checksum .= $self->_add_checksum_val($self->source()); 
-    $checksum .= $self->_add_checksum_val($self->destination()); 
-    $checksum .= $self->_add_checksum_val($self->measurement_agent()); 
-    $checksum .= $self->_add_checksum_val($self->tool_name()); 
-    $checksum .= $self->_add_checksum_val($self->event_type()); 
-    $checksum .= $self->_add_checksum_val($self->result_index()); 
-    $checksum .= $self->_add_checksum_val($self->domain()); 
-    $checksum .= $self->_add_checksum_val($self->communities()); 
-    foreach my $index(sort {$a->{type} <=> $b->{type}} @{$self->result_index()}){
-        $checksum .= $self->_add_checksum_val($index->{value});
-    }
-    $checksum = md5_base64($checksum);
-    $self->{LOGGER}->info("Checksum is " . $checksum);
-    
-    return  $checksum;
+sub checksum_prefix {
+    return "psmetadata";
 }
 
-sub build_duplicate_checksum {
-    my ( $self ) = @_;
-    
-    my $checksum = 'psmetadata::';
-    $checksum .= $self->_add_checksum_val($self->ma_locator()); 
-    $checksum .= $self->_add_checksum_val($self->metadata_uri()); 
-    $checksum .= $self->_add_checksum_val($self->source()); 
-    $checksum .= $self->_add_checksum_val($self->destination()); 
-    $checksum .= $self->_add_checksum_val($self->measurement_agent()); 
-    $checksum .= $self->_add_checksum_val($self->tool_name()); 
-    $checksum .= $self->_add_checksum_val($self->event_type());
-    $checksum .= $self->_add_checksum_val($self->result_index()); 
-    $checksum .= $self->_add_checksum_val($self->domain()); 
-    $checksum .= $self->_add_checksum_val($self->communities()); 
-    foreach my $index(sort {$a->{type} <=> $b->{type}} @{$self->result_index()}){
-        $checksum .= $self->_add_checksum_val($index->{value});
-    }
-    $checksum = md5_base64($checksum);
-    
-    return $checksum;
+sub checksum_fields{
+    return [
+        "ma_locator",
+        "metadata_uri",
+        "source",
+        "destination",
+        "measurement_agent",
+        "tool_name",
+        "event_type",
+        "domain",
+        "communities",
+        "result_index_values",
+    ];
 }
 
-sub _add_checksum_val {
-    my ($self, $val) = @_;
-    
-    my $result = '';
-    
-    if(!defined $val){
-        return $result;
-    }
-    
-    if(ref($val) eq 'ARRAY'){
-        $result = join ',', sort @{$val};
-    }else{
-        $result = $val;
-    }
-    
-    return $result;
+sub duplicate_checksum_fields {
+    my ($self) = @_;
+    return $self->checksum_fields();
 }
+
 1;

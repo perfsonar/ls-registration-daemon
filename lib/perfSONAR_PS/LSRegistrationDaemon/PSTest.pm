@@ -40,9 +40,9 @@ sub init {
     return $self->SUPER::init( $conf );
 }
 
-sub init_children {
+sub init_dependencies {
     my ( $self ) = @_;
-    $self->SUPER::init_children();
+
     my @child_registrations = ();
     
     #determine if source already registered
@@ -65,7 +65,9 @@ sub init_children {
         push @child_registrations, $self->{DESTINATION};
     }
 
-    $self->{CHILD_REGISTRATIONS} = \@child_registrations;
+    $self->{DEPENDENCIES} = \@child_registrations;
+
+    return 0;
 }
 
 
@@ -155,48 +157,24 @@ sub build_registration {
     return $pstest;
 }
 
-sub build_checksum {
-    my ( $self ) = @_;
-    
-    my $checksum = 'pstest::';
-    $checksum .= $self->_add_checksum_val($self->test_name()); 
-    $checksum .= $self->_add_checksum_val($self->event_type()); 
-    $checksum .= $self->_add_checksum_val($self->source_key()); 
-    $checksum .= $self->_add_checksum_val($self->destination_key()); 
-    
-    $checksum = md5_base64($checksum);
-    $self->{LOGGER}->info("Checksum is " . $checksum);
-    
-    return  $checksum;
+sub checksum_prefix {
+    return "pstest";
 }
 
-sub build_duplicate_checksum {
-    my ( $self ) = @_;
-    
-    my $checksum = 'pstest::';
-    $checksum .= $self->_add_checksum_val($self->test_name()); 
-    $checksum .= $self->_add_checksum_val($self->event_type()); 
-    
-    $checksum = md5_base64($checksum);
-    
-    return $checksum;
+sub checksum_fields {
+    return [
+        "test_name",
+        "event_type",
+        "source_key",
+        "destination_key",
+    ];    
 }
 
-sub _add_checksum_val {
-    my ($self, $val) = @_;
-    
-    my $result = '';
-    
-    if(!defined $val){
-        return $result;
-    }
-    
-    if(ref($val) eq 'ARRAY'){
-        $result = join ',', sort @{$val};
-    }else{
-        $result = $val;
-    }
-    
-    return $result;
+sub duplicate_checksum_fields {
+    return [
+        "test_name",
+        "event_type",
+    ];    
 }
+
 1;

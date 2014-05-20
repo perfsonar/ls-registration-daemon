@@ -10,6 +10,8 @@ use perfSONAR_PS::Common qw(mergeConfig);
 use perfSONAR_PS::Utils::Host qw(discover_primary_address);
 use perfSONAR_PS::Client::LS::PSRecords::PSService;
 
+use fields 'HOST';
+
 =head2 init($self, $conf)
 
 This function initializes the object according to the configuration options set
@@ -18,21 +20,18 @@ in the $conf hash.
 sub init {
     my ( $self, $conf ) = @_;
 
-    #Set the host to the value of external address if available
-    if(!$conf->{host_name} && $conf->{external_address}){
-        $conf->{host_name} = $conf->{external_address}
-    }
-
     if ($conf->{autodiscover_addresses} and not $conf->{is_local}) {
         die "Non-local service set to 'autodiscover'";
     }
+
+    $self->{HOST} = $conf->{host};
 
     $conf->{address} = [] unless $conf->{address};
     $conf->{address} = [ $conf->{address} ] unless ref($conf->{address}) eq "ARRAY";
 
     if ($conf->{autodiscover_addresses}) {
         my $addresses = discover_primary_address(
-                            interface => $conf->{if_name},
+                            interface => $conf->{primary_interface},
                             allow_rfc1918 => $conf->{allow_internal_addresses},
                             disable_ipv4_reverse_lookup => $conf->{disable_ipv4_reverse_lookup},
                             disable_ipv6_reverse_lookup => $conf->{disable_ipv6_reverse_lookup},
@@ -95,24 +94,11 @@ sub description {
 
 sub service_host {
     my ( $self ) = @_;
-    
-    #Skip host registration if value not set
-    if(!$self->{CONF}->{host_name}  || ($self->{CONF}->{host_name} eq 'disabled') ){
-        return '';
-    }
-    
-    my $host = perfSONAR_PS::LSRegistrationDaemon::Host->new();
-    my $host_conf = { 
-        name => $self->{CONF}->{host_name}, 
-        disabled => 1,
-        ls_key_db => $self->{CONF}->{ls_key_db}
-    };
-    if($host->init( $host_conf ) != 0) {
-        $self->{LOGGER}->error( "Error: Couldn't create host object" );
-        return '';
-    }
-    
-    return $host->find_duplicate();
+
+    my $key = $self->{HOST}->{KEY};
+    $key = "" unless $key;
+ 
+    return $key;
 }
 
 sub service_version {
@@ -228,61 +214,36 @@ sub build_registration {
     return $service;
 }
 
-sub build_checksum {
-    my ( $self ) = @_;
-    
-    my $checksum = 'service::'; #add prefix to distinguish from other types
-    $checksum .= $self->_add_checksum_val($self->service_locator()); 
-    $checksum .= $self->_add_checksum_val($self->service_type()); 
-    $checksum .= $self->_add_checksum_val($self->service_name()); 
-    $checksum .= $self->_add_checksum_val($self->service_version()); 
-    $checksum .= $self->_add_checksum_val($self->service_host());
-    $checksum .= $self->_add_checksum_val($self->domain());
-    $checksum .= $self->_add_checksum_val($self->administrator()); 
-    $checksum .= $self->_add_checksum_val($self->site_name());
-    $checksum .= $self->_add_checksum_val($self->communities());
-    $checksum .= $self->_add_checksum_val($self->city());
-    $checksum .= $self->_add_checksum_val($self->region());
-    $checksum .= $self->_add_checksum_val($self->country());
-    $checksum .= $self->_add_checksum_val($self->zip_code());
-    $checksum .= $self->_add_checksum_val($self->latitude());
-    $checksum .= $self->_add_checksum_val($self->longitude());
-    
-    $checksum = md5_base64($checksum);
-    $self->{LOGGER}->info("Checksum is " . $checksum);
-    
-    return  $checksum;
+sub checksum_prefix {
+    return "service";
 }
 
-sub build_duplicate_checksum {
-    my ( $self ) = @_;
-    
-    my $checksum = 'service::';#add prefix to distinguish from other types
-    $checksum .= $self->_add_checksum_val($self->service_locator()); 
-    $checksum .= $self->_add_checksum_val($self->service_type());  
-    $checksum .= $self->_add_checksum_val($self->domain());
-    
-    $checksum = md5_base64($checksum);
-    $self->{LOGGER}->info("Duplicate checksum is " . $checksum);
-    
-    return  $checksum;
+sub checksum_fields {
+    return [
+        "service_locator",
+        "service_type",
+        "service_name",
+        "service_version",
+        "service_host",
+        "domain",
+        "administrator",
+        "site_name",
+        "communities",
+        "city",
+        "region",
+        "country",
+        "zip_code",
+        "latitude",
+        "longitude",
+    ];
 }
 
-sub _add_checksum_val {
-    my ($self, $val) = @_;
-    
-    my $result = '';
-    
-    if(!defined $val){
-        return $result;
-    }
-    
-    if(ref($val) eq 'ARRAY'){
-        $result = join ',', sort @{$val};
-    }else{
-        $result = $val;
-    }
-    
-    return $result;
+sub duplicate_checksum_fields {
+    return [
+        "service_locator",
+        "service_type",
+        "domain",
+    ];
 }
+
 1;

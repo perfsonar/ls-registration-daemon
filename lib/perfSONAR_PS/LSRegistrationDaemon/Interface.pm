@@ -7,6 +7,8 @@ use base 'perfSONAR_PS::LSRegistrationDaemon::Base';
 use Digest::MD5 qw(md5_base64);
 use perfSONAR_PS::Client::LS::PSRecords::PSInterface;
 
+use perfSONAR_PS::Utils::Host qw(discover_primary_address);
+
 =head2 init($self, $conf)
 
 This function initializes the object according to the configuration options set
@@ -18,7 +20,40 @@ sub init {
     if ($conf->{autodiscover} and not $conf->{is_local}) {
         die "Non-local host defined as 'autodiscover'";
     }
-    
+
+    if ($conf->{autodiscover} and not $conf->{if_name}) {
+        die "No interface name specified for 'autodiscover' interface";
+    }
+
+    $conf->{address} = [] unless $conf->{address};
+    $conf->{address} = [ $conf->{address} ] unless ref($conf->{address}) eq "ARRAY";
+
+    if ($conf->{autodiscover}) {
+        my $addresses = discover_primary_address(
+                            interface => $conf->{if_name},
+                            allow_rfc1918 => $conf->{allow_internal_addresses},
+                            disable_ipv4_reverse_lookup => $conf->{disable_ipv4_reverse_lookup},
+                            disable_ipv6_reverse_lookup => $conf->{disable_ipv6_reverse_lookup},
+                        );
+
+        push @{ $conf->{address} }, $addresses->{primary_address} if $addresses->{primary_address};
+        push @{ $conf->{address} }, $addresses->{primary_ipv4} if $addresses->{primary_ipv4};
+        push @{ $conf->{address} }, $addresses->{primary_ipv6} if $addresses->{primary_ipv6};
+    }
+
+    # Make sure that addresses are unique
+    my %addresses = ();
+    foreach my $address (@{ $conf->{address} }) {
+        $addresses{$address} = 1;
+    }
+    my @addresses = keys %addresses;
+
+    $conf->{address} = \@addresses;
+
+    unless (scalar(@{ $conf->{address} }) > 0) {
+        die("No address for interface ".$conf->{if_name});
+    }
+
     return $self->SUPER::init( $conf );
 }
 
@@ -125,52 +160,30 @@ sub build_registration {
     return $iface;
 }
 
-sub build_checksum {
-    my ( $self ) = @_;
-    
-    my $checksum = 'interface::';
-    $checksum .= $self->_add_checksum_val($self->if_name()); 
-    $checksum .= $self->_add_checksum_val($self->address()); 
-    $checksum .= $self->_add_checksum_val($self->subnet()); 
-    $checksum .= $self->_add_checksum_val($self->capacity()); 
-    $checksum .= $self->_add_checksum_val($self->mac_address());
-    $checksum .= $self->_add_checksum_val($self->domain());
-    $checksum .= $self->_add_checksum_val($self->mtu());
-    $checksum .= $self->_add_checksum_val($self->if_type());
-    $checksum .= $self->_add_checksum_val($self->urn());
-    
-    $checksum = md5_base64($checksum);
-    $self->{LOGGER}->info("Checksum is " . $checksum);
-    
-    return  $checksum;
+
+sub checksum_prefix {
+    return "interface";
 }
 
-sub build_duplicate_checksum {
-    my ( $self ) = @_;
-    
-    my $checksum = 'interface::';
-    $checksum .= $self->_add_checksum_val($self->if_name()); 
-    $checksum .= $self->_add_checksum_val($self->address()); 
-    $checksum = md5_base64($checksum);
-    
-    return $checksum;
+sub checksum_fields {
+    return [
+        "if_name",
+        "address",
+        "subnet",
+        "capacity",
+        "mac_address",
+        "domain",
+        "mtu",
+        "if_type",
+        "urn",
+    ];
 }
 
-sub _add_checksum_val {
-    my ($self, $val) = @_;
-    
-    my $result = '';
-    
-    if(!defined $val){
-        return $result;
-    }
-    
-    if(ref($val) eq 'ARRAY'){
-        $result = join ',', sort @{$val};
-    }else{
-        $result = $val;
-    }
-    
-    return $result;
+sub duplicate_checksum_fields {
+    return [
+        "if_name",
+        "address",
+    ];
 }
+
 1;

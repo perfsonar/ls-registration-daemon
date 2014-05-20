@@ -16,7 +16,20 @@ use perfSONAR_PS::Client::LS::PSRecords::PSHost;
 use perfSONAR_PS::LSRegistrationDaemon::Interface;
 use perfSONAR_PS::Common qw(mergeConfig);
 
-use fields 'INTERFACES';
+use perfSONAR_PS::LSRegistrationDaemon::Person;
+
+use perfSONAR_PS::LSRegistrationDaemon::Services::Phoebus;
+use perfSONAR_PS::LSRegistrationDaemon::Services::REDDnet;
+use perfSONAR_PS::LSRegistrationDaemon::Services::BWCTL;
+use perfSONAR_PS::LSRegistrationDaemon::Services::OWAMP;
+use perfSONAR_PS::LSRegistrationDaemon::Services::MA;
+use perfSONAR_PS::LSRegistrationDaemon::Services::NDT;
+use perfSONAR_PS::LSRegistrationDaemon::Services::NPAD;
+use perfSONAR_PS::LSRegistrationDaemon::Services::GridFTP;
+use perfSONAR_PS::LSRegistrationDaemon::Services::Ping;
+use perfSONAR_PS::LSRegistrationDaemon::Services::Traceroute;
+
+use fields 'INTERFACES', 'SERVICES';
 
 =head2 init($self, $conf)
 
@@ -95,9 +108,8 @@ sub init {
 }
 
 
-sub init_children {
+sub init_dependencies {
     my ( $self ) = @_;
-    $self->SUPER::init_children();
 
     $self->{CONF}->{interface} = [] unless $self->{CONF}->{interface};
     $self->{CONF}->{interface} = [ $self->{CONF}->{interface} ] unless ref($self->{CONF}->{interface}) eq "ARRAY";
@@ -108,12 +120,27 @@ sub init_children {
         $self->{CONF}->{interface} = [ $self->{CONF}->{interface} ] unless ref($self->{CONF}->{interface}) eq "ARRAY";
 
         # XXX: handle the external address vs. internal address stuff?
+        $self->{LOGGER}->debug("Adding interface");
 
         my @interfaces = get_ethernet_interfaces();
         foreach my $interface (@interfaces) {
+            my @external_addresses = ();
+            my $addresses = discover_primary_address(
+                                interface => $interface,
+                                allow_rfc1918 => $self->{CONF}->{allow_internal_addresses},
+                                disable_ipv4_reverse_lookup => $self->{CONF}->{disable_ipv4_reverse_lookup},
+                                disable_ipv6_reverse_lookup => $self->{CONF}->{disable_ipv6_reverse_lookup},
+                            );
+
+            push @external_addresses, $addresses->{primary_address} if $addresses->{primary_address};
+            push @external_addresses, $addresses->{primary_ipv4} if $addresses->{primary_ipv4};
+            push @external_addresses, $addresses->{primary_ipv6} if $addresses->{primary_ipv6};
+
+            next unless scalar(@external_addresses) > 0;
+
             push @{ $self->{CONF}->{interface} }, {
-                autodiscover => 1,
-                if_name => $interface
+                if_name => $interface,
+                address => \@external_addresses
             };
         }
     }
@@ -122,6 +149,7 @@ sub init_children {
     my @interfaces = ();
 
     foreach my $iface(@{$self->{CONF}->{interface}}){
+        $self->{LOGGER}->debug("Creating new interface object");
         my $iface_reg = perfSONAR_PS::LSRegistrationDaemon::Interface->new();
         $iface_reg->init(mergeConfig($self->{CONF}, $iface));
         push @interfaces, $iface_reg;
@@ -129,7 +157,98 @@ sub init_children {
 
     $self->{INTERFACES} = \@interfaces;
 
-    $self->{CHILD_REGISTRATIONS} = $self->{INTERFACES};
+    $self->{DEPENDENCIES} = $self->{INTERFACES};
+
+    return 0;
+}
+
+sub init_subordinates {
+    my ($self) = @_;
+
+    # Parse service configurations
+    
+    $self->{CONF}->{service} = [] unless $self->{CONF}->{service};
+    $self->{CONF}->{service} = [ $self->{CONF}->{service} ] unless ref($self->{CONF}->{service}) eq "ARRAY";
+
+    my @services = ();
+
+    foreach my $curr_service_conf ( @{ $self->{CONF}->{service} } ) {
+        my $service_conf = mergeConfig( $self->{CONF}, $curr_service_conf );
+
+        if ($service_conf->{inherits}) {
+            unless ($service_conf->{service_template} and 
+                       $service_conf->{service_template}->{$service_conf->{inherits}}
+                   ) {
+                $self->{LOGGER}->error( "Error: Service template '".$service_conf->{inherits}."' not found" );
+                return -1;
+            }
+            my $template = $service_conf->{service_template}->{$service_conf->{inherits}};
+
+            $service_conf = mergeConfig( $template, $service_conf );
+        }
+
+        # Set the host parameter
+        $service_conf->{host} = $self;
+
+        unless ( $service_conf->{type} ) {
+
+            # complain
+            $self->{LOGGER}->error( "Error: No service type specified" );
+            return -1;
+        }
+
+        my $service;
+
+        if ( lc( $service_conf->{type} ) eq "bwctl" ) {
+            $service = perfSONAR_PS::LSRegistrationDaemon::Services::BWCTL->new();
+        }
+        elsif ( lc( $service_conf->{type} ) eq "owamp" ) {
+            $service = perfSONAR_PS::LSRegistrationDaemon::Services::OWAMP->new();
+        }
+        elsif ( lc( $service_conf->{type} ) eq "ping" ) {
+            $service = perfSONAR_PS::LSRegistrationDaemon::Services::Ping->new();
+        }
+        elsif ( lc( $service_conf->{type} ) eq "traceroute" ) {
+            $service = perfSONAR_PS::LSRegistrationDaemon::Services::Traceroute->new();
+        }
+        elsif ( lc( $service_conf->{type} ) eq "phoebus" ) {
+            $service = perfSONAR_PS::LSRegistrationDaemon::Services::Phoebus->new();
+        }
+        elsif ( lc( $service_conf->{type} ) eq "reddnet" ) {
+            $service = perfSONAR_PS::LSRegistrationDaemon::Services::REDDnet->new();
+        }
+        elsif ( lc( $service_conf->{type} ) eq "ndt" ) {
+            $service = perfSONAR_PS::LSRegistrationDaemon::Services::NDT->new();
+        }
+        elsif ( lc( $service_conf->{type} ) eq "npad" ) {
+            $service = perfSONAR_PS::LSRegistrationDaemon::Services::NPAD->new();
+        }
+        elsif ( lc( $service_conf->{type} ) eq "gridftp" ) {
+            $service = perfSONAR_PS::LSRegistrationDaemon::Services::GridFTP->new();
+        }
+        elsif ( lc( $service_conf->{type} ) eq "ma" ) {
+            $service = perfSONAR_PS::LSRegistrationDaemon::Services::MA->new();
+        }
+        else {
+            # error
+            $self->{LOGGER}->error( "Error: Unknown service type: " . $service_conf->{type} );
+            return -1;
+        }
+
+        if ( $service->init( $service_conf ) != 0 ) {
+            # complain
+            $self->{LOGGER}->error( "Error: Couldn't initialize service type: ".$service->type());
+            return -1;
+        }
+
+        push @services, $service;
+    }
+
+    $self->{SERVICES} = \@services;
+
+    $self->{SUBORDINATES} = $self->{SERVICES};
+
+    return 0;
 }
 
 sub is_up {
@@ -370,69 +489,45 @@ sub build_registration {
     return $service;
 }
 
-sub build_checksum {
-    my ( $self ) = @_;
-    
-    my $checksum = 'host::';
-    $checksum .= $self->_add_checksum_val($self->host_name()); 
-    $checksum .= $self->_add_checksum_val($self->interface()); 
-    $checksum .= $self->_add_checksum_val($self->memory()); 
-    $checksum .= $self->_add_checksum_val($self->processor_speed()); 
-    $checksum .= $self->_add_checksum_val($self->processor_count()); 
-    $checksum .= $self->_add_checksum_val($self->processor_cores());
-    $checksum .= $self->_add_checksum_val($self->os_name());
-    $checksum .= $self->_add_checksum_val($self->os_version());
-    $checksum .= $self->_add_checksum_val($self->os_kernel());
-    $checksum .= $self->_add_checksum_val($self->tcp_cc_algorithm());
-    $checksum .= $self->_add_checksum_val($self->tcp_max_buffer_send());
-    $checksum .= $self->_add_checksum_val($self->tcp_max_buffer_recv());
-    $checksum .= $self->_add_checksum_val($self->tcp_autotune_max_buffer_send());
-    $checksum .= $self->_add_checksum_val($self->tcp_autotune_max_buffer_recv());
-    $checksum .= $self->_add_checksum_val($self->tcp_max_backlog());
-    $checksum .= $self->_add_checksum_val($self->domain());
-    $checksum .= $self->_add_checksum_val($self->toolkit_version());
-    $checksum .= $self->_add_checksum_val($self->administrator()); 
-    $checksum .= $self->_add_checksum_val($self->site_name());
-    $checksum .= $self->_add_checksum_val($self->city());
-    $checksum .= $self->_add_checksum_val($self->region());
-    $checksum .= $self->_add_checksum_val($self->country());
-    $checksum .= $self->_add_checksum_val($self->zip_code());
-    $checksum .= $self->_add_checksum_val($self->latitude());
-    $checksum .= $self->_add_checksum_val($self->longitude());
-    $checksum .= $self->_add_checksum_val($self->site_project());
-    
-    $checksum = md5_base64($checksum);
-    $self->{LOGGER}->info("Checksum is " . $checksum);
-    
-    return  $checksum;
+sub checksum_prefix {
+    return "host";
 }
 
-sub build_duplicate_checksum {
-    my ( $self ) = @_;
-    
-    my $checksum = 'host::';
-    $checksum .= $self->_add_checksum_val($self->host_name()); 
-    $checksum = md5_base64($checksum);
-    
-    return $checksum;
+sub checksum_fields {
+    return [
+        "host_name",
+        "interface",
+        "memory",
+        "processor_speed",
+        "processor_count", 
+        "processor_cores",
+        "os_name",
+        "os_version",
+        "os_kernel",
+        "tcp_cc_algorithm",
+        "tcp_max_buffer_send",
+        "tcp_max_buffer_recv",
+        "tcp_autotune_max_buffer_send",
+        "tcp_autotune_max_buffer_recv",
+        "tcp_max_backlog",
+        "domain",
+        "toolkit_version",
+        "administrator", 
+        "site_name",
+        "city",
+        "region",
+        "country",
+        "zip_code",
+        "latitude",
+        "longitude",
+        "site_project",
+    ];
 }
 
-sub _add_checksum_val {
-    my ($self, $val) = @_;
-    
-    my $result = '';
-    
-    if(!defined $val){
-        return $result;
-    }
-    
-    if(ref($val) eq 'ARRAY'){
-        $result = join ',', sort @{$val};
-    }else{
-        $result = $val;
-    }
-    
-    return $result;
+sub duplicate_checksum_fields {
+    return [
+        "host_name"
+    ];
 }
 
 1;

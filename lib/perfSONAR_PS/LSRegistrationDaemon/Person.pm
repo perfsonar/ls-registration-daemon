@@ -186,52 +186,29 @@ sub build_registration {
     return $person;
 }
 
-sub build_checksum {
-    my ( $self ) = @_;
-    
-    my $checksum = 'person::';
-    $checksum .= $self->_add_checksum_val($self->name()); 
-    $checksum .= $self->_add_checksum_val($self->email()); 
-    $checksum .= $self->_add_checksum_val($self->phone_numbers()); 
-    $checksum .= $self->_add_checksum_val($self->organization()); 
-    $checksum .= $self->_add_checksum_val($self->city()); 
-    $checksum .= $self->_add_checksum_val($self->region());
-    $checksum .= $self->_add_checksum_val($self->country());
-    $checksum .= $self->_add_checksum_val($self->zip_code());
-    $checksum .= $self->_add_checksum_val($self->latitude());
-    $checksum .= $self->_add_checksum_val($self->longitude());
-    
-    $checksum = md5_base64($checksum);
-    $self->{LOGGER}->info("Checksum is " . $checksum);
-    
-    return  $checksum;
+sub checksum_prefix {
+    return "person";
 }
 
-sub build_duplicate_checksum {
-    my ( $self ) = @_;
-    
-    my $checksum = 'person::';
-    $checksum .= $self->_add_checksum_val($self->name()); 
-    $checksum = md5_base64($checksum);
-    
-    return $checksum;
+sub checksum_fields {
+    return [
+        "name",
+        "email",
+        "phone_numbers",
+        "organization",
+        "city",
+        "region",
+        "country",
+        "zip_code",
+        "latitude",
+        "longitude",
+    ];
 }
 
-sub _add_checksum_val {
-    my ($self, $val) = @_;
-    
-    my $result = '';
-    
-    if(!defined $val){
-        return $result;
-    }
-    
-    if(ref($val) eq 'ARRAY'){
-        $result = join ',', sort @{$val};
-    }else{
-        $result = $val;
-    }
-    
-    return $result;
+sub duplicate_checksum_fields {
+    return [
+        "name"
+    ];
 }
+
 1;

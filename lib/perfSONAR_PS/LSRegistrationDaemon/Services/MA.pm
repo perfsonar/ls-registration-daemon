@@ -58,11 +58,9 @@ sub init {
 
 Overridden method that initializes MA test registrations
 =cut
-sub init_children {
+sub init_dependencies {
     my ( $self ) = @_;
     my %service_event_type_map = ();
-    
-    $self->SUPER::init_children();
     
     #load tests
     my @ma_tests = ();
@@ -147,7 +145,9 @@ sub init_children {
     $self->{'SERVICE_EVENT_TYPES'} = \@tmp_ets;
     $self->{MA_TESTS} = \@ma_tests;
     
-    $self->{CHILD_REGISTRATIONS} = $self->{MA_TESTS};
+    $self->{DEPENDENCIES} = $self->{MA_TESTS};
+
+    return 0;
 }
 
 
@@ -250,30 +250,33 @@ sub build_registration {
     return $service;
 }
 
-sub build_checksum {
-    my ( $self ) = @_;
-    
-    my $checksum = 'service::'; #add prefix to distinguish from other types
-    $checksum .= $self->_add_checksum_val($self->service_locator()); 
-    $checksum .= $self->_add_checksum_val($self->service_type()); 
-    $checksum .= $self->_add_checksum_val($self->service_name()); 
-    $checksum .= $self->_add_checksum_val($self->service_event_type()); 
-    $checksum .= $self->_add_checksum_val($self->service_version()); 
-    $checksum .= $self->_add_checksum_val($self->domain());
-    $checksum .= $self->_add_checksum_val($self->administrator()); 
-    $checksum .= $self->_add_checksum_val($self->site_name());
-    $checksum .= $self->_add_checksum_val($self->communities());
-    $checksum .= $self->_add_checksum_val($self->city());
-    $checksum .= $self->_add_checksum_val($self->region());
-    $checksum .= $self->_add_checksum_val($self->country());
-    $checksum .= $self->_add_checksum_val($self->zip_code());
-    $checksum .= $self->_add_checksum_val($self->latitude());
-    $checksum .= $self->_add_checksum_val($self->longitude());
-    
-    $checksum = md5_base64($checksum);
-    $self->{LOGGER}->info("Checksum is " . $checksum);
-    
-    return  $checksum;
+sub checksum_fields {
+    return [
+        "service_locator",
+        "service_type",
+        "service_name",
+        "service_event_type",
+        "service_version",
+        "domain",
+        "administrator",
+        "site_name",
+        "communities",
+        "city",
+        "region",
+        "country",
+        "zip_code",
+        "latitude",
+        "longitude",
+    ];    
+}
+
+sub duplicate_checksum_fields {
+    return [
+        "service_locator",
+        "service_type",
+        "service_event_type",
+        "domain",
+    ];
 }
 
 1;
