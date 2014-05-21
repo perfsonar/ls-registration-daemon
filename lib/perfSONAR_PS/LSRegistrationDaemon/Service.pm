@@ -20,11 +20,19 @@ in the $conf hash.
 sub init {
     my ( $self, $conf ) = @_;
 
+    $self->fill_addresses($conf) unless $conf->{address};
+
+    $self->{HOST} = $conf->{host};
+
+    return $self->SUPER::init( $conf );
+}
+
+sub fill_addresses {
+    my ($self, $conf) = @_;
+
     if ($conf->{autodiscover_addresses} and not $conf->{is_local}) {
         die "Non-local service set to 'autodiscover'";
     }
-
-    $self->{HOST} = $conf->{host};
 
     $conf->{address} = [] unless $conf->{address};
     $conf->{address} = [ $conf->{address} ] unless ref($conf->{address}) eq "ARRAY";
@@ -51,9 +59,8 @@ sub init {
 
     $conf->{address} = \@addresses;
 
-    return $self->SUPER::init( $conf );
-}
 
+}
 
 sub service_type {
     die "Subclass must implement service_type";

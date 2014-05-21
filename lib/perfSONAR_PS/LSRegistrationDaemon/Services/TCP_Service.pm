@@ -43,10 +43,7 @@ local addresses, and uses those to perform the later checks.
 sub init {
     my ( $self, $conf ) = @_;
 
-    # Address initialization may happen in here
-    unless ($self->SUPER::init( $conf ) == 0) {
-        return -1;
-    }
+    $self->fill_addresses($conf) unless $conf->{address};
 
     $conf->{address} = [ $conf->{address} ] unless ref($conf->{address}) eq "ARRAY";
 
@@ -58,7 +55,7 @@ sub init {
     $self->{ADDRESSES} = $conf->{address};
     $self->{PORT}      = $conf->{port};
 
-    return 0;
+    return $self->SUPER::init( $conf );
 }
 
 =head2 is_up ($self)
