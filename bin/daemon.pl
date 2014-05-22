@@ -24,7 +24,7 @@ use perfSONAR_PS::Utils::Daemon qw/daemonize setids lockPIDFile unlockPIDFile/;
 use perfSONAR_PS::Utils::Host qw(get_ips);
 use perfSONAR_PS::LSRegistrationDaemon::Person;
 use perfSONAR_PS::LSRegistrationDaemon::Host;
-use SimpleLookupService::Client::Bootstrap;
+use perfSONAR_PS::Utils::LookupService qw( discover_primary_lookup_service );
 use DBI;
 use Getopt::Long;
 use Config::General;
@@ -156,26 +156,24 @@ else {
 }
 
 #determine URL
-if(!$conf{ls_instance}){
-    my $ls_bootstrap = SimpleLookupService::Client::Bootstrap->new();
-    if($conf{ls_bootstrap_file}){
-        $ls_bootstrap->init(file => $conf{ls_bootstrap_file});
-    }else{
-        $ls_bootstrap->init();
+unless ($conf{ls_instance}){
+    $conf{ls_instance} = discover_primary_lookup_service();
+    if ($conf{ls_instance}) {
+        $logger->debug("No lookup service specified. Using auto-discover LS: ".$conf{ls_instance});
     }
-    $conf{ls_instance} = $ls_bootstrap->register_url();
 }
-if(!$conf{ls_instance}){
+
+unless ($conf{ls_instance}){
     $logger->error("Unable to determine ls_instance");
     exit( -1 ); 
 }
 
-if ( not $conf{"ls_interval"} ) {
+unless ($conf{"ls_interval"}) {
     $logger->info( "No LS interval specified. Defaulting to 4 hours" );
     $conf{"ls_interval"} = 4;
 }
 
-if ( not $conf{"check_interval"} ) {
+unless ($conf{"check_interval"}) {
     $logger->info( "No service check interval specified. Defaulting to 5 minutes" );
     $conf{"check_interval"} = 300;
 }
@@ -184,7 +182,7 @@ if ( not $conf{"check_interval"} ) {
 $conf{"ls_interval"} = $conf{"ls_interval"} * 60 * 60;
 
 #initialize the key database
-if ( not $conf{"ls_key_db"} ) {
+unless ( $conf{"ls_key_db"} ) {
     $logger->info( "No LS key database found" );
     $conf{"ls_key_db"} = '/var/lib/perfsonar/ls_registration_daemon/lsKey.db';
 }
