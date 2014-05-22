@@ -5,6 +5,7 @@ Data::Dumper
 Data::UUID
 Data::Validate::IP
 DateTime
+DateTime::Format::ISO8601
 Digest::MD5
 English
 Exporter
@@ -17,6 +18,7 @@ IO::Socket
 IO::Socket::INET
 IO::Socket::INET6
 JSON
+LWP
 LWP::Simple
 LWP::UserAgent
 Log::Log4perl
@@ -31,22 +33,7 @@ NetAddr::IP
 POSIX
 Params::Validate
 Regexp::Common
-SimpleLookupService::Client::Bootstrap
-SimpleLookupService::Client::Query
-SimpleLookupService::Client::RecordManager
-SimpleLookupService::Client::Registration
-SimpleLookupService::Client::SimpleLS
-SimpleLookupService::Keywords::KeyNames
-SimpleLookupService::QueryObjects::Directory::PersonQueryObject
-SimpleLookupService::QueryObjects::Network::HostQueryObject
-SimpleLookupService::QueryObjects::Network::InterfaceQueryObject
-SimpleLookupService::QueryObjects::Network::ServiceQueryObject
-SimpleLookupService::QueryObjects::QueryObject
-SimpleLookupService::Records::Directory::Person
-SimpleLookupService::Records::Network::Host
-SimpleLookupService::Records::Network::Interface
-SimpleLookupService::Records::Network::Service
-SimpleLookupService::Records::Record
+Scalar::Util
 Storable
 Sys::Hostname
 Sys::MemInfo
@@ -54,4 +41,5 @@ Time::HiRes
 URI
 URI::Split
 XML::LibXML
+YAML::Syck
 base
