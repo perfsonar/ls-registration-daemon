@@ -5,6 +5,7 @@ use warnings;
 
 use base 'perfSONAR_PS::LSRegistrationDaemon::Base';
 use Digest::MD5 qw(md5_base64);
+use POSIX;
 
 use Sys::Hostname;
 use Sys::MemInfo qw(totalmem);
@@ -62,7 +63,7 @@ sub init {
             $conf->{host_name} = hostname;
         }
 
-        $conf->{memory} = (&totalmem()/(1024*1024)) . ' MB' unless $conf->{memory};
+        $conf->{memory} = floor((&totalmem()/(1024*1024))) . ' MB' unless $conf->{memory};
 
         my $os_info = get_operating_system_info();
         if ($os_info) {
