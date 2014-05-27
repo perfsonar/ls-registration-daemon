@@ -141,9 +141,9 @@ sub init_dependencies {
                 if_name => $interface,
                 address => \@external_addresses
             };
-            $iface_conf->{capacity} = $addresses->{primary_iface_speed} if(addresses->{primary_iface_speed});
-            $iface_conf->{mtu} = $addresses->{primary_iface_mtu} if(addresses->{primary_iface_mtu});
-            $iface_conf->{mac_address} = $addresses->{primary_iface_mac} if(addresses->{primary_iface_mac});
+            $iface_conf->{capacity} = $addresses->{primary_iface_speed} if($addresses->{primary_iface_speed});
+            $iface_conf->{mtu} = $addresses->{primary_iface_mtu} if($addresses->{primary_iface_mtu});
+            $iface_conf->{mac_address} = $addresses->{primary_iface_mac} if($addresses->{primary_iface_mac});
 
             push @{ $self->{CONF}->{interface} }, $iface_conf;
         }
