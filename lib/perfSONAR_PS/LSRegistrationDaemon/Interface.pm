@@ -39,6 +39,9 @@ sub init {
         push @{ $conf->{address} }, $addresses->{primary_address} if $addresses->{primary_address};
         push @{ $conf->{address} }, $addresses->{primary_ipv4} if $addresses->{primary_ipv4};
         push @{ $conf->{address} }, $addresses->{primary_ipv6} if $addresses->{primary_ipv6};
+        $conf->{capacity} = $addresses->{primary_iface_speed} if(addresses->{primary_iface_speed});
+        $conf->{mtu} = $addresses->{primary_iface_mtu} if(addresses->{primary_iface_mtu});
+        $conf->{mac_address} = $addresses->{primary_iface_mac} if(addresses->{primary_iface_mac});
     }
 
     # Make sure that addresses are unique

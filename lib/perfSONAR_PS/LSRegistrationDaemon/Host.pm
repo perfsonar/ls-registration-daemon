@@ -136,13 +136,16 @@ sub init_dependencies {
             push @external_addresses, $addresses->{primary_address} if $addresses->{primary_address};
             push @external_addresses, $addresses->{primary_ipv4} if $addresses->{primary_ipv4};
             push @external_addresses, $addresses->{primary_ipv6} if $addresses->{primary_ipv6};
-
             next unless scalar(@external_addresses) > 0;
-
-            push @{ $self->{CONF}->{interface} }, {
+            my $iface_conf = {
                 if_name => $interface,
                 address => \@external_addresses
             };
+            $iface_conf->{capacity} = $addresses->{primary_iface_speed} if(addresses->{primary_iface_speed});
+            $iface_conf->{mtu} = $addresses->{primary_iface_mtu} if(addresses->{primary_iface_mtu});
+            $iface_conf->{mac_address} = $addresses->{primary_iface_mac} if(addresses->{primary_iface_mac});
+
+            push @{ $self->{CONF}->{interface} }, $iface_conf;
         }
     }
 
