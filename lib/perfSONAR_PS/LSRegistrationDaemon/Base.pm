@@ -76,15 +76,7 @@ sub init {
     }
     
     #setup ls client
-    $self->{LS_CLIENT} = SimpleLookupService::Client::SimpleLS->new();
-    my $uri = URI->new($self->{CONF}->{ls_instance}); 
-    my $ls_port =$uri->port();
-    if(!$ls_port &&  $uri->scheme() eq 'https'){
-        $ls_port = 443;
-    }elsif(!$ls_port){
-        $ls_port = 80;
-    }
-    $self->{LS_CLIENT}->init( host=> $uri->host(), port=> $ls_port );
+    $self->init_ls_client();
     
     # Initialize registrations that we depend on
     if ($self->init_dependencies()) {
@@ -126,6 +118,20 @@ sub init {
     return 0;
 }
 
+sub init_ls_client {
+    my ( $self ) = @_;
+    
+    $self->{LS_CLIENT} = SimpleLookupService::Client::SimpleLS->new();
+    my $uri = URI->new($self->{CONF}->{ls_instance}); 
+    my $ls_port =$uri->port();
+    if(!$ls_port &&  $uri->scheme() eq 'https'){
+        $ls_port = 443;
+    }elsif(!$ls_port){
+        $ls_port = 80;
+    }
+    $self->{LS_CLIENT}->init( host=> $uri->host(), port=> $ls_port );
+    
+}
 sub init_dependencies {
     my ( $self ) = @_;
     

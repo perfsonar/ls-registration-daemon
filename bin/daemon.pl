@@ -168,18 +168,14 @@ unless ($conf{ls_instance}){
     exit( -1 ); 
 }
 
-unless ($conf{"ls_interval"}) {
-    $logger->info( "No LS interval specified. Defaulting to 4 hours" );
-    $conf{"ls_interval"} = 4;
+unless ($conf{server_flap_threshold}){
+    $conf{server_flap_threshold} = 3;
 }
 
 unless ($conf{"check_interval"}) {
-    $logger->info( "No service check interval specified. Defaulting to 5 minutes" );
-    $conf{"check_interval"} = 300;
+    $logger->info( "No service check interval specified. Defaulting to 60 minutes" );
+    $conf{"check_interval"} = 3600;
 }
-
-# the interval is configured in hours
-$conf{"ls_interval"} = $conf{"ls_interval"} * 60 * 60;
 
 #initialize the key database
 unless ( $conf{"ls_key_db"} ) {
@@ -336,9 +332,29 @@ through and refreshes the services, and pauses for "check_interval" seconds.
 
 sub handle_site {
     my ( $site_conf, $services, $update_id ) = @_;
-
+    
+    my $flap_count = 1;
     while ( 1 ) {
+        #check for a better lookup service
+        my $init_ls = 0;
+        my $new_ls_instance = discover_primary_lookup_service();
+        if($new_ls_instance ne $site_conf->{"ls_instance"}){
+            $flap_count++;
+            #only change if we have seen the new LS a few times to prevent flapping
+            if($flap_count >  $site_conf->{"server_flap_threshold"}){
+                $site_conf->{"ls_instance"} = $new_ls_instance;
+                $init_ls = 1;
+                $flap_count = 0;
+            }
+        }else{
+            $flap_count = 0;
+        }
+        
         foreach my $service ( @$services ) {
+            if($init_ls){
+                $service->delete_key();
+                $service->init_ls_client();
+            }
             $service->refresh($update_id);
         }
 
