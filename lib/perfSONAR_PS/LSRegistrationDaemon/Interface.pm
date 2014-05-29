@@ -111,7 +111,7 @@ sub mac_address {
 sub mtu {
     my ( $self ) = @_;
 
-    return $self->{CONF}->{mtu};
+    return $self->{CONF}->{mtu} . ""; #cast to string or registration fails
 }
 
 sub subnet {
@@ -123,7 +123,7 @@ sub subnet {
 sub capacity {
     my ( $self ) = @_;
 
-    return $self->{CONF}->{capacity};
+    return $self->{CONF}->{capacity} . ""; #cast to string or registration fails
 }
 
 sub if_type {
