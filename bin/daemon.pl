@@ -167,6 +167,7 @@ unless ($conf{ls_instance}){
     $logger->error("Unable to determine ls_instance");
     exit( -1 ); 
 }
+$logger->info("Initial LS URL set to " . $conf{ls_instance});
 
 unless ($conf{server_flap_threshold}){
     $conf{server_flap_threshold} = 3;
@@ -345,6 +346,7 @@ sub handle_site {
                 $site_conf->{"ls_instance"} = $new_ls_instance;
                 $init_ls = 1;
                 $flap_count = 0;
+                $logger->info("LS URL changed to  " . $site_conf->{"ls_instance"});
             }
         }else{
             $flap_count = 0;
