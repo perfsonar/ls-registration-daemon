@@ -73,24 +73,24 @@ sub init_dependencies {
     }
     
     #auto grab MA tests
-    if($self->{CONF}->{'auto_config_tests'}){
-        my $auto_url = $self->{CONF}->{'auto_config_url'};
+    if($self->{CONF}->{'autodiscover_tests'}){
+        my $auto_url = $self->{CONF}->{'autodiscover_url'};
         my $indexer_factory = perfSONAR_PS::LSRegistrationDaemon::EventTypeIndexer::EventTypeIndexerFactory->new();
-        my $indexer_time_range = $self->{CONF}->{'auto_config_index_time_range'};
+        my $indexer_time_range = $self->{CONF}->{'autodiscover_index_time_range'};
         $indexer_time_range = 86400 if(!$indexer_time_range); #default to 24 hours
         $auto_url = @{$self->service_locator()}[0] if(!$auto_url);
-        if(!defined $self->{CONF}->{'auto_config_indices'}){
-            $self->{CONF}->{'auto_config_indices'} = 1; #configure indices by default
+        if(!defined $self->{CONF}->{'autodiscover_indices'}){
+            $self->{CONF}->{'autodiscover_indices'} = 1; #configure indices by default
         }
         my $filters = new perfSONAR_PS::Client::Esmond::ApiFilters(
-            ca_certificate_file => $self->{CONF}->{'auto_config_ca_file'},
-            ca_certificate_path => $self->{CONF}->{'auto_config_ca_path'},
-            verify_hostname => $self->{CONF}->{'auto_config_verify_hostname'},
+            ca_certificate_file => $self->{CONF}->{'autodiscover_ca_file'},
+            ca_certificate_path => $self->{CONF}->{'autodiscover_ca_path'},
+            verify_hostname => $self->{CONF}->{'autodiscover_verify_hostname'},
         );
-        if(!defined $self->{CONF}->{'auto_config_time_range'}){
-            $self->{CONF}->{'auto_config_time_range'} = 86400*7; #default to 1 week
+        if(!defined $self->{CONF}->{'autodiscover_time_range'}){
+            $self->{CONF}->{'autodiscover_time_range'} = 86400*7; #default to 1 week
         }
-        $filters->time_range($self->{CONF}->{'auto_config_time_range'});
+        $filters->time_range($self->{CONF}->{'autodiscover_time_range'});
         my $client = new perfSONAR_PS::Client::Esmond::ApiConnect(url => $auto_url, filters => $filters );
         my $md = $client->get_metadata();
         if($client->error){
@@ -99,7 +99,7 @@ sub init_dependencies {
             foreach my $m(@{$md}){
                 #index results if possible            
                 my @indices = ();
-                if($self->{CONF}->{'auto_config_indices'}){
+                if($self->{CONF}->{'autodiscover_indices'}){
                     foreach my $event_type(@{$m->event_types()}){
                         my $indexer = $indexer_factory->create_indexer($event_type);
                         next unless($indexer);
