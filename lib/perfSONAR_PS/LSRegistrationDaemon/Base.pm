@@ -130,8 +130,28 @@ sub init_ls_client {
         $ls_port = 80;
     }
     $self->{LS_CLIENT}->init( host=> $uri->host(), port=> $ls_port );
-    
 }
+
+sub change_lookup_service {
+    my ( $self ) = @_;
+
+    $self->delete_key();
+
+    $self->init_ls_client();
+
+    if ($self->{DEPENDENCIES}) {
+        foreach my $child_reg (@{$self->{DEPENDENCIES}}){
+            $child_reg->change_lookup_service();
+        }
+    }
+
+    if ($self->{SUBORDINATES}) {
+        foreach my $child_reg (@{$self->{SUBORDINATES}}) {
+            $child_reg->change_lookup_service();
+        }
+    }
+}
+
 sub init_dependencies {
     my ( $self ) = @_;
     

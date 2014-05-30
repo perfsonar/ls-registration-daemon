@@ -354,8 +354,7 @@ sub handle_site {
         
         foreach my $service ( @$services ) {
             if($init_ls){
-                $service->delete_key();
-                $service->init_ls_client();
+                $service->change_lookup_service();
             }
             $service->refresh($update_id);
         }
