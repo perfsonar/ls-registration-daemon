@@ -8,7 +8,7 @@
 %define disttag pSPS
 
 Name:			perl-perfSONAR_PS-LSRegistrationDaemon
-Version:		3.3.2
+Version:		3.4
 Release:		%{relnum}.%{disttag}
 Summary:		perfSONAR_PS Lookup Service Registration Daemon
 License:		Distributable, see LICENSE
@@ -117,6 +117,10 @@ fi
 %{install_base}/dependencies
 
 %changelog
+* Thu Jun 18 2014 andy@es.net 3.4-1
+- Reorganization to better handled dual-homed hosts
+- Support for new MA record format
+
 * Fri Jan 11 2013 asides@es.net 3.3-1
 - 3.3 beta release
 
