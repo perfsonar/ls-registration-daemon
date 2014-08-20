@@ -24,6 +24,8 @@ use perfSONAR_PS::LSRegistrationDaemon::Services::REDDnet;
 use perfSONAR_PS::LSRegistrationDaemon::Services::BWCTL;
 use perfSONAR_PS::LSRegistrationDaemon::Services::OWAMP;
 use perfSONAR_PS::LSRegistrationDaemon::Services::MA;
+use perfSONAR_PS::LSRegistrationDaemon::Services::MP_BWCTL;
+use perfSONAR_PS::LSRegistrationDaemon::Services::MP_OWAMP;
 use perfSONAR_PS::LSRegistrationDaemon::Services::NDT;
 use perfSONAR_PS::LSRegistrationDaemon::Services::NPAD;
 use perfSONAR_PS::LSRegistrationDaemon::Services::GridFTP;
@@ -232,6 +234,12 @@ sub init_subordinates {
         }
         elsif ( lc( $service_conf->{type} ) eq "ma" ) {
             $service = perfSONAR_PS::LSRegistrationDaemon::Services::MA->new();
+        }
+        elsif ( lc( $service_conf->{type} ) eq "mp_bwctl" ) {
+            $service = perfSONAR_PS::LSRegistrationDaemon::Services::MP_BWCTL->new();
+        }
+        elsif ( lc( $service_conf->{type} ) eq "mp_owamp" ) {
+            $service = perfSONAR_PS::LSRegistrationDaemon::Services::MP_OWAMP->new();
         }
         else {
             # error
