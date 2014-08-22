@@ -152,10 +152,10 @@ sub build_registration {
         interfaceName => $self->if_name(), 
         interfaceAddresses => $self->address(), 
         subnet => $self->subnet(), 
-        capacity => $self->capacity(), 
         macAddress=> $self->mac_address(), 
         domains=> $self->domain(),
     );
+    $iface->setInterfaceCapacity($self->capacity()) if($self->capacity());
     $iface->setInterfaceMTU($self->mtu()) if(defined $self->mtu());
     $iface->setInterfaceType($self->if_type()) if(defined $self->if_type());
     $iface->setUrns($self->urn()) if(defined $self->urn());
