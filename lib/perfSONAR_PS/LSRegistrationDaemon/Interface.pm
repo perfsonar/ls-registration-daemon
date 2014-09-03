@@ -9,6 +9,29 @@ use perfSONAR_PS::Client::LS::PSRecords::PSInterface;
 
 use perfSONAR_PS::Utils::Host qw(discover_primary_address);
 
+sub known_variables {
+    my ($self) = @_;
+
+    my @variables = $self->SUPER::known_variables();
+
+    push @variables, (
+        { variable => "address", type => "array" },
+
+        { variable => "autodiscover", type => "scalar" },
+        { variable => "capacity", type => "scalar" },
+        { variable => "domain", type => "scalar" },
+        { variable => "if_name", type => "scalar" },
+        { variable => "if_type", type => "scalar" },
+        { variable => "is_local", type => "scalar" },
+        { variable => "mac_address", type => "scalar" },
+        { variable => "mtu", type => "scalar" },
+        { variable => "subnet", type => "scalar" },
+        { variable => "urn", type => "scalar" },
+    );
+
+    return @variables;
+}
+
 =head2 init($self, $conf)
 
 This function initializes the object according to the configuration options set

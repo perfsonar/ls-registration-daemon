@@ -12,6 +12,28 @@ use perfSONAR_PS::Common qw(mergeConfig);
 
 use fields 'INTERFACES';
 
+sub known_variables {
+    my ($self) = @_;
+
+    my @variables = $self->SUPER::known_variables();
+
+    push @variables, (
+        { variable => "city", type => "scalar" },
+        { variable => "country", type => "scalar" },
+        { variable => "email", type => "scalar" },
+        { variable => "latitude", type => "scalar" },
+        { variable => "longitude", type => "scalar" },
+        { variable => "name", type => "scalar" },
+        { variable => "organization", type => "scalar" },
+        { variable => "phone", type => "scalar" },
+        { variable => "region", type => "scalar" },
+        { variable => "site_name", type => "scalar" },
+        { variable => "zip_code", type => "scalar" },
+    );
+
+    return @variables;
+}
+
 =head2 init($self, $conf)
 
 This function initializes the object according to the configuration options set

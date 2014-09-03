@@ -12,6 +12,38 @@ use perfSONAR_PS::Client::LS::PSRecords::PSService;
 
 use fields 'HOST';
 
+sub known_variables {
+    my ($self) = @_;
+
+    my @variables = $self->SUPER::known_variables();
+
+    push @variables, (
+        { variable => "address", type => "array" },
+        { variable => "site_project", type => "array" },
+
+        { variable => "administrator", type => "hash" },
+
+        { variable => "allow_internal_addresses", type => "scalar" },
+        { variable => "autodiscover_addresses", type => "scalar" },
+        { variable => "city", type => "scalar" },
+        { variable => "country", type => "scalar" },
+        { variable => "disable_ipv4_reverse_lookup", type => "scalar" },
+        { variable => "disable_ipv6_reverse_lookup", type => "scalar" },
+        { variable => "domain", type => "scalar" },
+        { variable => "is_local", type => "scalar" },
+        { variable => "latitude", type => "scalar" },
+        { variable => "longitude", type => "scalar" },
+        { variable => "region", type => "scalar" },
+        { variable => "site_name", type => "scalar" },
+        { variable => "zip_code", type => "scalar" },
+        { variable => "service_locator", type => "scalar" },
+        { variable => "service_name", type => "scalar" },
+        { variable => "service_version", type => "scalar" },
+    );
+
+    return @variables;
+}
+
 =head2 init($self, $conf)
 
 This function initializes the object according to the configuration options set

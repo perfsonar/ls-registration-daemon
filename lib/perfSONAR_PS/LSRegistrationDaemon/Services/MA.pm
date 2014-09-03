@@ -30,6 +30,26 @@ use perfSONAR_PS::LSRegistrationDaemon::EventTypeIndexer::EventTypeIndexerFactor
 
 use fields 'MA_TESTS', 'SERVICE_EVENT_TYPES';
 
+sub known_variables {
+    my ($self) = @_;
+
+    my @variables = $self->SUPER::known_variables();
+
+    push @variables, (
+        { variable => "autodiscover_ca_file", type => "scalar" },
+        { variable => "autodiscover_ca_path", type => "scalar" },
+        { variable => "autodiscover_index_time_range", type => "scalar" },
+        { variable => "autodiscover_indices", type => "scalar" },
+        { variable => "autodiscover_tests", type => "scalar" },
+        { variable => "autodiscover_time_range", type => "scalar" },
+        { variable => "autodiscover_url", type => "scalar" },
+        { variable => "autodiscover_verify_hostname", type => "scalar" },
+        { variable => "test", type => "array" },
+    );
+
+    return @variables;
+}
+
 =head2 init_dependencies($self)
 
 Overridden method that initializes MA test registrations

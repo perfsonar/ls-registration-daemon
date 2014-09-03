@@ -56,6 +56,18 @@ sub new {
     return $self;
 }
 
+sub known_variables {
+    my ($self) = @_;
+
+    return (
+        { variable => "disabled", type => "scalar" },
+        { variable => "force_up_status", type => "scalar" },
+        { variable => "ls_instance", type => "scalar" },
+        { variable => "ls_key_db", type => "scalar" },
+        { variable => "check_interval", type => "scalar" },
+    );
+}
+
 =head2 init($self, $conf)
 
 This function initializes the object according to the configuration options set
@@ -80,6 +92,10 @@ sub init {
     
     # Initialize registrations that we depend on
     if ($self->init_dependencies()) {
+        return -1;
+    }
+
+    if ($self->validate_conf($self->{CONF})) {
         return -1;
     }
 
@@ -115,6 +131,34 @@ sub init {
         return -1;
     }
  
+    return 0;
+}
+
+sub validate_conf {
+    my ($self, $conf) = @_;
+
+    my @variables = $self->known_variables();
+    foreach my $variable_info (@variables) {
+        my $variable = $variable_info->{variable};
+        my $type = $variable_info->{type};
+
+        next unless defined ($conf->{$variable_info->{variable}});
+
+        if ($variable_info->{type} eq "array") {
+            $conf->{$variable} = [ $conf->{$variable} ] unless ref($conf->{$variable}) eq "ARRAY";
+        }
+        elsif ($variable_info->{type} eq "scalar") {
+            if (ref($conf->{$variable}) eq "ARRAY") {
+                $self->{LOGGER}->error("Multiple entries for ".$variable.". Only one is valid");
+                return -1;
+            }
+            elsif (ref($conf->{$variable})) {
+                $self->{LOGGER}->error("Invalid entry for ".$variable);
+                return -1;
+            }
+        }
+    }
+
     return 0;
 }
 

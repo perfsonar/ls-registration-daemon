@@ -12,6 +12,29 @@ use fields 'METADATA_HASH';
 use constant RESERVED_LS_KEYS => {
     'uri' => 1,
 };
+
+sub known_variables {
+    my ($self) = @_;
+
+    my @variables = $self->SUPER::known_variables();
+
+    push @variables, (
+        { variable => "result_index", type => "array" },
+        { variable => "event_type", type => "array" },
+        { variable => "site_project", type => "array" },
+
+        { variable => "destination", type => "scalar" },
+        { variable => "domain", type => "scalar" },
+        { variable => "ma_locator", type => "scalar" },
+        { variable => "measurement_agent", type => "scalar" },
+        { variable => "metadata_uri", type => "scalar" },
+        { variable => "source", type => "scalar" },
+        { variable => "tool_name", type => "scalar" },
+    );
+
+    return @variables;
+}
+
 =head2 init($self, $conf)
 
 This function initializes the object according to the configuration options set

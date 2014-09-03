@@ -10,6 +10,25 @@ use perfSONAR_PS::Common qw(mergeConfig);
 
 use fields 'SOURCE', 'DESTINATION';
 
+sub known_variables {
+    my ($self) = @_;
+
+    my @variables = $self->SUPER::known_variables();
+
+    push @variables, (
+        { variable => "event_type", type => "array" },
+
+        { variable => "destination", type => "scalar" },
+        { variable => "destination_if_name", type => "scalar" },
+        { variable => "register_destination", type => "scalar" },
+        { variable => "register_source", type => "scalar" },
+        { variable => "source", type => "scalar" },
+        { variable => "source_if_name", type => "scalar" },
+    );
+
+    return @variables;
+}
+
 =head2 init($self, $conf)
 
 This function initializes the object according to the configuration options set

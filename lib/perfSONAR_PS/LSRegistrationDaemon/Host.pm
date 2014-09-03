@@ -34,6 +34,54 @@ use perfSONAR_PS::LSRegistrationDaemon::Services::Traceroute;
 
 use fields 'INTERFACES', 'SERVICES';
 
+sub known_variables {
+    my ($self) = @_;
+
+    my @variables = $self->SUPER::known_variables();
+
+    push @variables, (
+        { variable => "interface", type => "array" },
+        { variable => "service", type => "array" },
+        { variable => "site_project", type => "array" },
+
+        { variable => "administrator", type => "hash" },
+
+        { variable => "allow_internal_addresses", type => "scalar" },
+        { variable => "autodiscover", type => "scalar" },
+        { variable => "autodiscover_interfaces", type => "scalar" },
+        { variable => "city", type => "scalar" },
+        { variable => "country", type => "scalar" },
+        { variable => "disable_ipv4_reverse_lookup", type => "scalar" },
+        { variable => "disable_ipv6_reverse_lookup", type => "scalar" },
+        { variable => "domain", type => "scalar" },
+        { variable => "host_name", type => "scalar" },
+        { variable => "is_local", type => "scalar" },
+        { variable => "latitude", type => "scalar" },
+        { variable => "longitude", type => "scalar" },
+        { variable => "memory", type => "scalar" },
+        { variable => "name", type => "scalar" },
+        { variable => "os_kernel", type => "scalar" },
+        { variable => "os_name", type => "scalar" },
+        { variable => "os_version", type => "scalar" },
+        { variable => "processor_cores", type => "scalar" },
+        { variable => "processor_count", type => "scalar" },
+        { variable => "processor_speed", type => "scalar" },
+        { variable => "region", type => "scalar" },
+        { variable => "site_name", type => "scalar" },
+        { variable => "tcp_autotune_max_buffer_recv", type => "scalar" },
+        { variable => "tcp_autotune_max_buffer_send", type => "scalar" },
+        { variable => "tcp_cc_algorithm", type => "scalar" },
+        { variable => "tcp_max_backlog", type => "scalar" },
+        { variable => "tcp_max_buffer_recv", type => "scalar" },
+        { variable => "tcp_max_buffer_send", type => "scalar" },
+        { variable => "toolkit_version", type => "scalar" },
+        { variable => "zip_code", type => "scalar" },
+    );
+
+    return @variables;
+}
+
+
 =head2 init($self, $conf)
 
 This function initializes the object according to the configuration options set

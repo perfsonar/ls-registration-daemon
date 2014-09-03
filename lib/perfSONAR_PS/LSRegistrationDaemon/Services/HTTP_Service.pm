@@ -23,6 +23,20 @@ use perfSONAR_PS::Common qw(mergeConfig);
 
 use constant DEFAULT_PORT => 80;
 
+sub known_variables {
+    my ($self) = @_;
+
+    my @variables = $self->SUPER::known_variables();
+
+    push @variables, (
+        { variable => "http_port", type => "scalar" },
+        { variable => "https_port", type => "scalar" },
+        { variable => "url_path", type => "scalar" },
+    );
+
+    return @variables;
+}
+
 =head2 init($self, $conf)
 
 Sets the default port and provides generic service initializations
