@@ -14,6 +14,7 @@ File::Basename
 Getopt::Long
 HTTP::Request
 IO::File
+IO::Interface
 IO::Socket
 IO::Socket::INET
 IO::Socket::INET6
@@ -26,7 +27,6 @@ Moose
 Net::CIDR
 Net::DNS
 Net::IP
-Net::Interface
 Net::Ping
 Net::Ping::External
 NetAddr::IP

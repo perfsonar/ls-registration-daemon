@@ -18,7 +18,7 @@ PIDFILE=${RUNDIR}/ls_registration_daemon.pid
 USER=perfsonar
 GROUP=perfsonar
 
-PERFSONAR="${BINDIR}/daemon.pl --config=${CONFFILE} --pidfile=${PIDFILE} --logger=${LOGGERFILE} --user=${USER} --group=${GROUP}"
+PERFSONAR="${BINDIR}/ls_registration_daemon.pl --config=${CONFFILE} --pidfile=${PIDFILE} --logger=${LOGGERFILE} --user=${USER} --group=${GROUP}"
 
 ERROR=0
 ARGV="$@"

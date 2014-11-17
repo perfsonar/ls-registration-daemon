@@ -1,0 +1,4 @@
+#!/usr/bin/dh-exec
+bin/ls_registration_daemon.pl =>                /usr/lib/perfsonar/bin/lsregistrationdaemon.pl
+etc/ls_registration_daemon.conf =>              /etc/perfsonar/lsregistrationdaemon.conf
+etc/ls_registration_daemon-logger.conf =>       /etc/perfsonar/lsregistrationdaemon-logger.conf

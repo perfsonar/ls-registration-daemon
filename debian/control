@@ -1,0 +1,16 @@
+Source: perfsonar-lsregistrationdaemon
+Section: misc
+Priority: extra
+Maintainer: Antoine Delvaux <antoine.delvaux@dante.net>
+Build-Depends: debhelper (>= 9.0.0), dh-exec, perl, quilt
+Standards-Version: 3.9.3
+Homepage: http://www.perfsonar.net
+
+Package: perfsonar-lsregistrationdaemon
+Architecture: any
+Depends: ${misc:Depends}, ${perl:Depends}, adduser, libperfsonar-perl, libperfsonar-sls-perl, libsys-statistics-linux-perl, libio-socket-inet6-perl, liblog-dispatch-filerotate-perl, libdbd-sqlite3-perl
+Description: perfSONAR LS Registration Daemon
+ The perfSONAR LS Registration Daemon allows networks to register their
+ BWCTL, OWAMP, NDT, NPAD and Phoebus services with a perfSONAR-PS Lookup
+ Service. This allows interested clients to search for and find the network's
+ services.

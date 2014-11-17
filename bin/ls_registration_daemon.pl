@@ -22,18 +22,9 @@ use lib "$Bin/../lib";
 use perfSONAR_PS::Common;
 use perfSONAR_PS::Utils::Daemon qw/daemonize setids lockPIDFile unlockPIDFile/;
 use perfSONAR_PS::Utils::Host qw(get_ips);
-use perfSONAR_PS::LSRegistrationDaemon::Services::Phoebus;
-use perfSONAR_PS::LSRegistrationDaemon::Services::REDDnet;
-use perfSONAR_PS::LSRegistrationDaemon::Services::BWCTL;
-use perfSONAR_PS::LSRegistrationDaemon::Services::OWAMP;
-use perfSONAR_PS::LSRegistrationDaemon::Services::MA;
-use perfSONAR_PS::LSRegistrationDaemon::Services::NDT;
-use perfSONAR_PS::LSRegistrationDaemon::Services::NPAD;
-use perfSONAR_PS::LSRegistrationDaemon::Services::GridFTP;
-use perfSONAR_PS::LSRegistrationDaemon::Services::Ping;
-use perfSONAR_PS::LSRegistrationDaemon::Services::Traceroute;
+use perfSONAR_PS::LSRegistrationDaemon::Person;
 use perfSONAR_PS::LSRegistrationDaemon::Host;
-use SimpleLookupService::Client::Bootstrap;
+use perfSONAR_PS::Utils::LookupService qw( discover_primary_lookup_service );
 use DBI;
 use Getopt::Long;
 use Config::General;
@@ -108,7 +99,7 @@ if ( not $RUNAS_USER ) {
 
 if ( $RUNAS_USER and $RUNAS_GROUP ) {
     if ( setids( USER => $RUNAS_USER, GROUP => $RUNAS_GROUP ) != 0 ) {
-        print "Error: Couldn't drop priviledges\n";
+        print "Error: Couldn't drop privileges\n";
         exit( -1 );
     }
 }
@@ -165,35 +156,30 @@ else {
 }
 
 #determine URL
-if(!$conf{ls_instance}){
-    my $ls_bootstrap = SimpleLookupService::Client::Bootstrap->new();
-    if($conf{ls_bootstrap_file}){
-        $ls_bootstrap->init(file => $conf{ls_bootstrap_file});
-    }else{
-        $ls_bootstrap->init();
+unless ($conf{ls_instance}){
+    $conf{ls_instance} = discover_primary_lookup_service();
+    if ($conf{ls_instance}) {
+        $logger->debug("No lookup service specified. Using auto-discover LS: ".$conf{ls_instance});
     }
-    $conf{ls_instance} = $ls_bootstrap->register_url();
 }
-if(!$conf{ls_instance}){
+
+unless ($conf{ls_instance}){
     $logger->error("Unable to determine ls_instance");
     exit( -1 ); 
 }
+$logger->info("Initial LS URL set to " . $conf{ls_instance});
 
-if ( not $conf{"ls_interval"} ) {
-    $logger->info( "No LS interval specified. Defaulting to 4 hours" );
-    $conf{"ls_interval"} = 4;
+unless ($conf{server_flap_threshold}){
+    $conf{server_flap_threshold} = 3;
 }
 
-if ( not $conf{"check_interval"} ) {
-    $logger->info( "No service check interval specified. Defaulting to 5 minutes" );
-    $conf{"check_interval"} = 300;
+unless ($conf{"check_interval"}) {
+    $logger->info( "No service check interval specified. Defaulting to 60 minutes" );
+    $conf{"check_interval"} = 3600;
 }
-
-# the interval is configured in hours
-$conf{"ls_interval"} = $conf{"ls_interval"} * 60 * 60;
 
 #initialize the key database
-if ( not $conf{"ls_key_db"} ) {
+unless ( $conf{"ls_key_db"} ) {
     $logger->info( "No LS key database found" );
     $conf{"ls_key_db"} = '/var/lib/perfsonar/ls_registration_daemon/lsKey.db';
 }
@@ -225,6 +211,23 @@ if ( ref( $site_confs ) ne "ARRAY" ) {
     $site_confs = \@tmp;
 }
 
+my @site_params = ();
+
+foreach my $site_conf ( @$site_confs ) {
+    my $site_merge_conf = mergeConfig( \%conf, $site_conf );
+    $site_merge_conf->{'ls_key_db'} = $conf{'ls_key_db'};
+    my $services = init_site( $site_merge_conf );
+
+    if ( not $services ) {
+        print "Couldn't initialize site. Exiting.";
+        exit( -1 );
+    }
+
+    my %params = ( conf => $site_merge_conf, services => $services );
+
+    push @site_params, \%params;
+}
+
 # Before daemonizing, set die and warn handlers so that any Perl errors or
 # warnings make it into the logs.
 my $insig = 0;
@@ -252,25 +255,22 @@ if ( not $DEBUGFLAG ) {
 
 unlockPIDFile( $fileHandle );
 
-my @site_params = ();
+foreach my $params ( @site_params ) {
 
-while(1) {
-    my $startTime = time;
-    foreach my $site_conf ( @$site_confs ) {
-        my $site_merge_conf = mergeConfig( \%conf, $site_conf );
-        $site_merge_conf->{'ls_key_db'} = $conf{'ls_key_db'};
-        my $services = init_site( $site_merge_conf );
-        if ( not $services ) {
-            $logger->error( "Couldn't initialize site. Exiting.");
-            exit( -1 );
-        }
-
-        my $update_id = time .'';
-        handle_site( $site_merge_conf, $services, $update_id );
+    # every site will register separately
+    my $update_id = time .'';
+    my $pid = fork();
+    if ( $pid != 0 ) {
+        push @child_pids, $pid;
+        next;
     }
-    my $intervalLeft = time - $startTime;
-    $logger->info("Interval Left: $intervalLeft ($startTime)");
-    sleep( $conf{"check_interval"} );
+    else {
+        handle_site( $params->{conf}, $params->{services}, $update_id );
+    }
+}
+
+foreach my $pid ( @child_pids ) {
+    waitpid( $pid, 0 );
 }
 
 exit( 0 );
@@ -289,15 +289,25 @@ sub init_site {
     my @services = ();
     
     ##
+    # Add person records to registration list first - We add these before hosts
+    # and services so they can be referenced
+    if($site_conf->{administrator}) {
+        my $admin_conf = mergeConfig( $site_conf, $site_conf->{administrator} );
+        my $person = perfSONAR_PS::LSRegistrationDaemon::Person->new();
+        if ( $person->init( $admin_conf ) != 0 ) {
+            $logger->error( "Error: Couldn't initialize person record" );
+            exit( -1 );
+        }
+        push @services, $person;
+    }
+
+    ##
     # Parse host configurations - We add these before services 
     # so they can be referenced
-    my $hosts_conf = $site_conf->{host};
-    if ($hosts_conf && ref( $hosts_conf ) ne "ARRAY" ) {
-        my @tmp = ();
-        push @tmp, $hosts_conf;
-        $hosts_conf = \@tmp;
-    }
-    foreach my $curr_host_conf ( @$hosts_conf ) {
+    $site_conf->{host} = [] unless $site_conf->{host};
+    $site_conf->{host} = [ $site_conf->{host} ] unless ref($site_conf->{host}) eq "ARRAY";
+
+    foreach my $curr_host_conf ( @{ $site_conf->{host} } ) {
 
         my $host_conf = mergeConfig( $site_conf, $curr_host_conf );
         
@@ -309,137 +319,6 @@ sub init_site {
             exit( -1 );
         }
         push @services, $host;
-    }
-    
-    ##
-    # Parse service configurations - We add these after hosts so they can 
-    # reference host objects at registration time 
-    my $services_conf = $site_conf->{service};
-    if(!defined $services_conf) {
-        $services_conf = [];
-    } 
-    elsif ( ref( $services_conf ) ne "ARRAY" ) {
-        my @tmp = ();
-        push @tmp, $services_conf;
-        $services_conf = \@tmp;
-    }
-
-    foreach my $curr_service_conf ( @$services_conf ) {
-
-        my $service_conf = mergeConfig( $site_conf, $curr_service_conf );
-
-        if ( not $service_conf->{type} ) {
-
-            # complain
-            $logger->error( "Error: No service type specified" );
-            exit( -1 );
-        }
-        elsif ( lc( $service_conf->{type} ) eq "bwctl" ) {
-            my $service = perfSONAR_PS::LSRegistrationDaemon::BWCTL->new();
-            if ( $service->init( $service_conf ) != 0 ) {
-
-                # complain
-                $logger->error( "Error: Couldn't initialize bwctl watcher" );
-                exit( -1 );
-            }
-            push @services, $service;
-        }
-        elsif ( lc( $service_conf->{type} ) eq "owamp" ) {
-            my $service = perfSONAR_PS::LSRegistrationDaemon::OWAMP->new();
-            if ( $service->init( $service_conf ) != 0 ) {
-
-                # complain
-                $logger->error( "Error: Couldn't initialize owamp watcher" );
-                exit( -1 );
-            }
-            push @services, $service;
-        }
-        elsif ( lc( $service_conf->{type} ) eq "ping" ) {
-            my $service = perfSONAR_PS::LSRegistrationDaemon::Ping->new();
-            if ( $service->init( $service_conf ) != 0 ) {
-
-                # complain
-                $logger->error( "Error: Couldn't initialize ping watcher" );
-                exit( -1 );
-            }
-            push @services, $service;
-        }
-        elsif ( lc( $service_conf->{type} ) eq "traceroute" ) {
-            my $service = perfSONAR_PS::LSRegistrationDaemon::Traceroute->new();
-            if ( $service->init( $service_conf ) != 0 ) {
-
-                # complain
-                $logger->error( "Error: Couldn't initialize traceroute watcher" );
-                exit( -1 );
-            }
-            push @services, $service;
-        }
-        elsif ( lc( $service_conf->{type} ) eq "phoebus" ) {
-            my $service = perfSONAR_PS::LSRegistrationDaemon::Phoebus->new();
-            if ( $service->init( $service_conf ) != 0 ) {
-
-                # complain
-                $logger->error( "Error: Couldn't initialize Phoebus watcher" );
-                exit( -1 );
-            }
-            push @services, $service;
-        }
-        elsif ( lc( $service_conf->{type} ) eq "reddnet" ) {
-            my $service = perfSONAR_PS::LSRegistrationDaemon::REDDnet->new();
-            if ( $service->init( $service_conf ) != 0 ) {
-
-                # complain
-                $logger->error( "Error: Couldn't initialize REDDnet watcher" );
-                exit( -1 );
-            }
-            push @services, $service;
-        }
-        elsif ( lc( $service_conf->{type} ) eq "ndt" ) {
-            my $service = perfSONAR_PS::LSRegistrationDaemon::NDT->new();
-            if ( $service->init( $service_conf ) != 0 ) {
-
-                # complain
-                $logger->error( "Error: Couldn't initialize NDT watcher" );
-                exit( -1 );
-            }
-            push @services, $service;
-        }
-        elsif ( lc( $service_conf->{type} ) eq "npad" ) {
-            my $service = perfSONAR_PS::LSRegistrationDaemon::NPAD->new();
-            if ( $service->init( $service_conf ) != 0 ) {
-
-                # complain
-                $logger->error( "Error: Couldn't initialize NPAD watcher" );
-                exit( -1 );
-            }
-            push @services, $service;
-        }
-        elsif ( lc( $service_conf->{type} ) eq "gridftp" ) {
-            my $service = perfSONAR_PS::LSRegistrationDaemon::GridFTP->new();
-            if ( $service->init( $service_conf ) != 0 ) {
-
-                # complain
-                $logger->error( "Error: Couldn't initialize GridFTP watcher" );
-                exit( -1 );
-            }
-            push @services, $service;
-        }
-        elsif ( lc( $service_conf->{type} ) eq "ma" ) {
-            my $service = perfSONAR_PS::LSRegistrationDaemon::MA->new();
-            if ( $service->init( $service_conf ) != 0 ) {
-
-                # complain
-                $logger->error( "Error: Couldn't initialize MA watcher" );
-                exit( -1 );
-            }
-            push @services, $service;
-        }
-        else {
-
-            # error
-            $logger->error( "Error: Unknown service type: " . $conf{type} );
-            exit( -1 );
-        }
     }
 
     return \@services;
@@ -454,9 +333,33 @@ through and refreshes the services, and pauses for "check_interval" seconds.
 
 sub handle_site {
     my ( $site_conf, $services, $update_id ) = @_;
+    
+    my $flap_count = 1;
+    while ( 1 ) {
+        #check for a better lookup service
+        my $init_ls = 0;
+        my $new_ls_instance = discover_primary_lookup_service();
+        if($new_ls_instance ne $site_conf->{"ls_instance"}){
+            $flap_count++;
+            #only change if we have seen the new LS a few times to prevent flapping
+            if($flap_count >  $site_conf->{"server_flap_threshold"}){
+                $site_conf->{"ls_instance"} = $new_ls_instance;
+                $init_ls = 1;
+                $flap_count = 0;
+                $logger->info("LS URL changed to  " . $site_conf->{"ls_instance"});
+            }
+        }else{
+            $flap_count = 0;
+        }
+        
+        foreach my $service ( @$services ) {
+            if($init_ls){
+                $service->change_lookup_service();
+            }
+            $service->refresh($update_id);
+        }
 
-    foreach my $service ( @$services ) {
-       $service->refresh($update_id);
+        sleep( $site_conf->{"check_interval"} );
     }
 
     return;
@@ -495,13 +398,13 @@ __END__
 
 L<FindBin>, L<Getopt::Long>, L<Config::General>, L<Log::Log4perl>,
 L<perfSONAR_PS::Common>, L<perfSONAR_PS::Utils::Daemon>,
-L<perfSONAR_PS::Utils::Host>, L<perfSONAR_PS::LSRegistrationDaemon::Phoebus>,
-L<perfSONAR_PS::LSRegistrationDaemon::BWCTL>,
-L<perfSONAR_PS::LSRegistrationDaemon::OWAMP>,
-L<perfSONAR_PS::LSRegistrationDaemon::NDT>,
-L<perfSONAR_PS::LSRegistrationDaemon::NPAD>,
-L<perfSONAR_PS::LSRegistrationDaemon::Ping>,
-L<perfSONAR_PS::LSRegistrationDaemon::Traceroute>
+L<perfSONAR_PS::Utils::Host>, L<perfSONAR_PS::LSRegistrationDaemon::Services::Phoebus>,
+L<perfSONAR_PS::LSRegistrationDaemon::Services::BWCTL>,
+L<perfSONAR_PS::LSRegistrationDaemon::Services::OWAMP>,
+L<perfSONAR_PS::LSRegistrationDaemon::Services::NDT>,
+L<perfSONAR_PS::LSRegistrationDaemon::Services::NPAD>,
+L<perfSONAR_PS::LSRegistrationDaemon::Services::Ping>,
+L<perfSONAR_PS::LSRegistrationDaemon::Services::Traceroute>
 
 To join the 'perfSONAR Users' mailing list, please visit:
 
@@ -518,7 +421,7 @@ Bugs, feature requests, and improvements can be directed here:
 
 =head1 VERSION
 
-$Id: daemon.pl 5545 2013-02-13 21:39:28Z alake $
+$Id$
 
 =head1 AUTHOR
 
