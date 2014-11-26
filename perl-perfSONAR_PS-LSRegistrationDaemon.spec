@@ -44,7 +44,6 @@ Requires:		perl(Socket)
 Requires:		perl(Sys::MemInfo)
 Requires:		perl(Time::HiRes)
 Requires:		perl(XML::LibXML)
-Requires:		perl-perfSONAR_PS-SimpleLS-BootStrap-client
 Requires:		perl(base)
 Requires:		chkconfig
 Requires:		coreutils
