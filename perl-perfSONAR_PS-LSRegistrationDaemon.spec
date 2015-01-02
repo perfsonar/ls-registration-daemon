@@ -44,6 +44,7 @@ Requires:		perl(Socket)
 Requires:		perl(Sys::MemInfo)
 Requires:		perl(Time::HiRes)
 Requires:		perl(XML::LibXML)
+Requires:		perl(Net::Interface)
 Requires:		perl(base)
 Requires:		chkconfig
 Requires:		coreutils
