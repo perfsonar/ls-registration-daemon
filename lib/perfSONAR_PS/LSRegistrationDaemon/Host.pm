@@ -24,6 +24,7 @@ use perfSONAR_PS::LSRegistrationDaemon::Services::REDDnet;
 use perfSONAR_PS::LSRegistrationDaemon::Services::BWCTL;
 use perfSONAR_PS::LSRegistrationDaemon::Services::OWAMP;
 use perfSONAR_PS::LSRegistrationDaemon::Services::MA;
+use perfSONAR_PS::LSRegistrationDaemon::Services::Dashboard;
 use perfSONAR_PS::LSRegistrationDaemon::Services::MP_BWCTL;
 use perfSONAR_PS::LSRegistrationDaemon::Services::MP_OWAMP;
 use perfSONAR_PS::LSRegistrationDaemon::Services::NDT;
@@ -282,6 +283,9 @@ sub init_subordinates {
         }
         elsif ( lc( $service_conf->{type} ) eq "ma" ) {
             $service = perfSONAR_PS::LSRegistrationDaemon::Services::MA->new();
+        }
+        elsif ( lc( $service_conf->{type} ) eq "dashboard" ) {
+            $service = perfSONAR_PS::LSRegistrationDaemon::Services::Dashboard->new();
         }
         elsif ( lc( $service_conf->{type} ) eq "mp_bwctl" ) {
             $service = perfSONAR_PS::LSRegistrationDaemon::Services::MP_BWCTL->new();
