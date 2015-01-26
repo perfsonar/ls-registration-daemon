@@ -70,7 +70,7 @@ Returns the web UI URL
 sub webui_url {
     my ( $self ) = @_;
     
-    if($conf->{autodiscover_webui_url}){
+    if($self->{CONF}->{autodiscover_webui_url}){
         my @addresses = ();
         
         if($self->{CONF}->{http_port} || ! $self->{CONF}->{https_port}){
@@ -109,7 +109,7 @@ sub build_registration {
     my ( $self ) = @_;
     
     my $service = $self->SUPER::build_registration();
-    $service->addField(key=>'service-webui-url', value= > $self->webui_url()) if($self->webui_url());
+    $service->addField(key=>'service-webui-url', value=> $self->webui_url()) if($self->webui_url());
 
     return $service;
 }
