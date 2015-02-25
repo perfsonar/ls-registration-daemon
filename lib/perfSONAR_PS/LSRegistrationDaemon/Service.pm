@@ -20,7 +20,7 @@ sub known_variables {
     push @variables, (
         { variable => "address", type => "array" },
         { variable => "site_project", type => "array" },
-
+        { variable => "authentication_type", type => "array" },
         { variable => "administrator", type => "hash" },
 
         { variable => "allow_internal_addresses", type => "scalar" },
@@ -152,6 +152,12 @@ sub service_locator {
     return $self->{CONF}->{service_locator};
 }
 
+sub authentication_type {
+    my ( $self ) = @_;
+
+    return $self->{CONF}->{authentication_type};
+}
+
 
 sub domain {
     my ( $self ) = @_;
@@ -249,6 +255,7 @@ sub build_registration {
     );
     $service->setServiceEventType($self->event_type()) if($self->event_type());
     $service->setCommunities($self->communities()) if($self->communities());
+    $service->setAuthnType($self->authentication_type()) if($self->authentication_type());
     
     return $service;
 }
@@ -274,6 +281,7 @@ sub checksum_fields {
         "zip_code",
         "latitude",
         "longitude",
+        "authentication_type"
     ];
 }
 
