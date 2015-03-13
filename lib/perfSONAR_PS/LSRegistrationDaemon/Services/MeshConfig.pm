@@ -22,6 +22,7 @@ use base 'perfSONAR_PS::LSRegistrationDaemon::Services::HTTP_Service';
 
 use Digest::MD5 qw(md5_base64);
 use perfSONAR_PS::Common qw(mergeConfig);
+use perfSONAR_PS::LSRegistrationDaemon::Person;
 use LWP::UserAgent;
 use JSON qw(from_json);
 
@@ -58,15 +59,15 @@ sub init_dependencies {
     
     #build user agent
     my $ua = LWP::UserAgent->new;
-    if defined ($self->{CONF}->{'autodiscover_timeout'}){
+    if(defined $self->{CONF}->{'autodiscover_timeout'}){
         $ua->timeout($self->{CONF}->{'autodiscover_timeout'});
     }else{
         $ua->timeout(60);#default to 60 seconds
     }
     $ua->env_proxy();
-    $client->ssl_opts(verify_hostname => $self->{CONF}->{'autodiscover_verify_hostname'}) if defined ($self->{CONF}->{'autodiscover_verify_hostname'});
-    $client->ssl_opts(SSL_ca_file => $self->{CONF}->{'autodiscover_ca_certificate_file'}) if($self->{CONF}->{'autodiscover_ca_certificate_file'});
-    $client->ssl_opts(SSL_ca_path => $self->{CONF}->{'autodiscover_ca_certificate_path'}) if($self->{CONF}->{'autodiscover_ca_certificate_path'});
+    $ua->ssl_opts(verify_hostname => $self->{CONF}->{'autodiscover_verify_hostname'}) if defined ($self->{CONF}->{'autodiscover_verify_hostname'});
+    $ua->ssl_opts(SSL_ca_file => $self->{CONF}->{'autodiscover_ca_certificate_file'}) if($self->{CONF}->{'autodiscover_ca_certificate_file'});
+    $ua->ssl_opts(SSL_ca_path => $self->{CONF}->{'autodiscover_ca_certificate_path'}) if($self->{CONF}->{'autodiscover_ca_certificate_path'});
     
     #Determine URL
     my $autodiscover_urls =  [];
@@ -77,7 +78,7 @@ sub init_dependencies {
     }
     
     #grab JSON
-    my $mesh_json = '';
+    my $mesh_json = {};
     foreach my $autodiscover_url(@{$autodiscover_urls}){
         my $response = $ua->get($autodiscover_url);
         if ($response->is_success) {
@@ -89,7 +90,7 @@ sub init_dependencies {
     }
         
     #parse JSON
-    unless $mesh_json{
+    unless($mesh_json){
         $self->{LOGGER}->error("Unable to download MeshConfig file. Autodiscovery failed. Proceeding without autodiscovered information");
         return 0;
     }
@@ -129,6 +130,12 @@ sub init_dependencies {
                     'name' => $admins->{'name'},
                     'email' => $admins->{'email'},
                 };
+                my $admin_conf = mergeConfig($self->{CONF}, $self->{CONF}->{administrator});
+                my $admin_record = perfSONAR_PS::LSRegistrationDaemon::Person->new();
+                if($admin_record->init( $admin_conf ) != 0) {
+                    $self->{LOGGER}->error( "Error: Couldn't create person object for MeshConfig admin" );
+                }
+                $self->{DEPENDENCIES} = [ $admin_record ];
                 last;
             }
         }
