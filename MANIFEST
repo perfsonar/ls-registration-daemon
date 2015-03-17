@@ -65,6 +65,7 @@ lib/perfSONAR_PS/LSRegistrationDaemon/PSTest.pm
 lib/perfSONAR_PS/LSRegistrationDaemon/Person.pm
 lib/perfSONAR_PS/LSRegistrationDaemon/Service.pm
 lib/perfSONAR_PS/LSRegistrationDaemon/Services/BWCTL.pm
+lib/perfSONAR_PS/LSRegistrationDaemon/Services/Dashboard.pm
 lib/perfSONAR_PS/LSRegistrationDaemon/Services/GridFTP.pm
 lib/perfSONAR_PS/LSRegistrationDaemon/Services/HTTP_Service.pm
 lib/perfSONAR_PS/LSRegistrationDaemon/Services/ICMP_Service.pm

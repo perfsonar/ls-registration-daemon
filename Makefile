@@ -1,7 +1,7 @@
 PACKAGE=perfSONAR_PS-LSRegistrationDaemon
 DESTDIR?=/opt/perfsonar
-VERSION=3.4
-RELEASE=2
+VERSION=3.4.2
+RELEASE=1
 BIN=$(DESTDIR)/bin
 DOC=$(DESTDIR)/doc
 ETC=$(DESTDIR)/etc
