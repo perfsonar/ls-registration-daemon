@@ -1,5 +1,7 @@
 # perfSONAR Lookup Service Registration Daemon
 
+The Lookup Service (LS) Registration daemon registers and maintains records with the lookup service. It includes features such as autodetecting hardware details of the host on which it is running and registering these as host and interface records in the Lookup Seervice. It also registers service records of the various perfSONAR components, in many cases detecting whether the service is up prior to registering and autodetcting service specific features where applicable. It opaquely handles most record management tasks, such as refreshing a record and avoiding duplicate registrations. It is designed to be extensible so that new registration types may be added with minimal effort.
+
 ##Getting the Code
 You may checkout the code with the following command:
 
