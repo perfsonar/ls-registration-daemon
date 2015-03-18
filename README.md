@@ -60,7 +60,7 @@ This repository contains a [git submodule](http://git-scm.com/book/en/v2/Git-Too
     git commit -a -m "Updating to latest shared"
     git push
     ```
-* If you want to include a new file from the *shared* submodule, create a symbolic under *lib*. For example, if you were to add a reference to the  *perfSONAR_PS::Utils::DNS* module you would run the following:
+* If you want to include a new file from the *shared* submodule, create a symbolic link under *lib*. For example, if you were to add a reference to the  *perfSONAR_PS::Utils::DNS* module you would run the following:
 
     ```bash
     mkdir -p lib/perfSONAR_PS/Utils/
