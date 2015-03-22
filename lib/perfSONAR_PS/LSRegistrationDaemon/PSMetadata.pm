@@ -25,7 +25,7 @@ sub known_variables {
 
         { variable => "destination", type => "scalar" },
         { variable => "domain", type => "scalar" },
-        { variable => "ma_locator", type => "scalar" },
+        { variable => "ma_locator", type => "array" },
         { variable => "measurement_agent", type => "scalar" },
         { variable => "metadata_uri", type => "scalar" },
         { variable => "source", type => "scalar" },
