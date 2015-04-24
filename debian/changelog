@@ -1,9 +1,3 @@
-perfsonar-lsregistrationdaemon (3.4.3-1) UNRELEASED; urgency=low
-
-  * to be completed...
-
- -- Antoine Delvaux <antoine.delvaux@dante.net>  Fri, 24 Apr 2015 15:34:39 +0000
-
 perfsonar-lsregistrationdaemon (3.4.2.1-1) unstable; urgency=low
 
   * Port to Debian.

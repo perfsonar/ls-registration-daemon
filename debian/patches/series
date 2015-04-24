@@ -1,3 +1,4 @@
+MemStats
 Makefile-versionnumber
 Makefile-DESTDIR
 debian-naming.patch

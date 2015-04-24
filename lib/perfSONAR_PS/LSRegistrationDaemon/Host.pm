@@ -8,7 +8,7 @@ use Digest::MD5 qw(md5_base64);
 use POSIX;
 
 use Sys::Hostname;
-use Sys::Statistics::Linux::MemStats;
+use Sys::MemInfo qw(totalmem);
 
 use perfSONAR_PS::NPToolkit::Config::Version;
 use perfSONAR_PS::Utils::Host qw(get_operating_system_info get_processor_info get_tcp_configuration get_ethernet_interfaces discover_primary_address);
@@ -114,10 +114,7 @@ sub init {
             $conf->{host_name} = hostname;
         }
 
-        my $lxs = Sys::Statistics::Linux::MemStats->new;
-        my $stat = $lxs->get();
-
-        $conf->{memory} = floor(($stat->{memtotal}/(1024*1024))) . ' MB' unless $conf->{memory};
+        $conf->{memory} = floor((&totalmem()/(1024*1024))) . ' MB' unless $conf->{memory};
 
         my $os_info = get_operating_system_info();
         if ($os_info) {

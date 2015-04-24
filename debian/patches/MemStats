@@ -1,0 +1,23 @@
+--- a/lib/perfSONAR_PS/LSRegistrationDaemon/Host.pm
++++ b/lib/perfSONAR_PS/LSRegistrationDaemon/Host.pm
+@@ -8,7 +8,7 @@
+ use POSIX;
+ 
+ use Sys::Hostname;
+-use Sys::MemInfo qw(totalmem);
++use Sys::Statistics::Linux::MemStats;
+ 
+ use perfSONAR_PS::NPToolkit::Config::Version;
+ use perfSONAR_PS::Utils::Host qw(get_operating_system_info get_processor_info get_tcp_configuration get_ethernet_interfaces discover_primary_address);
+@@ -114,7 +114,10 @@
+             $conf->{host_name} = hostname;
+         }
+ 
+-        $conf->{memory} = floor((&totalmem()/(1024*1024))) . ' MB' unless $conf->{memory};
++        my $lxs = Sys::Statistics::Linux::MemStats->new;
++        my $stat = $lxs->get();
++
++        $conf->{memory} = floor(($stat->{memtotal}/(1024*1024))) . ' MB' unless $conf->{memory};
+ 
+         my $os_info = get_operating_system_info();
+         if ($os_info) {

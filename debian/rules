@@ -5,6 +5,7 @@
 
 %:
 	dh $@ --with quilt
+	# We need the 2 override for quilt because we are changing the daemon.pl name.
 override_dh_quilt_patch:
 	dh_quilt_patch
 	[ -f bin/ls_registration_daemon.pl ] || mv bin/daemon.pl bin/ls_registration_daemon.pl
