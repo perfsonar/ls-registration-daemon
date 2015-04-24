@@ -99,7 +99,7 @@ if ( not $RUNAS_USER ) {
 
 if ( $RUNAS_USER and $RUNAS_GROUP ) {
     if ( setids( USER => $RUNAS_USER, GROUP => $RUNAS_GROUP ) != 0 ) {
-        print "Error: Couldn't drop priviledges\n";
+        print "Error: Couldn't drop privileges\n";
         exit( -1 );
     }
 }
