@@ -67,7 +67,7 @@ themselves.
 %install
 rm -rf %{buildroot}
 
-make DESTDIR=%{buildroot}/%{install_base} rpminstall
+make ROOTPATH=%{buildroot}/%{install_base} rpminstall
 
 mkdir -p %{buildroot}/etc/init.d
 

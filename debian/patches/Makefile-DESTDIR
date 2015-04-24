@@ -34,3 +34,14 @@
 +	install -d $(BIN) $(DOC) $(ETC) $(LIB)
 +	tar ch ./lib/perfSONAR_PS/LSRegistrationDaemon | tar x -C $(LIB)
  
+--- a/perl-perfSONAR_PS-LSRegistrationDaemon.spec
++++ b/perl-perfSONAR_PS-LSRegistrationDaemon.spec
+@@ -67,7 +67,7 @@
+ %install
+ rm -rf %{buildroot}
+ 
+-make ROOTPATH=%{buildroot}/%{install_base} rpminstall
++make DESTDIR=%{buildroot}/%{install_base} rpminstall
+ 
+ mkdir -p %{buildroot}/etc/init.d
+ 

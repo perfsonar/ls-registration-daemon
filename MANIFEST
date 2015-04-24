@@ -1,6 +1,7 @@
 MANIFEST
 Makefile
-bin/ls_registration_daemon.pl
+bin/daemon.pl
+bin/daemon_compat.pl
 dependencies
 doc/Changes
 doc/INSTALL
