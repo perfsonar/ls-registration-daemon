@@ -68,6 +68,7 @@ sub known_variables {
         { variable => "processor_cores", type => "scalar" },
         { variable => "processor_count", type => "scalar" },
         { variable => "processor_speed", type => "scalar" },
+        { variable => "processor_cpuid", type => "scalar" },
         { variable => "region", type => "scalar" },
         { variable => "site_name", type => "scalar" },
         { variable => "tcp_autotune_max_buffer_recv", type => "scalar" },
@@ -76,8 +77,15 @@ sub known_variables {
         { variable => "tcp_max_backlog", type => "scalar" },
         { variable => "tcp_max_buffer_recv", type => "scalar" },
         { variable => "tcp_max_buffer_send", type => "scalar" },
+        { variable => "tcp_max_achievable", type => "scalar" },
         { variable => "toolkit_version", type => "scalar" },
         { variable => "zip_code", type => "scalar" },
+        { variable => "role", type => "array" },
+        { variable => "bundle_type", type => "scalar" },
+        { variable => "bundle_version", type => "scalar" },
+        { variable => "access_policy", type => "scalar" },
+        { variable => "access_policy_notes", type => "scalar" },
+        { variable => "is_virtual_machine", type => "scalar" },
     );
 
     return @variables;
@@ -131,6 +139,7 @@ sub init {
             }
             $conf->{processor_count} = $cpu_info->{count} unless $conf->{processor_count};
             $conf->{processor_cores} = $cpu_info->{cores} unless $conf->{processor_cores};
+            $conf->{processor_cpuid} = $cpu_info->{model_name} unless $conf->{processor_cpuid};
         }
    
         my $tcp_info = get_tcp_configuration(); 
@@ -151,10 +160,12 @@ sub init {
             $conf->{tcp_cc_backlog} = $tcp_info->{tcp_cc_backlog} unless $conf->{tcp_cc_backlog};
         }
 
-        # Grab the Toolkit version    
-        my $toolkit_version_conf = perfSONAR_PS::NPToolkit::Config::Version->new();
-        $toolkit_version_conf->init();
-        $conf->{toolkit_version} = $toolkit_version_conf->get_version() if $toolkit_version_conf->get_version();
+        # Grab the bundle version
+        unless($conf->{bundle_version}) {
+            my $toolkit_version_conf = perfSONAR_PS::NPToolkit::Config::Version->new();
+            $toolkit_version_conf->init();
+            $conf->{bundle_version} = $toolkit_version_conf->get_version() if $toolkit_version_conf->get_version();
+        }
     }
  
     return $self->SUPER::init( $conf );
@@ -385,6 +396,12 @@ sub processor_cores {
     return $self->{CONF}->{processor_cores};
 }
 
+sub processor_cpuid {
+    my ( $self ) = @_;
+
+    return $self->{CONF}->{processor_cpuid};
+}
+
 sub os_name {
     my ( $self ) = @_;
 
@@ -439,6 +456,12 @@ sub tcp_max_backlog {
     return $self->{CONF}->{tcp_max_backlog};
 }
 
+sub tcp_max_achievable {
+    my ( $self ) = @_;
+
+    return $self->{CONF}->{tcp_max_achievable};
+}
+
 sub domain {
     my ( $self ) = @_;
 
@@ -449,6 +472,42 @@ sub toolkit_version {
     my ( $self ) = @_;
     
     return $self->{CONF}->{toolkit_version};
+}
+
+sub role {
+    my ( $self ) = @_;
+    
+    return $self->{CONF}->{role};
+}
+
+sub bundle_type {
+    my ( $self ) = @_;
+    
+    return $self->{CONF}->{bundle_type};
+}
+
+sub bundle_version {
+    my ( $self ) = @_;
+    
+    return $self->{CONF}->{bundle_version};
+}
+
+sub access_policy {
+    my ( $self ) = @_;
+    
+    return $self->{CONF}->{access_policy};
+}
+
+sub access_policy_notes {
+    my ( $self ) = @_;
+    
+    return $self->{CONF}->{access_policy_notes};
+}
+
+sub is_virtual_machine {
+    my ( $self ) = @_;
+    
+    return $self->{CONF}->{is_virtual_machine};
 }
 
 sub administrator {
@@ -530,6 +589,7 @@ sub build_registration {
     	processorSpeed => $self->processor_speed(), 
     	processorCount => $self->processor_count(), 
     	processorCore => $self->processor_cores(),
+    	cpuId => $self->processor_cpuid(),
     	osName=> $self->os_name(), 
     	osVersion=> $self->os_version(), 
     	osKernel => $self->os_kernel(), 
@@ -539,6 +599,8 @@ sub build_registration {
     	tcpAutoMaxBufferSend => $self->tcp_autotune_max_buffer_send(), 
     	tcpAutoMaxBufferRecv => $self->tcp_autotune_max_buffer_recv(), 
     	tcpMaxBacklog => $self->tcp_max_backlog(), 
+    	tcpMaxAchievable => $self->tcp_max_achievable(), 
+    	vm => $self->is_virtual_machine(),
         administrators=> $self->administrator(), 
         domains => $self->domain(),
     	siteName => $self->site_name(), 
@@ -549,10 +611,19 @@ sub build_registration {
     	latitude => $self->latitude(), 
     	longitude => $self->longitude(),
     );
-    if(defined $self->toolkit_version()){
-        $service->setToolkitVersion($self->toolkit_version());
+    $service->setRole($self->role()) if(defined $self->role());
+    $service->setBundle($self->bundle_type()) if(defined $self->bundle_type());
+    $service->setBundleVersion($self->bundle_version()) if(defined $self->bundle_version());
+    $service->setAccessPolicy($self->access_policy()) if(defined $self->access_policy());
+    $service->setAccessNotes($self->access_policy_notes()) if(defined $self->access_policy_notes());
+    $service->setToolkitVersion($self->toolkit_version()) if(defined $self->toolkit_version());
+    #handle backward compatibility with toolkit version (deprecated in 3.5)
+    if(defined $self->bundle_version() && !defined $self->toolkit_version()){
+         $service->setToolkitVersion($self->bundle_version());
+    }elsif(defined $self->toolkit_version() && !defined $self->bundle_version()){
+         $service->setBundleVersion($self->toolkit_version());
     }
-    $service->setCommunities($self->site_project()) if($self->site_project());
+    $service->setCommunities($self->ite_project()) if($self->site_project());
     
     return $service;
 }
@@ -569,6 +640,7 @@ sub checksum_fields {
         "processor_speed",
         "processor_count", 
         "processor_cores",
+        "processor_cpuid",
         "os_name",
         "os_version",
         "os_kernel",
@@ -578,8 +650,15 @@ sub checksum_fields {
         "tcp_autotune_max_buffer_send",
         "tcp_autotune_max_buffer_recv",
         "tcp_max_backlog",
+        "tcp_max_achievable",
         "domain",
         "toolkit_version",
+        "role",
+        "bundle_type",
+        "bundle_version",
+        "access_policy",
+        "access_policy_notes",
+        "is_virtual_machine",
         "administrator", 
         "site_name",
         "city",
