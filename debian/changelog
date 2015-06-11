@@ -1,8 +1,8 @@
-perfsonar-lsregistrationdaemon (3.4.3-1) UNRELEASED; urgency=low
+perfsonar-lsregistrationdaemon (3.4.2.1-2) unstable; urgency=low
 
-  * TO BE FILLED IN...
+  * We register mp_bwctl and mp_owamp as default services (OPPD).
 
- -- Antoine Delvaux <antoine.delvaux@dante.net>  Fri, 24 Apr 2015 22:37:37 +0000
+ -- Antoine Delvaux <adelvaux@man.poznan.pl>  Thu, 11 Jun 2015 22:35:36 +0000
 
 perfsonar-lsregistrationdaemon (3.4.2.1-1) unstable; urgency=low
 
