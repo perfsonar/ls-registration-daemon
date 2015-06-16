@@ -1,6 +1,19 @@
 --- a/Makefile
 +++ b/Makefile
-@@ -22,15 +22,11 @@
+@@ -1,7 +1,11 @@
+ PACKAGE=perfSONAR_PS-LSRegistrationDaemon
+-ROOTPATH=/opt/perfsonar_ps/ls_registration_daemon
++DESTDIR?=/opt/perfsonar
+ VERSION=3.5
+ RELEASE=0.0.a1
++BIN=$(DESTDIR)/bin
++DOC=$(DESTDIR)/doc
++ETC=$(DESTDIR)/etc
++LIB=$(DESTDIR)/lib
+ 
+ default:
+ 	@echo No need to build the package. Just run \"make install\"
+@@ -22,15 +26,11 @@
  	rm -rf /tmp/$(PACKAGE)-$(VERSION).$(RELEASE)
  
  rpminstall:
