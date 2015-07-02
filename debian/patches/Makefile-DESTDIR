@@ -5,7 +5,7 @@
 -ROOTPATH=/opt/perfsonar_ps/ls_registration_daemon
 +DESTDIR?=/opt/perfsonar
  VERSION=3.5
- RELEASE=0.0.a1
+ RELEASE=0.1.rc1
 +BIN=$(DESTDIR)/bin
 +DOC=$(DESTDIR)/doc
 +ETC=$(DESTDIR)/etc
