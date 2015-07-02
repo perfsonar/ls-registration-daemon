@@ -1,3 +1,5 @@
+Using the GNU standardised $DESTDIR Makefile variable instead of $ROOTPATH.
+The install: step probably need to be reworked before being ported back to the master branch.
 --- a/Makefile
 +++ b/Makefile
 @@ -1,7 +1,11 @@

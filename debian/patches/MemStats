@@ -1,3 +1,5 @@
+This patch is necessary under Debian as Sys::MemInfo is not available in a package (as of Debian 7).
+Porting this patch to master is not advisable as Sys::Statistics::Linux seems not available for CentOS 7 yet.
 --- a/lib/perfSONAR_PS/LSRegistrationDaemon/Host.pm
 +++ b/lib/perfSONAR_PS/LSRegistrationDaemon/Host.pm
 @@ -8,7 +8,7 @@

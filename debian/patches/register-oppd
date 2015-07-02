@@ -1,3 +1,4 @@
+Registers OPPD services to the Lookup Service.
 --- a/etc/ls_registration_daemon.conf
 +++ b/etc/ls_registration_daemon.conf
 @@ -94,6 +94,11 @@
