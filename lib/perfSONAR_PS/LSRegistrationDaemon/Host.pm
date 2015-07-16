@@ -623,7 +623,7 @@ sub build_registration {
     }elsif(defined $self->toolkit_version() && !defined $self->bundle_version()){
          $service->setBundleVersion($self->toolkit_version());
     }
-    $service->setCommunities($self->ite_project()) if($self->site_project());
+    $service->setCommunities($self->site_project()) if($self->site_project());
     
     return $service;
 }

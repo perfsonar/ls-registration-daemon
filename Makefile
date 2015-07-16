@@ -1,7 +1,7 @@
 PACKAGE=perfSONAR_PS-LSRegistrationDaemon
 ROOTPATH=/opt/perfsonar_ps/ls_registration_daemon
 VERSION=3.5
-RELEASE=0.1.rc1
+RELEASE=0.2.rc1
 
 default:
 	@echo No need to build the package. Just run \"make install\"
