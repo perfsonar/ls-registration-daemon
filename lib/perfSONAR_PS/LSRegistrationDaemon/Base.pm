@@ -103,10 +103,10 @@ sub init {
     # if its not there is nothing to do
     my $duplicate_uri = $self->find_duplicate();
     unless ($duplicate_uri){
-        $self->{LOGGER}->info("No duplicate found for " . $self->description());
+        $self->{LOGGER}->debug("No duplicate found for " . $self->description());
     }
     else {
-        $self->{LOGGER}->info("Duplicate $duplicate_uri found for " . $self->description());
+        $self->{LOGGER}->debug("Duplicate $duplicate_uri found for " . $self->description());
     
         # if it is a duplicate, determine if anything has changed in the fields the LS
         # does not use to compare records...
@@ -116,10 +116,10 @@ sub init {
             $self->{STATUS} = "REGISTERED";
             $self->{KEY} = $existing_key;
             $self->{NEXT_REFRESH} = time; # Renew it now to make sure that the LS actually has the record
-            $self->{LOGGER}->info("No changes, will renew " . $self->description());
+            $self->{LOGGER}->info("No changes for record $existing_key, will renew " . $self->description());
         }else{
             #changes so unregister old one
-            $self->{LOGGER}->info("Changes, will delete " . $duplicate_uri);
+            $self->{LOGGER}->info("Changes in record, will delete " . $duplicate_uri);
             my $ls_client = new SimpleLookupService::Client::RecordManager();
             $ls_client->init({ server => $self->{LS_CLIENT}, record_id => $duplicate_uri });
             $ls_client->delete();
@@ -225,7 +225,7 @@ sub refresh {
     }
     
     if ( $self->{STATUS} eq "BROKEN" ) {
-        $self->{LOGGER}->error( "Refreshing misconfigured record: ".$self->description() );
+        $self->{LOGGER}->error( "Refreshing misconfigured record (key=" . $self->{KEY} . ", description=" . $self->description() . ")" );
         return;
     }
     
@@ -248,11 +248,11 @@ sub refresh {
         
         #perform needed LS operation
         if ( $self->{STATUS} ne "REGISTERED" ) {
-            $self->{LOGGER}->info( "Record '".$self->description()."' is up, registering" );
+            $self->{LOGGER}->info( "Record is up, registering (key=" . $self->{KEY} . ", description=" . $self->description() . ")" );
             $self->register();
         }
         elsif ( time >= $self->{NEXT_REFRESH} ) {
-            $self->{LOGGER}->info( "Record '".$self->description()."' is up, refreshing registration" );
+            $self->{LOGGER}->info( "Record is up, refreshing registration (key=" . $self->{KEY} . ", description=" . $self->description() . ")" );
             $self->keepalive();
         }
         else {
@@ -260,11 +260,11 @@ sub refresh {
         }
     }
     elsif ( $self->{STATUS} eq "REGISTERED" ) {
-        $self->{LOGGER}->info( "Record '".$self->description()."' is down, unregistering" );
+        $self->{LOGGER}->info( "Record is down, unregistering (key=" . $self->{KEY} . ", description=" . $self->description() . ")" );
         $self->unregister();
     }
     else {
-        $self->{LOGGER}->info( "Record '".$self->description()."' is down" );
+        $self->{LOGGER}->info( "Record is down (key=" . $self->{KEY} . ", description=" . $self->description() . ")" );
     }
 
     # Refresh the objects that depend on us
@@ -298,10 +298,10 @@ sub register {
         if($self->{NEXT_REFRESH} < time){
              $self->{LOGGER}->warn( "You may want to decrease the check_interval option as the registered record will expire before the next run");
         }
-        $self->{LOGGER}->info("Next Refresh: " . $self->{NEXT_REFRESH});
+        $self->{LOGGER}->info("Service registered. Next Refresh: " . $self->{NEXT_REFRESH} . "(key=" . $self->{KEY} . ", description=" . $self->description() . ")");
         $self->add_key();
     }else{
-        $self->{LOGGER}->error( "Problem registering service. Will retry full registration next time: " . $res->{message} );
+        $self->{LOGGER}->error( "Problem registering service. Will retry full registration next time: " . $res->{message} . "(key=NONE, description=" . $self->description() . ")" );
     }
     
     return;
@@ -322,10 +322,11 @@ sub keepalive {
     if ( $resCode == 0 ) {
         $self->{NEXT_REFRESH} = $res->getRecordExpiresAsUnixTS()->[0] - $self->{CONF}->{check_interval};
         $self->update_key();
+        $self->{LOGGER}->info("Service renewed. Next Refresh: " . $self->{NEXT_REFRESH} . "(key=" . $self->{KEY} . ", description=" . $self->description() . ")");
     }
     else {
         $self->{STATUS} = "UNREGISTERED";
-        $self->{LOGGER}->error( "Couldn't send Keepalive. Will send full registration next time. Error was: " . $res->{message} );
+        $self->{LOGGER}->error( "Couldn't send Keepalive. Will send full registration next time. Error was: " . $res->{message} . "(key=" . $self->{KEY} . ", description=" . $self->description() . ")");
         $self->delete_key();
     }
     
@@ -370,7 +371,7 @@ sub find_key {
     while(my @row = $stmt->fetchrow_array()){
         $key = $row[0];
         $expires = $row[1];
-        $self->{LOGGER}->info( "Found key $key with $checksum for " . $self->description() . " that expires $expires" );
+        $self->{LOGGER}->debug( "Found key $key with $checksum for " . $self->description() . " that expires $expires" );
     }
     $dbh->disconnect();
     
@@ -393,7 +394,7 @@ sub find_duplicate {
     }
     while(my @row = $stmt->fetchrow_array()){
         $key = $row[0];
-        $self->{LOGGER}->info( "Found duplicate checksum $key with $checksum for " . $self->description());
+        $self->{LOGGER}->debug( "Found duplicate checksum $key with $checksum for " . $self->description());
     }
     $dbh->disconnect();
     
@@ -476,11 +477,11 @@ sub build_checksum {
         $checksum .= $self->_add_checksum_val($self->$field());
     }
 
-    $self->{LOGGER}->info("Checksum prior to md5 is " . $checksum);
+    $self->{LOGGER}->debug("Checksum prior to md5 is " . $checksum);
 
     $checksum = md5_base64($checksum);
 
-    $self->{LOGGER}->info("Checksum is " . $checksum);
+    $self->{LOGGER}->debug("Checksum is " . $checksum);
 
     return $checksum;
 }
@@ -493,11 +494,11 @@ sub build_duplicate_checksum {
         $checksum .= $self->_add_checksum_val($self->$field());
     }
 
-    $self->{LOGGER}->info("Duplicate checksum prior to md5 is " . $checksum);
+    $self->{LOGGER}->debug("Duplicate checksum prior to md5 is " . $checksum);
 
     $checksum = md5_base64($checksum);
 
-    $self->{LOGGER}->info("Duplicate checksum is " . $checksum);
+    $self->{LOGGER}->debug("Duplicate checksum is " . $checksum);
 
     return $checksum;
 
