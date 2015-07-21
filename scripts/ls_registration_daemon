@@ -2,7 +2,7 @@
 #
 # Init file for perfSONAR Lookup Service Registration Daemon
 #
-# chkconfig: 2345 60 20
+# chkconfig: 2345 90 20
 # description: perfSONAR Lookup Service Registration Daemon
 #
 
