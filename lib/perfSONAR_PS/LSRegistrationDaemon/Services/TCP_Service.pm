@@ -48,7 +48,10 @@ sub init {
     $conf->{address} = [ $conf->{address} ] unless ref($conf->{address}) eq "ARRAY";
 
     unless ( scalar(@{ $conf->{address} }) > 0 ) {
-        $self->{LOGGER}->error( "No address available for service" );
+        my $err_msg = "No address available for service";
+        $err_msg .= " on " . $conf->{primary_interface} if($conf->{primary_interface});
+        $err_msg .= ". All private addresses were ignored. Please set allow_internal_addresses if you wish to use a private address." unless($conf->{allow_internal_addresses});
+        $self->{LOGGER}->error($err_msg);
         return -1;
     }
 
