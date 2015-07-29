@@ -67,7 +67,7 @@ sub init_dependencies {
         push @tmp, $self->{CONF}->{test};
         $self->{CONF}->{test} = \@tmp;
     }
-    
+
     #auto grab MA tests
     if($self->{CONF}->{'autodiscover_tests'}){
         my $auto_url = $self->{CONF}->{'autodiscover_url'};
@@ -153,6 +153,24 @@ sub init_dependencies {
     return 0;
 }
 
+=head2 refresh($self)
+
+Overridden method that detects new MA test registrations
+
+=cut
+sub refresh {
+    my ( $self ) = @_;
+
+    #if disabled then return
+    if($self->{CONF}->{disabled}){
+        return 0;
+    }
+
+    #grab any new metadata
+    $self->init_dependencies();
+
+    return $self->SUPER::refresh();
+}
 
 =head2 service_event_type($self)
 
