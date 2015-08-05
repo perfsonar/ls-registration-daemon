@@ -161,10 +161,11 @@ sub init {
         }
 
         # Grab the bundle version
-        unless($conf->{bundle_version}) {
+        unless($conf->{bundle_version} && $conf->{bundle_type}) {
             my $toolkit_version_conf = perfSONAR_PS::NPToolkit::Config::Version->new();
             $toolkit_version_conf->init();
-            $conf->{bundle_version} = $toolkit_version_conf->get_version() if $toolkit_version_conf->get_version();
+            $conf->{bundle_version} = $toolkit_version_conf->get_version() if(!$conf->{bundle_version} && $toolkit_version_conf->get_version());
+            $conf->{bundle_type} = $toolkit_version_conf->get_install_type() if(!$conf->{bundle_type} && $toolkit_version_conf->get_install_type());
         }
     }
  
