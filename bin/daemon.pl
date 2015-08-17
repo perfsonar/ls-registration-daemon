@@ -179,6 +179,11 @@ unless ($conf{"check_interval"}) {
 }
 
 #initialize the key database
+unless ( $conf{"client_uuid_file"} ) {
+    $conf{"client_uuid_file"} = '/var/lib/perfsonar/ls_registration_daemon/client_uuid';
+}
+
+#initialize the key database
 unless ( $conf{"ls_key_db"} ) {
     $logger->info( "No LS key database found" );
     $conf{"ls_key_db"} = '/var/lib/perfsonar/ls_registration_daemon/lsKey.db';
