@@ -24,11 +24,12 @@ use URI;
 use Data::Dumper;
 
 use perfSONAR_PS::Utils::DNS qw(reverse_dns);
+use perfSONAR_PS::Utils::LookupService qw(get_client_uuid set_client_uuid);
 use Digest::MD5 qw(md5_base64);
 use SimpleLookupService::Client::Registration;
 use SimpleLookupService::Client::RecordManager;
 
-use fields 'CONF', 'STATUS', 'LOGGER', 'KEY', 'NEXT_REFRESH', 'LS_CLIENT', 'DEPENDENCIES', 'SUBORDINATES';
+use fields 'CONF', 'STATUS', 'LOGGER', 'KEY', 'NEXT_REFRESH', 'LS_CLIENT', 'DEPENDENCIES', 'SUBORDINATES', 'CLIENT_UUID';
 
 =head1 API
 
@@ -81,6 +82,10 @@ sub init {
 
     $self->{CONF}   = $conf;
     $self->{STATUS} = "UNREGISTERED";
+    $self->{CLIENT_UUID} = get_client_uuid(file => $self->{CONF}->{'client_uuid_file'});
+    unless($self->{CLIENT_UUID}){
+         $self->{CLIENT_UUID} = set_client_uuid(file => $self->{CONF}->{'client_uuid_file'});
+    }
     
     #if disabled then return
     if($self->{CONF}->{disabled}){
@@ -248,7 +253,7 @@ sub refresh {
         
         #perform needed LS operation
         if ( $self->{STATUS} ne "REGISTERED" ) {
-            $self->{LOGGER}->info( "Record is up, registering (key=" . $self->{KEY} . ", description=" . $self->description() . ")" );
+            $self->{LOGGER}->info( "Record is up, registering (description=" . $self->description() . ")" );
             $self->register();
         }
         elsif ( time >= $self->{NEXT_REFRESH} ) {
@@ -286,6 +291,8 @@ sub register {
 
     #Register
     my $reg = $self->build_registration();
+    $reg->setRecordClientUUID($self->client_uuid());
+    
     my $ls_client = new SimpleLookupService::Client::Registration();
     $ls_client->init({server => $self->{LS_CLIENT}, record => $reg});
     my ($resCode, $res) = $ls_client->register();
@@ -443,7 +450,11 @@ sub delete_key {
     $dbh->disconnect();
 }
 
-
+sub client_uuid(){
+    my ( $self ) = @_;
+    
+    return $self->{CLIENT_UUID};
+}
 
 sub build_registration {
     my ( $self ) = @_;
@@ -471,12 +482,13 @@ sub checksum_prefix {
 
 sub build_checksum {
     my ( $self ) = @_;
-
+    
     my $checksum = $self->checksum_prefix()."::";
     foreach my $field (@{ $self->checksum_fields() }) {
         $checksum .= $self->_add_checksum_val($self->$field());
     }
-
+    $checksum .= $self->_add_checksum_val($self->client_uuid());
+    
     $self->{LOGGER}->debug("Checksum prior to md5 is " . $checksum);
 
     $checksum = md5_base64($checksum);
@@ -493,7 +505,7 @@ sub build_duplicate_checksum {
     foreach my $field (@{ $self->duplicate_checksum_fields() }) {
         $checksum .= $self->_add_checksum_val($self->$field());
     }
-
+    
     $self->{LOGGER}->debug("Duplicate checksum prior to md5 is " . $checksum);
 
     $checksum = md5_base64($checksum);
