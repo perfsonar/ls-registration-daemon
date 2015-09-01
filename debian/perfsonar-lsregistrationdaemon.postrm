@@ -24,7 +24,7 @@ case "$1" in
         rm -rf /var/lib/perfsonar/lsregistrationdaemon
     ;;
 
-    purge|remove|upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
+    remove|upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
     ;;
 
     *)

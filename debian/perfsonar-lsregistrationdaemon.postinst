@@ -27,7 +27,6 @@ case "$1" in
     # DB directory
     mkdir -p /var/lib/perfsonar/lsregistrationdaemon
     chown perfsonar:perfsonar /var/lib/perfsonar/lsregistrationdaemon
-    chown perfsonar:perfsonar /var/lib/perfsonar
 
     ;;
 
