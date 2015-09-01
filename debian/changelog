@@ -1,10 +1,11 @@
-perfsonar-lsregistrationdaemon (3.5~2.1.rc1-2) UNRELEASED; urgency=low
+perfsonar-lsregistrationdaemon (3.5~3.rc2-1) UNRELEASED; urgency=low
 
   * Adding support for registering the type of perfSONAR node into the sLS
   * Adding an authentication type field to LSRegistrationDaemon
   * Register existence of mesh files
+  * Adding support for client-uuid field
 
- -- Antoine Delvaux <adelvaux@man.poznan.pl>  Tue, 21 Jul 2015 12:31:07 +0000
+ -- Antoine Delvaux <adelvaux@man.poznan.pl>  Tue, 01 Sep 2015 19:34:16 +0000
 
 perfsonar-lsregistrationdaemon (3.4.2.1-2) unstable; urgency=low
 
