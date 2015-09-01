@@ -28,7 +28,7 @@ Renaming all occurences of 'ls_registration_daemon' to 'lsregistrationdaemon'.
  }
  
  ( $status, $res ) = lockPIDFile( $PIDFILE );
-@@ -181,7 +181,7 @@
+@@ -186,7 +186,7 @@
  #initialize the key database
  unless ( $conf{"ls_key_db"} ) {
      $logger->info( "No LS key database found" );
