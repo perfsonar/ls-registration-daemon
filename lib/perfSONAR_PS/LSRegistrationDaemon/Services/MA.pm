@@ -70,6 +70,8 @@ sub init_dependencies {
 
     #auto grab MA tests
     if($self->{CONF}->{'autodiscover_tests'}){
+        #if we auto discover tests there is no manually setting allowed. This prevents memory leak.
+        $self->{CONF}->{test} = [];
         my $auto_url = $self->{CONF}->{'autodiscover_url'};
         my $indexer_factory = perfSONAR_PS::LSRegistrationDaemon::EventTypeIndexer::EventTypeIndexerFactory->new();
         my $indexer_time_range = $self->{CONF}->{'autodiscover_index_time_range'};
