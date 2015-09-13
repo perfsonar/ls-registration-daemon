@@ -4,7 +4,7 @@ Install perfsonar binaries and libraries into their Debian proper location.
 @@ -2,10 +2,10 @@
  DESTDIR?=/opt/perfsonar
  VERSION=3.5
- RELEASE=0.3.rc2
+ RELEASE=0.4.rc2
 -BIN=$(DESTDIR)/bin
 -DOC=$(DESTDIR)/doc
 -ETC=$(DESTDIR)/etc
