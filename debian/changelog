@@ -1,11 +1,11 @@
-perfsonar-lsregistrationdaemon (3.5~4.rc2-1) perfsonar-wheezy-staging; urgency=low
+perfsonar-lsregistrationdaemon (3.5~5.rc2-1) perfsonar-wheezy-staging; urgency=low
 
   * Adding support for registering the type of perfSONAR node into the sLS
   * Adding an authentication type field to LSRegistrationDaemon
   * Register existence of mesh files
   * Adding support for client-uuid field
 
- -- Antoine Delvaux <adelvaux@man.poznan.pl>  Sun, 13 Sep 2015 14:27:48 +0000
+ -- Antoine Delvaux <adelvaux@man.poznan.pl>  Tue, 22 Sep 2015 17:33:52 +0000
 
 perfsonar-lsregistrationdaemon (3.4.2.1-2) unstable; urgency=low
 
