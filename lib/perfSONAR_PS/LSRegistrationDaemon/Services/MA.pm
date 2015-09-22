@@ -28,7 +28,7 @@ use perfSONAR_PS::Client::Esmond::Metadata;
 use perfSONAR_PS::LSRegistrationDaemon::PSMetadata;
 use perfSONAR_PS::LSRegistrationDaemon::EventTypeIndexer::EventTypeIndexerFactory;
 
-use fields 'MA_TESTS', 'SERVICE_EVENT_TYPES';
+use fields 'SERVICE_EVENT_TYPES';
 
 sub known_variables {
     my ($self) = @_;
@@ -60,18 +60,16 @@ sub init_dependencies {
     
     #load tests
     my @ma_tests = ();
-    if(!$self->{CONF}->{test}){
-        $self->{CONF}->{test} = [];
-    }elsif($self->{CONF}->{test} && ref($self->{CONF}->{test}) ne 'ARRAY'){
-        my @tmp = ();
-        push @tmp, $self->{CONF}->{test};
-        $self->{CONF}->{test} = \@tmp;
+    my @discovered_tests = ();
+    if($self->{CONF}->{test} && ref($self->{CONF}->{test}) ne 'ARRAY'){
+        push @discovered_tests, $self->{CONF}->{test};
+    }elsif($self->{CONF}->{test}){
+        push @discovered_tests, @{$self->{CONF}->{test}};
     }
 
     #auto grab MA tests
     if($self->{CONF}->{'autodiscover_tests'}){
         #if we auto discover tests there is no manually setting allowed. This prevents memory leak.
-        $self->{CONF}->{test} = [];
         my $auto_url = $self->{CONF}->{'autodiscover_url'};
         my $indexer_factory = perfSONAR_PS::LSRegistrationDaemon::EventTypeIndexer::EventTypeIndexerFactory->new();
         my $indexer_time_range = $self->{CONF}->{'autodiscover_index_time_range'};
@@ -113,7 +111,7 @@ sub init_dependencies {
                     }
                 }
                 #add new test
-                push @{$self->{CONF}->{test}}, {
+                push @discovered_tests, {
                     'ma_locator' => $self->service_locator(),
                     'metadata_uri' => $m->uri(),
                     'source' => $m->source(),
@@ -128,7 +126,7 @@ sub init_dependencies {
     }
     
     #Create metadata registrations
-    foreach my $ma_test(@{$self->{CONF}->{test}}){
+    foreach my $ma_test(@discovered_tests){
         my $ma_test_reg = perfSONAR_PS::LSRegistrationDaemon::PSMetadata->new();
         if( $ma_test_reg->init(mergeConfig($self->{CONF}, $ma_test)) == 0){
             push @ma_tests, $ma_test_reg;
@@ -148,9 +146,7 @@ sub init_dependencies {
     #set ma type
     my @tmp_ets = keys %service_event_type_map;
     $self->{'SERVICE_EVENT_TYPES'} = \@tmp_ets;
-    $self->{MA_TESTS} = \@ma_tests;
-    
-    $self->{DEPENDENCIES} = $self->{MA_TESTS};
+    $self->{DEPENDENCIES} = \@ma_tests;
 
     return 0;
 }
@@ -168,8 +164,8 @@ sub refresh {
         return 0;
     }
 
-    #grab any new metadata
-    $self->init_dependencies();
+    #grab any new metadata. this is a memory hog. saving for another day.
+    #$self->init_dependencies();
 
     return $self->SUPER::refresh();
 }
