@@ -7,7 +7,7 @@ The install: step probably need to be reworked before being ported back to the m
 -ROOTPATH=/opt/perfsonar_ps/ls_registration_daemon
 +DESTDIR?=/opt/perfsonar
  VERSION=3.5
- RELEASE=0.5.rc2
+ RELEASE=1
 +BIN=$(DESTDIR)/bin
 +DOC=$(DESTDIR)/doc
 +ETC=$(DESTDIR)/etc
