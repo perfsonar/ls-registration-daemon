@@ -29,7 +29,7 @@ sub known_variables {
         { variable => "country", type => "scalar" },
         { variable => "disable_ipv4_reverse_lookup", type => "scalar" },
         { variable => "disable_ipv6_reverse_lookup", type => "scalar" },
-        { variable => "domain", type => "scalar" },
+        { variable => "domain", type => "array" },
         { variable => "is_local", type => "scalar" },
         { variable => "latitude", type => "scalar" },
         { variable => "longitude", type => "scalar" },
