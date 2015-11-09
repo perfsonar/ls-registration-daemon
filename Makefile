@@ -1,6 +1,6 @@
 PACKAGE=perfSONAR_PS-LSRegistrationDaemon
 ROOTPATH=/opt/perfsonar_ps/ls_registration_daemon
-VERSION=3.5
+VERSION=3.5.0.1
 RELEASE=1
 
 default:
