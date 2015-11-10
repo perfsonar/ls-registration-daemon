@@ -19,7 +19,7 @@ sub known_variables {
 
         { variable => "autodiscover", type => "scalar" },
         { variable => "capacity", type => "scalar" },
-        { variable => "domain", type => "scalar" },
+        { variable => "domain", type => "array" },
         { variable => "if_name", type => "scalar" },
         { variable => "if_type", type => "scalar" },
         { variable => "is_local", type => "scalar" },

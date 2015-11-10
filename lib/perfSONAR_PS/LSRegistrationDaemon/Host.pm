@@ -9,9 +9,12 @@ use POSIX;
 
 use Sys::Hostname;
 use Sys::MemInfo qw(totalmem);
+use Socket;
+use Socket6;
+use Data::Validate::IP qw(is_ipv4);
 
 use perfSONAR_PS::NPToolkit::Config::Version;
-use perfSONAR_PS::Utils::Host qw(get_operating_system_info get_processor_info get_tcp_configuration get_ethernet_interfaces discover_primary_address);
+use perfSONAR_PS::Utils::Host qw(get_operating_system_info get_processor_info get_tcp_configuration get_ethernet_interfaces discover_primary_address get_ips);
 
 use perfSONAR_PS::Client::LS::PSRecords::PSHost;
 use perfSONAR_PS::LSRegistrationDaemon::Interface;
@@ -55,7 +58,7 @@ sub known_variables {
         { variable => "country", type => "scalar" },
         { variable => "disable_ipv4_reverse_lookup", type => "scalar" },
         { variable => "disable_ipv6_reverse_lookup", type => "scalar" },
-        { variable => "domain", type => "scalar" },
+        { variable => "domain", type => "array" },
         { variable => "host_name", type => "scalar" },
         { variable => "is_local", type => "scalar" },
         { variable => "latitude", type => "scalar" },
@@ -122,7 +125,26 @@ sub init {
         unless ($conf->{host_name}) {
             $conf->{host_name} = hostname;
         }
-
+        
+        unless ($conf->{domain}){
+            my @iface_ips = get_ips();
+            my %domain_map = ();
+            foreach my $iface_ip(@iface_ips){
+                my $iface_afamily = (is_ipv4($iface_ip) ? AF_INET : AF_INET6);
+                my $iface_iaddr = inet_pton($iface_afamily, $iface_ip);
+                my $iface_host = gethostbyaddr($iface_iaddr, $iface_afamily);
+                if($iface_host){
+                    my @domain_parts = split /\./, $iface_host;
+                    shift @domain_parts;
+                    while(@domain_parts >= 2){
+                        $domain_map{join '.', @domain_parts} = 1;
+                        shift @domain_parts;
+                    }
+                }
+            }
+            my @tmp_domains = keys %domain_map;
+            $conf->{domain} = \@tmp_domains;
+        }
         $conf->{memory} = floor((&totalmem()/(1024*1024))) . ' MB' unless $conf->{memory};
 
         my $os_info = get_operating_system_info();
