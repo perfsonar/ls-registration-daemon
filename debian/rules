@@ -4,7 +4,7 @@
 #export DH_VERBOSE=1
 
 %:
-	dh $@ --with quilt
+	dh $@ --with quilt,systemd
 	# We need the 2 override for quilt because we are changing the daemon.pl name.
 override_dh_quilt_patch:
 	dh_quilt_patch
