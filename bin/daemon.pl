@@ -22,6 +22,7 @@ use lib "$Bin/../lib";
 use perfSONAR_PS::Common;
 use perfSONAR_PS::Utils::Daemon qw/daemonize setids lockPIDFile unlockPIDFile/;
 use perfSONAR_PS::Utils::LookupService qw( discover_primary_lookup_service );
+use perfSONAR_PS::LSRegistrationDaemon::Utils::Config qw( init_sites );
 use DBI;
 use Getopt::Long;
 use Config::General;
@@ -201,7 +202,7 @@ if($ls_key_clean_expired->err){
 }
 $ls_key_dbh->disconnect();
 
-my @site_params = init_sites($conf);
+my @site_params = init_sites(\%conf);
 
 # Before daemonizing, set die and warn handlers so that any Perl errors or
 # warnings make it into the logs.
