@@ -82,6 +82,7 @@ lib/perfSONAR_PS/LSRegistrationDaemon/Services/Ping.pm
 lib/perfSONAR_PS/LSRegistrationDaemon/Services/REDDnet.pm
 lib/perfSONAR_PS/LSRegistrationDaemon/Services/TCP_Service.pm
 lib/perfSONAR_PS/LSRegistrationDaemon/Services/Traceroute.pm
+lib/perfSONAR_PS/LSRegistrationDaemon/Utils/Config.pm
 lib/perfSONAR_PS/Messages.pm
 lib/perfSONAR_PS/NPToolkit/Config/Base.pm
 lib/perfSONAR_PS/NPToolkit/Config/Version.pm

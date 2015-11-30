@@ -11,7 +11,7 @@ use Test::More tests => 6;
 
 use DBI;
 
-use constant TEST_KEY_DB => "$Bin/test_files/lsKey.db";
+use constant TEST_KEY_DB => "$Bin/test_data/lsKey.db";
 note("Test DB can be found at " . TEST_KEY_DB);
 
 #Create test database

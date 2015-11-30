@@ -22,6 +22,7 @@ our $VERSION = 3.3;
 use Log::Log4perl qw/get_logger/;
 use URI;
 use Data::Dumper;
+use DBI;
 
 use perfSONAR_PS::Utils::DNS qw(reverse_dns);
 use perfSONAR_PS::Utils::LookupService qw(get_client_uuid set_client_uuid);
