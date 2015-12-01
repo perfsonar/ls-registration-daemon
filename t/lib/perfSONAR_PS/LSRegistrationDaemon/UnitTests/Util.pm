@@ -52,7 +52,7 @@ sub test_ls_record {
     is_deeply($registration->{RECORD_HASH}, $reg_hash, "record check");
     
     # use Data::Dumper;
-#     print Dumper($registration);
+    # print Dumper($registration);
     
     return $registration;
 }
