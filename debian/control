@@ -2,7 +2,10 @@ Source: perfsonar-lsregistrationdaemon
 Section: misc
 Priority: extra
 Maintainer: Antoine Delvaux <antoine.delvaux@dante.net>
-Build-Depends: debhelper (>= 9.0.0), dh-exec, dh-systemd, perl, quilt
+Build-Depends: debhelper (>= 9.0.0), dh-exec, dh-systemd, perl, quilt, procps,
+ libdbi-perl, libconfig-general-perl, libsocket6-perl, libdbd-sqlite3-perl,
+ libsys-statistics-linux-perl, libio-socket-inet6-perl, libtest-log4perl-perl,
+ net-tools, libperfsonar-perl, libperfsonar-sls-perl
 Standards-Version: 3.9.3
 Homepage: http://www.perfsonar.net
 Vcs-Git: https://github.com/perfsonar/ls-registration-daemon.git

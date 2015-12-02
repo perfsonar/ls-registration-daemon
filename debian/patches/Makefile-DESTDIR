@@ -15,7 +15,7 @@ The install: step probably need to be reworked before being ported back to the m
  
  default:
  	@echo No need to build the package. Just run \"make install\"
-@@ -22,15 +26,11 @@
+@@ -22,17 +26,13 @@
  	rm -rf /tmp/$(PACKAGE)-$(VERSION).$(RELEASE)
  
  rpminstall:
@@ -36,6 +36,8 @@ The install: step probably need to be reworked before being ported back to the m
 +	install -d $(BIN) $(DOC) $(ETC) $(LIB)
 +	tar ch ./lib/perfSONAR_PS/LSRegistrationDaemon | tar x -C $(LIB)
  
+ test:
+ 	PERL_DL_NONLAZY=1 /usr/bin/perl "-MExtUtils::Command::MM" "-e" "test_harness(0)" t/*.t
 --- a/perl-perfSONAR_PS-LSRegistrationDaemon.spec
 +++ b/perl-perfSONAR_PS-LSRegistrationDaemon.spec
 @@ -67,7 +67,7 @@
