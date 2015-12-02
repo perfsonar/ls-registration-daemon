@@ -13,4 +13,3 @@ override_dh_quilt_unpatch:
 	[ -f bin/daemon.pl ] || mv bin/ls_registration_daemon.pl bin/daemon.pl
 	dh_quilt_unpatch
 
-override_dh_auto_test:
