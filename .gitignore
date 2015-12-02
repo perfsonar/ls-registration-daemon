@@ -2,3 +2,5 @@
 .DS_Store
 # Ignore quilt patch cache
 .pc
+#ignore test data
+t/test_data/*
