@@ -28,7 +28,6 @@ lib/SimpleLookupService/Records/Network/Interface.pm
 lib/SimpleLookupService/Records/Network/Service.pm
 lib/SimpleLookupService/Records/Record.pm
 lib/SimpleLookupService/Records/RecordFactory.pm
-lib/perfSONAR_PS/Client/Echo.pm
 lib/perfSONAR_PS/Client/Esmond/ApiConnect.pm
 lib/perfSONAR_PS/Client/Esmond/ApiFilters.pm
 lib/perfSONAR_PS/Client/Esmond/BaseDataNode.pm
@@ -40,7 +39,6 @@ lib/perfSONAR_PS/Client/Esmond/EventTypeBulkPost.pm
 lib/perfSONAR_PS/Client/Esmond/Metadata.pm
 lib/perfSONAR_PS/Client/Esmond/Summary.pm
 lib/perfSONAR_PS/Client/Esmond/Utils.pm
-lib/perfSONAR_PS/Client/LS.pm
 lib/perfSONAR_PS/Client/LS/PSKeywords/PSKeyNames.pm
 lib/perfSONAR_PS/Client/LS/PSKeywords/PSKeyValues.pm
 lib/perfSONAR_PS/Client/LS/PSQueryObjects/PSHostQueryObject.pm
@@ -52,7 +50,6 @@ lib/perfSONAR_PS/Client/LS/PSRecords/PSHost.pm
 lib/perfSONAR_PS/Client/LS/PSRecords/PSInterface.pm
 lib/perfSONAR_PS/Client/LS/PSRecords/PSPerson.pm
 lib/perfSONAR_PS/Client/LS/PSRecords/PSService.pm
-lib/perfSONAR_PS/Client/gLS.pm
 lib/perfSONAR_PS/Common.pm
 lib/perfSONAR_PS/LSRegistrationDaemon/Base.pm
 lib/perfSONAR_PS/LSRegistrationDaemon/EventTypeIndexer/EventTypeIndexerBase.pm
@@ -81,17 +78,14 @@ lib/perfSONAR_PS/LSRegistrationDaemon/Services/REDDnet.pm
 lib/perfSONAR_PS/LSRegistrationDaemon/Services/TCP_Service.pm
 lib/perfSONAR_PS/LSRegistrationDaemon/Services/Traceroute.pm
 lib/perfSONAR_PS/LSRegistrationDaemon/Utils/Config.pm
-lib/perfSONAR_PS/Messages.pm
 lib/perfSONAR_PS/NPToolkit/Config/Base.pm
 lib/perfSONAR_PS/NPToolkit/Config/Version.pm
-lib/perfSONAR_PS/Transport.pm
 lib/perfSONAR_PS/Utils/DNS.pm
 lib/perfSONAR_PS/Utils/Daemon.pm
 lib/perfSONAR_PS/Utils/Host.pm
 lib/perfSONAR_PS/Utils/LookupService.pm
 lib/perfSONAR_PS/Utils/NetLogger.pm
 lib/perfSONAR_PS/Utils/ParameterValidation.pm
-lib/perfSONAR_PS/XML/Document.pm
 perl-perfSONAR_PS-LSRegistrationDaemon.spec
 scripts/install_dependencies.sh
 scripts/ls_registration_daemon
