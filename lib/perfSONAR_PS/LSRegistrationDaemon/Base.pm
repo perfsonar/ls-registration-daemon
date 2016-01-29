@@ -270,7 +270,7 @@ sub refresh {
         $self->unregister();
     }
     else {
-        $self->{LOGGER}->info( "Record is down (key=" . $self->{KEY} . ", description=" . $self->description() . ")" );
+        $self->{LOGGER}->info( "Record is down (key=" . ($self->{KEY} ? $self->{KEY} : 'NONE') . ", description=" . $self->description() . ")" );
     }
 
     # Refresh the objects that depend on us

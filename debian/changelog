@@ -1,8 +1,8 @@
-perfsonar-lsregistrationdaemon (3.5.1~1.a1-1) UNRLEASED; urgency=low
+perfsonar-lsregistrationdaemon (3.5.1~2.a1-1) UNRLEASED; urgency=low
 
   * Port to Jessie.
 
- -- Antoine Delvaux <adelvaux@man.poznan.pl>  Wed, 02 Dec 2015 11:10:38 +0000
+ -- Antoine Delvaux <adelvaux@man.poznan.pl>  Fri, 29 Jan 2016 22:24:33 +0000
 
 perfsonar-lsregistrationdaemon (3.5.0.1-1) perfsonar-wheezy-release; urgency=low
 
