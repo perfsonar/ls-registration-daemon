@@ -71,7 +71,7 @@ themselves.
 %install
 rm -rf %{buildroot}
 
-make ROOTPATH=%{buildroot}/%{install_base} install
+make ROOTPATH=%{buildroot}/%{install_base} CONFIGPATH=%{buildroot}/%{config_base} install
 
 mkdir -p %{buildroot}/etc/init.d
 
