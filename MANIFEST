@@ -1,12 +1,9 @@
 MANIFEST
 Makefile
 dependencies
-README.md
 bin/lsregistrationdaemon.pl
 etc/lsregistrationdaemon-logger.conf
 etc/lsregistrationdaemon.conf
-doc/INSTALL
-doc/LICENSE
 lib/perfSONAR_PS/LSRegistrationDaemon/Base.pm
 lib/perfSONAR_PS/LSRegistrationDaemon/EventTypeIndexer/EventTypeIndexerBase.pm
 lib/perfSONAR_PS/LSRegistrationDaemon/EventTypeIndexer/EventTypeIndexerFactory.pm

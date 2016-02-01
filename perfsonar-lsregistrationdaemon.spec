@@ -124,7 +124,6 @@ fi
 %files
 %defattr(0644,perfsonar,perfsonar,0755)
 %config(noreplace) %{config_base}/*
-%doc %{install_base}/doc/*
 %attr(0755,perfsonar,perfsonar) %{install_base}/bin/*
 %attr(0755,perfsonar,perfsonar) /etc/init.d/*
 %{install_base}/lib/*
