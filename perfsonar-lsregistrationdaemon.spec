@@ -1,20 +1,19 @@
-%define install_base /opt/perfsonar_ps/ls_registration_daemon
+%define install_base /usr/lib/perfsonar/
+%define config_base  /etc/perfsonar
 
 # init scripts must be located in the 'scripts' directory
-%define init_script_1 ls_registration_daemon
-# %define init_script_2 ls_registration_daemon
+%define init_script_1  perfsonar-lsregistrationdaemon
 
-%define relnum 1 
-%define disttag pSPS
+%define relnum 0.0.a1 
 
-Name:			perl-perfSONAR_PS-LSRegistrationDaemon
-Version:		3.5.0.1
-Release:		%{relnum}.%{disttag}
-Summary:		perfSONAR_PS Lookup Service Registration Daemon
+Name:			perfsonar-lsregistrationdaemon
+Version:		3.5.1
+Release:		%{relnum}
+Summary:		perfSONAR Lookup Service Registration Daemon
 License:		Distributable, see LICENSE
 Group:			Development/Libraries
-URL:			http://psps.perfsonar.net/lsregistration/
-Source0:		perfSONAR_PS-LSRegistrationDaemon-%{version}.%{relnum}.tar.gz
+URL:			http://www.perfsonar.net
+Source0:		perfsonar-lsregistrationdaemon-%{version}.%{relnum}.tar.gz
 BuildRoot:		%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch:		noarch
 Requires:		perl
@@ -49,10 +48,15 @@ Requires:		perl(base)
 Requires:		chkconfig
 Requires:		coreutils
 Requires:		shadow-utils
+Requires:       libperfsonar-perl
+Requires:       libperfsonar-esmond-perl
+Requires:       libperfsonar-sls-perl
+Requires:       libperfsonar-toolkit-perl
+Obsoletes:		perl-perfSONAR_PS-LSRegistrationDaemon
 
 %description
 The LS Registration Daemon is used to register service instances for services
-like bwctl, NDT, NPAD, etc. that don't currently support registering
+like bwctl, owamp, etc. that don't currently support registering
 themselves.
 
 %pre
@@ -60,22 +64,19 @@ themselves.
 /usr/sbin/useradd -g perfsonar -r -s /sbin/nologin -c "perfSONAR User" -d /tmp perfsonar 2> /dev/null || :
 
 %prep
-%setup -q -n perfSONAR_PS-LSRegistrationDaemon-%{version}.%{relnum}
+%setup -q -n perfsonar-lsregistrationdaemon-%{version}.%{relnum}
 
 %build
 
 %install
 rm -rf %{buildroot}
 
-make ROOTPATH=%{buildroot}/%{install_base} rpminstall
+make ROOTPATH=%{buildroot}/%{install_base} install
 
 mkdir -p %{buildroot}/etc/init.d
 
-awk "{gsub(/^PREFIX=.*/,\"PREFIX=%{install_base}\"); print}" scripts/%{init_script_1} > scripts/%{init_script_1}.new
-install -D -m 0755 scripts/%{init_script_1}.new %{buildroot}/etc/init.d/%{init_script_1}
-
-#awk "{gsub(/^PREFIX=.*/,\"PREFIX=%{install_base}\"); print}" scripts/%{init_script_2} > scripts/%{init_script_2}.new
-#install -D -m 0755 scripts/%{init_script_2}.new %{buildroot}/etc/init.d/%{init_script_2}
+install -D -m 0755 scripts/%{init_script_1} %{buildroot}/etc/init.d/%{init_script_1}
+rm -rf %{buildroot}/%{install_base}/scripts/
 
 %clean
 rm -rf %{buildroot}
@@ -84,37 +85,49 @@ rm -rf %{buildroot}
 mkdir -p /var/log/perfsonar
 chown perfsonar:perfsonar /var/log/perfsonar
 
-mkdir -p /var/lib/perfsonar/ls_registration_daemon
+mkdir -p /var/lib/perfsonar/lsregistrationdaemon
 chown -R perfsonar:perfsonar /var/lib/perfsonar
 
+#Update config file. For 3.5.1 will symlink to old location. In 3.6 we will move it.
+if [ -L "%{config_base}/lsregistrationdaemon.conf" ]; then
+    echo "WARN: /opt/perfsonar_ps/ls_registration_daemon/etc/ls_registration_daemon.conf will be moved to %{config_base}/lsregistrationdaemon.conf in 3.6. Update configuration management software as soon as possible. "
+elif [ -e "/opt/perfsonar_ps/ls_registration_daemon/etc/ls_registration_daemon.conf" ]; then
+    mv %{config_base}/lsregistrationdaemon.conf %{config_base}/lsregistrationdaemon.conf.default
+    ln -s /opt/perfsonar_ps/ls_registration_daemon/etc/ls_registration_daemon.conf %{config_base}/lsregistrationdaemon.conf
+    sed -i "s:/var/lib/perfsonar/ls_registration_daemon:/var/lib/perfsonar/lsregistrationdaemon:g" /opt/perfsonar_ps/ls_registration_daemon/etc/ls_registration_daemon.conf
+fi
+
+#Update logging config file. For 3.5.1 will symlink to old location. In 3.6 we will move it.
+if [ -L "%{config_base}/lsregistrationdaemon-logger.conf" ]; then
+    echo "WARN: /opt/perfsonar_ps/ls_registration_daemon/etc/ls_registration_daemon-logger.conf will be moved to %{config_base}/lsregistrationdaemon-logger.conf in 3.6. Update configuration management software as soon as possible. "
+elif [ -e "/opt/perfsonar_ps/ls_registration_daemon/etc/ls_registration_daemon-logger.conf" ]; then
+    mv %{config_base}/lsregistrationdaemon-logger.conf %{config_base}/lsregistrationdaemon-logger.conf.default
+    ln -s /opt/perfsonar_ps/ls_registration_daemon/etc/ls_registration_daemon-logger.conf %{config_base}/lsregistrationdaemon-logger.conf
+    sed -i "s:ls_registration_daemon.log:lsregistrationdaemon.log:g" /opt/perfsonar_ps/ls_registration_daemon/etc/ls_registration_daemon-logger.conf
+fi
+
 /sbin/chkconfig --add %{init_script_1}
-#/sbin/chkconfig --add %{init_script_2}
 
 %preun
 if [ "$1" = "0" ]; then
 	# Totally removing the service
 	/etc/init.d/%{init_script_1} stop
 	/sbin/chkconfig --del %{init_script_1}
-#	/etc/init.d/%{init_script_2} stop
-#	/sbin/chkconfig --del %{init_script_2}
 fi
 
 %postun
 if [ "$1" != "0" ]; then
 	# An RPM upgrade
 	/etc/init.d/%{init_script_1} restart
-#	/etc/init.d/%{init_script_2} restart
 fi
 
 %files
 %defattr(0644,perfsonar,perfsonar,0755)
+%config(noreplace) %{config_base}/*
 %doc %{install_base}/doc/*
-%config(noreplace) %{install_base}/etc/*
 %attr(0755,perfsonar,perfsonar) %{install_base}/bin/*
-%attr(0755,perfsonar,perfsonar) %{install_base}/scripts/*
-%{install_base}/lib/*
 %attr(0755,perfsonar,perfsonar) /etc/init.d/*
-%{install_base}/dependencies
+%{install_base}/lib/*
 
 %changelog
 * Thu Jun 18 2014 andy@es.net 3.4-1

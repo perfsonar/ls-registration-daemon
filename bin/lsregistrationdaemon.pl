@@ -5,7 +5,7 @@ use warnings;
 
 =head1 NAME
 
-ls_registration_daemon.pl - Registers services (e.g. daemons such as owamp,
+lsregistrationdaemon.pl - Registers services (e.g. daemons such as owamp,
 bwctl) into the global information service.
 
 =head1 DESCRIPTION
@@ -29,7 +29,7 @@ use Config::General;
 use Log::Log4perl qw/:easy/;
 
 # set the process name
-$0 = "ls_registration_daemon.pl";
+$0 = "lsregistrationdaemon.pl";
 
 my @child_pids = ();
 
@@ -70,7 +70,7 @@ if ( not $PIDFILE ) {
 }
 
 if ( not $PIDFILE ) {
-    $PIDFILE = "/var/run/ls_registration_daemon.pid";
+    $PIDFILE = "/var/run/lsregistrationdaemon.pid";
 }
 
 ( $status, $res ) = lockPIDFile( $PIDFILE );
@@ -178,13 +178,13 @@ unless ($conf{"check_interval"}) {
 
 #initialize the key database
 unless ( $conf{"client_uuid_file"} ) {
-    $conf{"client_uuid_file"} = '/var/lib/perfsonar/ls_registration_daemon/client_uuid';
+    $conf{"client_uuid_file"} = '/var/lib/perfsonar/lsregistrationdaemon/client_uuid';
 }
 
 #initialize the key database
 unless ( $conf{"ls_key_db"} ) {
     $logger->info( "No LS key database found" );
-    $conf{"ls_key_db"} = '/var/lib/perfsonar/ls_registration_daemon/lsKey.db';
+    $conf{"ls_key_db"} = '/var/lib/perfsonar/lsregistrationdaemon/lsKey.db';
 }
 my $ls_key_dbh = DBI->connect('dbi:SQLite:dbname=' . $conf{"ls_key_db"}, '', '');
 my $ls_key_create  = $ls_key_dbh->prepare('CREATE TABLE IF NOT EXISTS lsKeys (uri VARCHAR(255) PRIMARY KEY, expires BIGINT NOT NULL, checksum VARCHAR(255) NOT NULL, duplicateChecksum VARCHAR(255) NOT NULL)');
