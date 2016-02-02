@@ -53,6 +53,7 @@ Requires:       libperfsonar-esmond-perl
 Requires:       libperfsonar-sls-perl
 Requires:       libperfsonar-toolkit-perl
 Obsoletes:		perl-perfSONAR_PS-LSRegistrationDaemon
+Provides:		perl-perfSONAR_PS-LSRegistrationDaemon
 
 %description
 The LS Registration Daemon is used to register service instances for services
