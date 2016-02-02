@@ -88,22 +88,19 @@ chown perfsonar:perfsonar /var/log/perfsonar
 mkdir -p /var/lib/perfsonar/lsregistrationdaemon
 chown -R perfsonar:perfsonar /var/lib/perfsonar
 
-#Update config file. For 3.5.1 will symlink to old location. In 3.6 we will move it.
-if [ -L "%{config_base}/lsregistrationdaemon.conf" ]; then
-    echo "WARN: /opt/perfsonar_ps/ls_registration_daemon/etc/ls_registration_daemon.conf will be moved to %{config_base}/lsregistrationdaemon.conf in 3.6. Update configuration management software as soon as possible. "
-elif [ -e "/opt/perfsonar_ps/ls_registration_daemon/etc/ls_registration_daemon.conf" ]; then
-    mv %{config_base}/lsregistrationdaemon.conf %{config_base}/lsregistrationdaemon.conf.default
-    ln -s /opt/perfsonar_ps/ls_registration_daemon/etc/ls_registration_daemon.conf %{config_base}/lsregistrationdaemon.conf
-    sed -i "s:/var/lib/perfsonar/ls_registration_daemon:/var/lib/perfsonar/lsregistrationdaemon:g" /opt/perfsonar_ps/ls_registration_daemon/etc/ls_registration_daemon.conf
-fi
-
-#Update logging config file. For 3.5.1 will symlink to old location. In 3.6 we will move it.
-if [ -L "%{config_base}/lsregistrationdaemon-logger.conf" ]; then
-    echo "WARN: /opt/perfsonar_ps/ls_registration_daemon/etc/ls_registration_daemon-logger.conf will be moved to %{config_base}/lsregistrationdaemon-logger.conf in 3.6. Update configuration management software as soon as possible. "
-elif [ -e "/opt/perfsonar_ps/ls_registration_daemon/etc/ls_registration_daemon-logger.conf" ]; then
-    mv %{config_base}/lsregistrationdaemon-logger.conf %{config_base}/lsregistrationdaemon-logger.conf.default
-    ln -s /opt/perfsonar_ps/ls_registration_daemon/etc/ls_registration_daemon-logger.conf %{config_base}/lsregistrationdaemon-logger.conf
-    sed -i "s:ls_registration_daemon.log:lsregistrationdaemon.log:g" /opt/perfsonar_ps/ls_registration_daemon/etc/ls_registration_daemon-logger.conf
+if [ "$1" = "1" ]; then
+    # clean install, check for pre 3.5.1 files
+    if [ -e "/opt/perfsonar_ps/ls_registration_daemon/etc/ls_registration_daemon.conf" ]; then
+        mv %{config_base}/lsregistrationdaemon.conf %{config_base}/lsregistrationdaemon.conf.default
+        mv /opt/perfsonar_ps/ls_registration_daemon/etc/ls_registration_daemon.conf %{config_base}/lsregistrationdaemon.conf
+        sed -i "s:/var/lib/perfsonar/ls_registration_daemon:/var/lib/perfsonar/lsregistrationdaemon:g" %{config_base}/lsregistrationdaemon.conf
+    fi
+    
+    if [ -e "/opt/perfsonar_ps/ls_registration_daemon/etc/ls_registration_daemon-logger.conf" ]; then
+        mv %{config_base}/lsregistrationdaemon-logger.conf %{config_base}/lsregistrationdaemon-logger.conf.default
+        mv /opt/perfsonar_ps/ls_registration_daemon/etc/ls_registration_daemon-logger.conf %{config_base}/lsregistrationdaemon-logger.conf
+        sed -i "s:ls_registration_daemon.log:lsregistrationdaemon.log:g" %{config_base}/lsregistrationdaemon-logger.conf
+    fi
 fi
 
 /sbin/chkconfig --add %{init_script_1}
