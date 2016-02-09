@@ -30,19 +30,19 @@ make dist
 To start the service run:
 
 ```bash
-/etc/init.d/ls_registration_daemon start
+/etc/init.d/perfsonar-lsregistrationdaemon start
 ```
 
 To stop the service run:
 
 ```bash
-/etc/init.d/ls_registration_daemon stop
+/etc/init.d/perfsonar-lsregistrationdaemon stop
 ```
 
 To restart the service run:
 
 ```bash
-/etc/init.d/ls_registration_daemon restart
+/etc/init.d/perfsonar-lsregistrationdaemon restart
 ```
 
 ##Using the *shared* Submodule
