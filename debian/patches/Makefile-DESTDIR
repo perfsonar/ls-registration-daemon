@@ -2,12 +2,13 @@ Using the GNU standardised $DESTDIR Makefile variable instead of $ROOTPATH.
 The install: step probably need to be reworked before being ported back to the master branch.
 --- a/Makefile
 +++ b/Makefile
-@@ -1,7 +1,11 @@
- PACKAGE=perfSONAR_PS-LSRegistrationDaemon
--ROOTPATH=/opt/perfsonar_ps/ls_registration_daemon
-+DESTDIR?=/opt/perfsonar
- VERSION=3.5.0.1
- RELEASE=1
+@@ -1,8 +1,12 @@
+ PACKAGE=perfsonar-lsregistrationdaemon
+-ROOTPATH=/usr/lib/perfsonar
++DESTDIR?=/usr/lib/perfsonar
+ CONFIGPATH=/etc/perfsonar
+ VERSION=3.5.1
+ RELEASE=0.0.a1
 +BIN=$(DESTDIR)/bin
 +DOC=$(DESTDIR)/doc
 +ETC=$(DESTDIR)/etc
@@ -15,37 +16,26 @@ The install: step probably need to be reworked before being ported back to the m
  
  default:
  	@echo No need to build the package. Just run \"make install\"
-@@ -22,17 +26,13 @@
+@@ -17,9 +21,8 @@
  	rm -rf /tmp/$(PACKAGE)-$(VERSION).$(RELEASE)
  
- rpminstall:
--	mkdir -p ${ROOTPATH}
--	tar ch --exclude=etc/* --exclude=*spec --exclude=MANIFEST --exclude=Makefile -T MANIFEST | tar x -C ${ROOTPATH}
--	for i in `cat MANIFEST | grep ^etc`; do  mkdir -p `dirname $(ROOTPATH)/$${i}`; if [ -e $(ROOTPATH)/$${i} ]; then install -m 640 -c $${i} $(ROOTPATH)/$${i}.new; else install -m 640 -c $${i} $(ROOTPATH)/$${i}; fi; done
-+	mkdir -p ${DESTDIR}
-+	tar ch --exclude=etc/* --exclude=*spec --exclude=MANIFEST --exclude=Makefile -T MANIFEST | tar x -C ${DESTDIR}
-+	for i in `cat MANIFEST | grep ^etc`; do  mkdir -p `dirname $(DESTDIR)/$${i}`; if [ -e $(DESTDIR)/$${i} ]; then install -m 640 -c $${i} $(DESTDIR)/$${i}.new; else install -m 640 -c $${i} $(DESTDIR)/$${i}; fi; done
-  
  install:
--	sed -i "s|/opt/perfsonar_ps/ls_registration_daemon|${ROOTPATH}|g" ./etc/ls_registration_daemon.conf
--	sed -i "s|/opt/perfsonar_ps/ls_registration_daemon|${ROOTPATH}|g" ./etc/ls_registration_daemon-logger.conf
--	for i in `ls ./scripts`; do sed -i "s|/opt/perfsonar_ps/ls_registration_daemon|${ROOTPATH}|g" ./scripts/$${i}; done
 -	mkdir -p ${ROOTPATH}
--	tar ch --exclude=etc/* --exclude=*spec --exclude=MANIFEST --exclude=Makefile -T MANIFEST | tar x -C ${ROOTPATH}
--	for i in `cat MANIFEST | grep ^etc`; do  mkdir -p `dirname $(ROOTPATH)/$${i}`; if [ -e $(ROOTPATH)/$${i} ]; then install -m 640 -c $${i} $(ROOTPATH)/$${i}.new; else install -m 640 -c $${i} $(ROOTPATH)/$${i}; fi; done
+-	tar ch --exclude=etc/* --exclude=*spec --exclude=dependencies --exclude=MANIFEST --exclude=Makefile -T MANIFEST | tar x -C ${ROOTPATH}
+-	for i in `cat MANIFEST | grep ^etc/ | sed "s/^etc\///"`; do  mkdir -p `dirname $(CONFIGPATH)/$${i}`; if [ -e $(CONFIGPATH)/$${i} ]; then install -m 640 -c etc/$${i} $(CONFIGPATH)/$${i}.new; else install -m 640 -c etc/$${i} $(CONFIGPATH)/$${i}; fi; done
 +	install -d $(BIN) $(DOC) $(ETC) $(LIB)
 +	tar ch ./lib/perfSONAR_PS/LSRegistrationDaemon | tar x -C $(LIB)
  
  test:
  	PERL_DL_NONLAZY=1 /usr/bin/perl "-MExtUtils::Command::MM" "-e" "test_harness(0)" t/*.t
---- a/perl-perfSONAR_PS-LSRegistrationDaemon.spec
-+++ b/perl-perfSONAR_PS-LSRegistrationDaemon.spec
-@@ -67,7 +67,7 @@
+--- a/perfsonar-lsregistrationdaemon.spec
++++ b/perfsonar-lsregistrationdaemon.spec
+@@ -72,7 +72,7 @@
  %install
  rm -rf %{buildroot}
  
--make ROOTPATH=%{buildroot}/%{install_base} rpminstall
-+make DESTDIR=%{buildroot}/%{install_base} rpminstall
+-make ROOTPATH=%{buildroot}/%{install_base} CONFIGPATH=%{buildroot}/%{config_base} install
++make DESTDIR=%{buildroot}/%{install_base} CONFIGPATH=%{buildroot}/%{config_base} install
  
  mkdir -p %{buildroot}/etc/init.d
  

@@ -1,4 +1,3 @@
 MemStats
 Makefile-DESTDIR
-debian-naming.patch
 install.patch

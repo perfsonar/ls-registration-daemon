@@ -2,7 +2,7 @@ Source: perfsonar-lsregistrationdaemon
 Section: misc
 Priority: extra
 Maintainer: Antoine Delvaux <antoine.delvaux@dante.net>
-Build-Depends: debhelper (>= 9.0.0), dh-exec, dh-systemd, perl, quilt, procps,
+Build-Depends: debhelper (>= 9.0.0), dh-systemd, perl, quilt, procps,
  libdbi-perl, libconfig-general-perl, libsocket6-perl, libdbd-sqlite3-perl,
  libsys-statistics-linux-perl, libio-socket-inet6-perl, libtest-log4perl-perl,
  net-tools, libperfsonar-perl, libperfsonar-sls-perl
