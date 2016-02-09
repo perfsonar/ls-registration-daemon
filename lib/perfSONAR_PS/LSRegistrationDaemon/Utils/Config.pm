@@ -6,7 +6,7 @@ perfSONAR_PS::LSRegistrationDaemon::Config - Utility class for parsing the confi
 
 =head1 DESCRIPTION
 
-This module provides methods for parsing ls_registration_daemon.conf.
+This module provides methods for parsing lsregistrationdaemon.conf.
 =cut
 
 use strict;

@@ -22,7 +22,7 @@ use Config::General;
 
 our @EXPORT_OK = qw( test_ls_record );
 
-use constant TEST_CONF => "$Bin/../etc/ls_registration_daemon.conf";
+use constant TEST_CONF => "$Bin/../etc/lsregistrationdaemon.conf";
 use constant TEST_LS_INSTANCE => 'http://foo.bar';
 use constant TEST_CLIENT_UUID_FILE => "$Bin/test_data/client_uuid";
 use constant TEST_KEY_DB => "$Bin/test_data/lsKey.db";

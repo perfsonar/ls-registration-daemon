@@ -6,19 +6,19 @@
 # description: perfSONAR Lookup Service Registration Daemon
 #
 
-PREFIX=/opt/perfsonar_ps/ls_registration_daemon
+PREFIX=/usr/lib/perfsonar
 BINDIR=${PREFIX}/bin
-CONFDIR=${PREFIX}/etc
+CONFDIR=/etc/perfsonar
 RUNDIR=/var/run
 
-CONFFILE=${CONFDIR}/ls_registration_daemon.conf
-LOGGERFILE=${CONFDIR}/ls_registration_daemon-logger.conf
-PIDFILE=${RUNDIR}/ls_registration_daemon.pid
+CONFFILE=${CONFDIR}/lsregistrationdaemon.conf
+LOGGERFILE=${CONFDIR}/lsregistrationdaemon-logger.conf
+PIDFILE=${RUNDIR}/lsregistrationdaemon.pid
 
 USER=perfsonar
 GROUP=perfsonar
 
-PERFSONAR="${BINDIR}/daemon.pl --config=${CONFFILE} --pidfile=${PIDFILE} --logger=${LOGGERFILE} --user=${USER} --group=${GROUP}"
+PERFSONAR="${BINDIR}/lsregistrationdaemon.pl --config=${CONFFILE} --pidfile=${PIDFILE} --logger=${LOGGERFILE} --user=${USER} --group=${GROUP}"
 
 ERROR=0
 ARGV="$@"
@@ -49,7 +49,7 @@ do
 
 	if $PERFSONAR ; then
 	    echo "$0 $ARG: LS Registration Daemon started"
-            touch /var/lock/subsys/ls_registration_daemon
+            touch /var/lock/subsys/perfsonar-lsregistrationdaemon
 	else
 	    echo "$0 $ARG: LS Registration Daemon could not be started"
 	    ERROR=3
@@ -62,7 +62,7 @@ do
 	fi
 	if kill $PID ; then
 	    echo "$0 $ARG: LS Registration Daemon stopped"
-            rm /var/lock/subsys/ls_registration_daemon
+            rm /var/lock/subsys/perfsonar-lsregistrationdaemon
 	else
 	    echo "$0 $ARG: LS Registration Daemon could not be stopped"
 	    ERROR=4
