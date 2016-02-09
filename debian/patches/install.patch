@@ -1,10 +1,10 @@
 Install perfsonar binaries and libraries into their Debian proper location.
 --- a/Makefile
 +++ b/Makefile
-@@ -2,10 +2,10 @@
- DESTDIR?=/opt/perfsonar
- VERSION=3.5.0.1
- RELEASE=1
+@@ -3,10 +3,10 @@
+ CONFIGPATH=/etc/perfsonar
+ VERSION=3.5.1
+ RELEASE=0.0.a1
 -BIN=$(DESTDIR)/bin
 -DOC=$(DESTDIR)/doc
 -ETC=$(DESTDIR)/etc
