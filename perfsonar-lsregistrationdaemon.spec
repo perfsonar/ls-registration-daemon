@@ -102,6 +102,14 @@ if [ "$1" = "1" ]; then
         mv /opt/perfsonar_ps/ls_registration_daemon/etc/ls_registration_daemon-logger.conf %{config_base}/lsregistrationdaemon-logger.conf
         sed -i "s:ls_registration_daemon.log:lsregistrationdaemon.log:g" %{config_base}/lsregistrationdaemon-logger.conf
     fi
+    
+    if [ -e /var/lib/perfsonar/ls_registration_daemon/client_uuid ]; then
+        mv -f /var/lib/perfsonar/ls_registration_daemon/client_uuid /var/lib/perfsonar/lsregistrationdaemon/client_uuid
+    fi
+    
+    if [ -e /var/lib/perfsonar/ls_registration_daemon/lsKey.db ]; then
+        mv -f /var/lib/perfsonar/ls_registration_daemon/lsKey.db /var/lib/perfsonar/lsregistrationdaemon/lsKey.db
+    fi
 fi
 
 /sbin/chkconfig --add %{init_script_1}
