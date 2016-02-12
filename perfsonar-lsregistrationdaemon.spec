@@ -4,7 +4,7 @@
 # init scripts must be located in the 'scripts' directory
 %define init_script_1  perfsonar-lsregistrationdaemon
 
-%define relnum 0.0.a1 
+%define relnum 0.1.rc1 
 
 Name:			perfsonar-lsregistrationdaemon
 Version:		3.5.1
@@ -101,6 +101,14 @@ if [ "$1" = "1" ]; then
         mv %{config_base}/lsregistrationdaemon-logger.conf %{config_base}/lsregistrationdaemon-logger.conf.default
         mv /opt/perfsonar_ps/ls_registration_daemon/etc/ls_registration_daemon-logger.conf %{config_base}/lsregistrationdaemon-logger.conf
         sed -i "s:ls_registration_daemon.log:lsregistrationdaemon.log:g" %{config_base}/lsregistrationdaemon-logger.conf
+    fi
+    
+    if [ -e /var/lib/perfsonar/ls_registration_daemon/client_uuid ]; then
+        mv -f /var/lib/perfsonar/ls_registration_daemon/client_uuid /var/lib/perfsonar/lsregistrationdaemon/client_uuid
+    fi
+    
+    if [ -e /var/lib/perfsonar/ls_registration_daemon/lsKey.db ]; then
+        mv -f /var/lib/perfsonar/ls_registration_daemon/lsKey.db /var/lib/perfsonar/lsregistrationdaemon/lsKey.db
     fi
 fi
 
