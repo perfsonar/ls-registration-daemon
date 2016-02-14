@@ -21,9 +21,6 @@ set -e
 case "$1" in
     configure)
 
-    # Set executable bit
-    chmod +x /usr/lib/perfsonar/bin/lsregistrationdaemon.pl
-
     # DB directory
     mkdir -p /var/lib/perfsonar/lsregistrationdaemon
     chown perfsonar:perfsonar /var/lib/perfsonar/lsregistrationdaemon
