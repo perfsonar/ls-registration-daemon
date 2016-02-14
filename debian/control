@@ -4,7 +4,7 @@ Priority: extra
 Maintainer: Antoine Delvaux <adelvaux@man.poznan.pl>
 Build-Depends: debhelper (>= 9.0.0), perl, quilt, procps, net-tools,
  libdbi-perl, libconfig-general-perl, libsocket6-perl, libdbd-sqlite3-perl,
- libsys-statistics-linux-perl, libio-socket-inet6-perl, libtest-log4perl-perl,
+ libsys-meminfo-perl, libio-socket-inet6-perl, libtest-log4perl-perl,
  libperfsonar-perl, libperfsonar-sls-perl
 Standards-Version: 3.9.3
 Homepage: http://www.perfsonar.net
