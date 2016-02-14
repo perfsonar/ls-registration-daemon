@@ -5,7 +5,8 @@ Maintainer: Antoine Delvaux <adelvaux@man.poznan.pl>
 Build-Depends: debhelper (>= 9.0.0), dh-systemd, perl, quilt, procps,
  libdbi-perl, libconfig-general-perl, libsocket6-perl, libdbd-sqlite3-perl,
  libsys-meminfo-perl, libio-socket-inet6-perl, libtest-log4perl-perl,
- net-tools, libperfsonar-perl, libperfsonar-sls-perl
+ net-tools, libperfsonar-perl, libperfsonar-esmond-perl, libperfsonar-sls-perl,
+ libperfsonar-toolkit-perl
 Standards-Version: 3.9.3
 Homepage: http://www.perfsonar.net
 Vcs-Git: https://github.com/perfsonar/ls-registration-daemon.git
@@ -14,8 +15,9 @@ Vcs-Browser: https://github.com/perfsonar/ls-registration-daemon/tree/debian/whe
 Package: perfsonar-lsregistrationdaemon
 Architecture: all
 Depends: ${misc:Depends}, ${perl:Depends}, perfsonar-common, libperfsonar-perl,
- libperfsonar-sls-perl, libsys-statistics-linux-perl, libio-socket-inet6-perl,
- liblog-dispatch-filerotate-perl, libdbd-sqlite3-perl, libnet-ping-external-perl
+ libperfsonar-esmond-perl, libperfsonar-sls-perl, libperfsonar-toolkit-perl,
+ libsys-meminfo-perl, libio-socket-inet6-perl, liblog-dispatch-filerotate-perl,
+ libdbd-sqlite3-perl, libnet-ping-external-perl
 Description: perfSONAR LS Registration Daemon
  The perfSONAR LS Registration Daemon allows networks to register their
  BWCTL, OWAMP, NDT, NPAD and Phoebus services with a perfSONAR-PS Lookup
