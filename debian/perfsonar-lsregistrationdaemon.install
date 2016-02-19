@@ -1,2 +1,3 @@
 bin/* usr/lib/perfsonar/bin/
 etc/* etc/perfsonar/
+lib/perfSONAR_PS/LSRegistrationDaemon/* usr/lib/perfsonar/lib/perfSONAR_PS/LSRegistrationDaemon/
