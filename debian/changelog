@@ -1,4 +1,4 @@
-perfsonar-lsregistrationdaemon (3.5.1~4.rc1-5) UNRLEASED; urgency=low
+perfsonar-lsregistrationdaemon (3.5.1~5.rc1-1) perfsonar-jessie-staging; urgency=low
 
   * Port to Jessie.
   * Adding systemd support.
@@ -10,7 +10,7 @@ perfsonar-lsregistrationdaemon (3.5.1~4.rc1-5) UNRLEASED; urgency=low
   * Removing debian/patches that are integrated upstream.
   * Include libraries in package build.
 
- -- Antoine Delvaux <adelvaux@man.poznan.pl>  Sun, 14 Feb 2016 22:15:37 +0000
+ -- Antoine Delvaux <adelvaux@man.poznan.pl>  Sat, 20 Feb 2016 19:03:01 +0000
 
 perfsonar-lsregistrationdaemon (3.5.0.1-1) perfsonar-wheezy-release; urgency=low
 
