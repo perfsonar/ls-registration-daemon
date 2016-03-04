@@ -1,10 +1,10 @@
-perfsonar-lsregistrationdaemon (3.5.1~5.rc1-2~bpo70+1) perfsonar-wheezy-staging; urgency=low
+perfsonar-lsregistrationdaemon (3.5.1-1~bpo70+1) perfsonar-wheezy-release; urgency=low
 
   * Backport to Wheezy.
 
- -- Antoine Delvaux <adelvaux@man.poznan.pl>  Mon, 22 Feb 2016 23:36:20 +0000
+ -- Antoine Delvaux <adelvaux@man.poznan.pl>  Fri, 04 Mar 2016 10:41:05 +0100
 
-perfsonar-lsregistrationdaemon (3.5.1~5.rc1-2) perfsonar-jessie-staging; urgency=low
+perfsonar-lsregistrationdaemon (3.5.1-1) perfsonar-jessie-release; urgency=low
 
   * Port to Jessie.
   * Adding systemd support.
@@ -16,7 +16,7 @@ perfsonar-lsregistrationdaemon (3.5.1~5.rc1-2) perfsonar-jessie-staging; urgency
   * Removing debian/patches that are integrated upstream.
   * Include libraries in package build.
 
- -- Antoine Delvaux <adelvaux@man.poznan.pl>  Mon, 22 Feb 2016 23:33:40 +0000
+ -- Antoine Delvaux <adelvaux@man.poznan.pl>  Fri, 04 Mar 2016 10:38:26 +0100
 
 perfsonar-lsregistrationdaemon (3.5.0.1-1) perfsonar-wheezy-release; urgency=low
 
