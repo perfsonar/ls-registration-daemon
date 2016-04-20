@@ -8,7 +8,7 @@
 
 Name:			perfsonar-lsregistrationdaemon
 Version:		3.5.1.2
-Release:		%{relnum}
+Release:		%{relnum}%{?dist}
 Summary:		perfSONAR Lookup Service Registration Daemon
 License:		Distributable, see LICENSE
 Group:			Development/Libraries
@@ -131,7 +131,7 @@ fi
 %config(noreplace) %{config_base}/*
 %attr(0755,perfsonar,perfsonar) %{install_base}/bin/*
 %attr(0755,perfsonar,perfsonar) /etc/init.d/*
-%{install_base}/lib/*
+%{install_base}/lib/perfSONAR_PS/*
 
 %changelog
 * Thu Jun 18 2014 andy@es.net 3.4-1
