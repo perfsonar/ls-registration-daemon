@@ -32,3 +32,4 @@ lib/perfSONAR_PS/LSRegistrationDaemon/Services/TCP_Service.pm
 lib/perfSONAR_PS/LSRegistrationDaemon/Services/Traceroute.pm
 lib/perfSONAR_PS/LSRegistrationDaemon/Utils/Config.pm
 scripts/perfsonar-lsregistrationdaemon
+scripts/perfsonar-lsregistrationdaemon.service
