@@ -14,7 +14,7 @@ use Socket6;
 use Data::Validate::IP qw(is_ipv4);
 
 use perfSONAR_PS::NPToolkit::Config::Version;
-use perfSONAR_PS::Utils::Host qw(get_operating_system_info get_processor_info get_tcp_configuration get_ethernet_interfaces discover_primary_address get_ips);
+use perfSONAR_PS::Utils::Host qw(get_operating_system_info get_processor_info get_tcp_configuration get_ethernet_interfaces discover_primary_address get_ips get_dmi_info);
 
 use perfSONAR_PS::Client::LS::PSRecords::PSHost;
 use perfSONAR_PS::LSRegistrationDaemon::Interface;
@@ -89,6 +89,8 @@ sub known_variables {
         { variable => "access_policy", type => "scalar" },
         { variable => "access_policy_notes", type => "scalar" },
         { variable => "is_virtual_machine", type => "scalar" },
+        { variable => "manufacturer", type => "scalar" },
+        { variable => "system_product_name", type => "scalar" },
     );
 
     return @variables;
@@ -163,7 +165,14 @@ sub init {
             $conf->{processor_cores} = $cpu_info->{cores} unless $conf->{processor_cores};
             $conf->{processor_cpuid} = $cpu_info->{model_name} unless $conf->{processor_cpuid};
         }
-   
+        
+        my $dmi_info = get_dmi_info();
+        if ($dmi_info) {
+            $conf->{manufacturer} = $dmi_info->{'sys_vendor'} unless $conf->{manufacturer};
+            $conf->{product_name} = $dmi_info->{'product_name'} unless $conf->{product_name};
+            $conf->{is_virtual_machine}  = $dmi_info->{'is_virtual_machine'} unless defined $conf->{is_virtual_machine};
+        }
+        
         my $tcp_info = get_tcp_configuration(); 
         if ($tcp_info) {
             $conf->{tcp_cc_algorithm} = $tcp_info->{tcp_cc_algorithm} unless $conf->{tcp_cc_algorithm};
@@ -533,6 +542,18 @@ sub is_virtual_machine {
     return $self->{CONF}->{is_virtual_machine};
 }
 
+sub manufacturer {
+    my ( $self ) = @_;
+    
+    return $self->{CONF}->{manufacturer};
+}
+
+sub product_name {
+    my ( $self ) = @_;
+    
+    return $self->{CONF}->{product_name};
+}
+
 sub administrator {
     my ( $self ) = @_;
     
@@ -623,7 +644,9 @@ sub build_registration {
     	tcpAutoMaxBufferRecv => $self->tcp_autotune_max_buffer_recv(), 
     	tcpMaxBacklog => $self->tcp_max_backlog(), 
     	tcpMaxAchievable => $self->tcp_max_achievable(), 
-    	vm => $self->is_virtual_machine(),
+    	vm => $self->is_virtual_machine() . "", #does not register unless a string
+    	manufacturer => $self->manufacturer(),
+    	productName => $self->product_name(),
         administrators=> $self->administrator(), 
         domains => $self->domain(),
     	siteName => $self->site_name(), 
@@ -646,7 +669,7 @@ sub build_registration {
     }elsif(defined $self->toolkit_version() && !defined $self->bundle_version()){
          $service->setBundleVersion($self->toolkit_version());
     }
-    $service->setCommunities($self->site_project()) if($self->site_project());
+    $service->setCommunities($self->site_project()) if($self->site_project());;
     
     return $service;
 }
