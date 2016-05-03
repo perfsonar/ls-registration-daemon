@@ -139,7 +139,7 @@ sub result_index_values {
     my @results = ();
     foreach my $index(sort {$a->{type} <=> $b->{type}} @{$self->result_index()}){
         foreach my $subindex(sort keys %{$index->{value}}){
-            push @results, $index->{value}->{$subindex};
+            push @results, join(',', @{$index->{value}->{$subindex}});
         }
     }
 
