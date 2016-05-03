@@ -138,7 +138,9 @@ sub result_index_values {
 
     my @results = ();
     foreach my $index(sort {$a->{type} <=> $b->{type}} @{$self->result_index()}){
-        push @results, $index->{value};
+        foreach my $subindex(sort keys %{$index->{value}}){
+            push @results, $index->{value}->{$subindex};
+        }
     }
 
     return \@results;
@@ -159,7 +161,9 @@ sub build_registration {
     $psmd->addField(key => 'group-domains', value => $self->domain()) if($self->domain());
     $psmd->addField(key => 'group-communities', value => $self->communities()) if($self->communities());
     foreach my $index(@{$self->result_index()}){
-        $psmd->addField(key => 'psmetadata-index-' . $index->{type} , value => $index->{value}) if($index->{type});
+        foreach my $subindex(keys %{$index->{value}}){
+            $psmd->addField(key => 'psmetadata-index-' . $index->{type} . "-$subindex" , value => $index->{value}->{$subindex}) if($index->{type});
+        }
     }
     
     return $psmd;
