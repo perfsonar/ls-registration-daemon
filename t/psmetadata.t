@@ -39,7 +39,7 @@ use constant TEST_RECORD_HASH => {
                                     'type' => [
                                                 'psmetadata'
                                               ],
-                                    'psmetadata-index-example' => [
+                                    'psmetadata-index-example-foobar' => [
                                                                     'foo',
                                                                     'bar'
                                                                   ],
@@ -60,7 +60,7 @@ my %conf = ( 'source' => '10.0.0.1',
              'ma_locator' => 'http://foo.bar/esmond/perfsonar/archive',
              'domain' => 'foo.bar',
              'site_project' => 'Test',
-             'result_index' => [ {type=>'example', value=>['foo', 'bar']} ],
+             'result_index' => [ {type=>'example', value=>{'foobar' => ['foo', 'bar']}} ],
              'metadata_uri' => '/esmond/perfsonar/archive/ABCDEF1234567890',
             );
             

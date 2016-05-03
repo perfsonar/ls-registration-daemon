@@ -57,9 +57,19 @@ sub create_index {
         }
     }
     
-    #make into a list of strings in format "IP,srd_distance,dst_distance"
-    my @ip_list = map {$_ . "," . $ip_map{$_}->{"srcd"} . "," . $ip_map{$_}->{"dstd"}} keys %ip_map;
-    return \@ip_list;
+    #format results
+    my $indices = {
+        "addresses" => [],
+        "srchops" => [],
+        "dsthops" => []
+    };
+    foreach my $hop_addr(sort keys %ip_map){
+        push @{$indices->{'addresses'}}, $hop_addr;
+        #all val must be strings of else LS ignores hence the concatenation
+        push @{$indices->{'srchops'}}, $ip_map{$hop_addr}->{'srcd'} . "";
+        push @{$indices->{'dsthops'}}, $ip_map{$hop_addr}->{'dstd'} . "";
+    }
+    return $indices;
 }
 
 1;
