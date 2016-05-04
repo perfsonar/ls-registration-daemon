@@ -132,25 +132,8 @@ if ( not defined $LOGGER_CONF or $LOGGER_CONF eq q{} ) {
     $logger = get_logger( "perfSONAR_PS" );
 }
 else {
-    use Log::Log4perl qw(get_logger :levels);
-
-    my $output_level = $INFO;
-    if ( $DEBUGFLAG ) {
-        $output_level = $DEBUG;
-    }
-
-    my %logger_opts = (
-        level  => $output_level,
-        layout => '%d (%P) %p> %F{1}:%L %M - %m%n',
-    );
-
-    if ( $LOGOUTPUT ) {
-        $logger_opts{file} = $LOGOUTPUT;
-    }
-
     Log::Log4perl->init( $LOGGER_CONF );
     $logger = get_logger( "perfSONAR_PS" );
-    $logger->level( $output_level ) if $output_level;
 }
 
 #determine URL
@@ -183,7 +166,6 @@ unless ( $conf{"client_uuid_file"} ) {
 
 #initialize the key database
 unless ( $conf{"ls_key_db"} ) {
-    $logger->info( "No LS key database found" );
     $conf{"ls_key_db"} = '/var/lib/perfsonar/lsregistrationdaemon/lsKey.db';
 }
 my $ls_key_dbh = DBI->connect('dbi:SQLite:dbname=' . $conf{"ls_key_db"}, '', '');
