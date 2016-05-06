@@ -8,13 +8,12 @@ use Digest::MD5 qw(md5_base64);
 use POSIX;
 
 use Sys::Hostname;
-use Sys::MemInfo qw(totalmem);
 use Socket;
 use Socket6;
 use Data::Validate::IP qw(is_ipv4);
 
 use perfSONAR_PS::NPToolkit::Config::Version;
-use perfSONAR_PS::Utils::Host qw(get_operating_system_info get_processor_info get_tcp_configuration get_ethernet_interfaces discover_primary_address get_ips get_dmi_info);
+use perfSONAR_PS::Utils::Host qw(get_operating_system_info get_processor_info get_tcp_configuration get_ethernet_interfaces discover_primary_address get_ips get_dmi_info totalmem);
 
 use perfSONAR_PS::Client::LS::PSRecords::PSHost;
 use perfSONAR_PS::LSRegistrationDaemon::Interface;
