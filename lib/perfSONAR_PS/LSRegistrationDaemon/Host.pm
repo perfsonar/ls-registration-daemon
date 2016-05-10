@@ -8,13 +8,12 @@ use Digest::MD5 qw(md5_base64);
 use POSIX;
 
 use Sys::Hostname;
-use Sys::MemInfo qw(totalmem);
 use Socket;
 use Socket6;
 use Data::Validate::IP qw(is_ipv4);
 
 use perfSONAR_PS::NPToolkit::Config::Version;
-use perfSONAR_PS::Utils::Host qw(get_operating_system_info get_processor_info get_tcp_configuration get_ethernet_interfaces discover_primary_address get_ips get_dmi_info);
+use perfSONAR_PS::Utils::Host qw(get_operating_system_info get_processor_info get_tcp_configuration get_ethernet_interfaces discover_primary_address get_ips get_dmi_info get_health_info);
 
 use perfSONAR_PS::Client::LS::PSRecords::PSHost;
 use perfSONAR_PS::LSRegistrationDaemon::Interface;
@@ -147,7 +146,8 @@ sub init {
             my @tmp_domains = keys %domain_map;
             $conf->{domain} = \@tmp_domains;
         }
-        $conf->{memory} = floor((&totalmem()/(1024*1024))) . ' MB' unless $conf->{memory};
+        $conf->{memory} = floor(get_health_info()->{memstats}->{memtotal}/1024) . ' MB'
+            unless $conf->{memory};
 
         my $os_info = get_operating_system_info();
         if ($os_info) {
