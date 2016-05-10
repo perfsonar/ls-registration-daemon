@@ -35,7 +35,6 @@ Regexp::Common
 Scalar::Util
 Storable
 Sys::Hostname
-Sys::MemInfo
 Time::HiRes
 URI
 URI::Split

@@ -7,7 +7,7 @@
 %define relnum 1 
 
 Name:			perfsonar-lsregistrationdaemon
-Version:		3.5.1.1
+Version:		3.5.1.2
 Release:		%{relnum}
 Summary:		perfSONAR Lookup Service Registration Daemon
 License:		Distributable, see LICENSE
@@ -40,7 +40,6 @@ Requires:		perl(POSIX)
 Requires:		perl(Params::Validate)
 Requires:		perl(Regexp::Common)
 Requires:		perl(Socket)
-Requires:		perl(Sys::MemInfo)
 Requires:		perl(Time::HiRes)
 Requires:		perl(XML::LibXML)
 Requires:		perl(Net::Interface)
