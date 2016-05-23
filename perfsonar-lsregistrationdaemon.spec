@@ -8,7 +8,7 @@
 
 Name:			perfsonar-lsregistrationdaemon
 Version:		3.5.1.2
-Release:		%{relnum}
+Release:		%{relnum}%{?dist}
 Summary:		perfSONAR Lookup Service Registration Daemon
 License:		Distributable, see LICENSE
 Group:			Development/Libraries
@@ -44,7 +44,6 @@ Requires:		perl(Time::HiRes)
 Requires:		perl(XML::LibXML)
 Requires:		perl(Net::Interface)
 Requires:		perl(base)
-Requires:		chkconfig
 Requires:		coreutils
 Requires:		shadow-utils
 Requires:       libperfsonar-perl
@@ -53,6 +52,12 @@ Requires:       libperfsonar-sls-perl
 Requires:       libperfsonar-toolkit-perl
 Obsoletes:		perl-perfSONAR_PS-LSRegistrationDaemon
 Provides:		perl-perfSONAR_PS-LSRegistrationDaemon
+%if 0%{?el7}
+BuildRequires: systemd
+%{?systemd_requires: %systemd_requires}
+%else
+Requires:		chkconfig
+%endif
 
 %description
 The LS Registration Daemon is used to register service instances for services
@@ -75,7 +80,11 @@ make ROOTPATH=%{buildroot}/%{install_base} CONFIGPATH=%{buildroot}/%{config_base
 
 mkdir -p %{buildroot}/etc/init.d
 
+%if 0%{?el7}
+install -D -m 0644 scripts/%{init_script_1}.service %{buildroot}/%{_unitdir}/%{init_script_1}.service
+%else
 install -D -m 0755 scripts/%{init_script_1} %{buildroot}/etc/init.d/%{init_script_1}
+%endif
 rm -rf %{buildroot}/%{install_base}/scripts/
 
 %clean
@@ -88,6 +97,9 @@ chown perfsonar:perfsonar /var/log/perfsonar
 mkdir -p /var/lib/perfsonar/lsregistrationdaemon
 chown -R perfsonar:perfsonar /var/lib/perfsonar
 
+%if 0%{?el7}
+%systemd_post %{init_script_1}.service
+%else
 if [ "$1" = "1" ]; then
     # clean install, check for pre 3.5.1 files
     if [ -e "/opt/perfsonar_ps/ls_registration_daemon/etc/ls_registration_daemon.conf" ]; then
@@ -112,26 +124,39 @@ if [ "$1" = "1" ]; then
 fi
 
 /sbin/chkconfig --add %{init_script_1}
+%endif
 
 %preun
+%if 0%{?el7}
+%systemd_preun %{init_script_1}.service
+%else
 if [ "$1" = "0" ]; then
 	# Totally removing the service
 	/etc/init.d/%{init_script_1} stop
 	/sbin/chkconfig --del %{init_script_1}
 fi
+%endif
 
 %postun
+%if 0%{?el7}
+%systemd_postun_with_restart %{init_script_1}.service
+%else
 if [ "$1" != "0" ]; then
 	# An RPM upgrade
 	/etc/init.d/%{init_script_1} restart
 fi
+%endif
 
 %files
 %defattr(0644,perfsonar,perfsonar,0755)
 %config(noreplace) %{config_base}/*
 %attr(0755,perfsonar,perfsonar) %{install_base}/bin/*
+%{install_base}/lib/perfSONAR_PS/*
+%if 0%{?el7}
+%attr(0644,root,root) %{_unitdir}/%{init_script_1}.service
+%else
 %attr(0755,perfsonar,perfsonar) /etc/init.d/*
-%{install_base}/lib/*
+%endif
 
 %changelog
 * Thu Jun 18 2014 andy@es.net 3.4-1
