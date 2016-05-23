@@ -10,7 +10,7 @@ Build-Depends: debhelper (>= 9.0.0), dh-systemd, perl, quilt, procps,
 Standards-Version: 3.9.3
 Homepage: http://www.perfsonar.net
 Vcs-Git: https://github.com/perfsonar/ls-registration-daemon.git
-Vcs-Browser: https://github.com/perfsonar/ls-registration-daemon/tree/debian/wheezy
+Vcs-Browser: https://github.com/perfsonar/ls-registration-daemon/tree/debian/jessie
 
 Package: perfsonar-lsregistrationdaemon
 Architecture: all
