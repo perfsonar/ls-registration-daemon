@@ -1,4 +1,6 @@
-[![Build Status (Debian)](https://perfsonar-dev3.grnoc.iu.edu/jenkins/buildStatus/icon?job=ls-registration-daemon-debian-source)](https://perfsonar-dev3.grnoc.iu.edu/jenkins/view/Debian/job/ls-registration-daemon-debian-source/)
+| CentOS        | Debian      |
+| ------------- |-------------|
+| [![Build Status (CentOS)](https://perfsonar-dev3.grnoc.iu.edu/jenkins/buildStatus/icon?job=perfsonar-lsregistrationdaemon-centos)](https://perfsonar-dev3.grnoc.iu.edu/jenkins/view/Debian/job/perfsonar-lsregistrationdaemon-centos/) | [![Build Status (Debian)](https://perfsonar-dev3.grnoc.iu.edu/jenkins/buildStatus/icon?job=ls-registration-daemon-debian-source)](https://perfsonar-dev3.grnoc.iu.edu/jenkins/view/Debian/job/ls-registration-daemon-debian-source/) |
 
 # perfSONAR Lookup Service Registration Daemon
 
