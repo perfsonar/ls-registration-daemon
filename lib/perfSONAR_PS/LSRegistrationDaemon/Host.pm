@@ -58,7 +58,7 @@ sub known_variables {
         { variable => "disable_ipv4_reverse_lookup", type => "scalar" },
         { variable => "disable_ipv6_reverse_lookup", type => "scalar" },
         { variable => "domain", type => "array" },
-        { variable => "host_name", type => "scalar" },
+        { variable => "host_name", type => "array" },
         { variable => "is_local", type => "scalar" },
         { variable => "latitude", type => "scalar" },
         { variable => "longitude", type => "scalar" },
@@ -114,17 +114,19 @@ sub init {
 
     if ($conf->{autodiscover}) {
         unless ($conf->{host_name}) {
+            $conf->{host_name} = [];
             my $primary_address_info = discover_primary_address(
                                            interface => $conf->{primary_interface},
                                            allow_rfc1918 => $conf->{allow_internal_addresses},
                                            disable_ipv4_reverse_lookup => $conf->{disable_ipv4_reverse_lookup},
                                            disable_ipv6_reverse_lookup => $conf->{disable_ipv6_reverse_lookup},
                                        );
-            $conf->{host_name} = $primary_address_info->{primary_address};
+            push @{$conf->{host_name}}, $primary_address_info->{primary_address} if($primary_address_info->{primary_address});
+            push @{$conf->{host_name}}, $primary_address_info->{primary_dns_name} if($primary_address_info->{primary_dns_name});
         }
 
         unless ($conf->{host_name}) {
-            $conf->{host_name} = hostname;
+            push @{$conf->{host_name}}, hostname;
         }
         
         unless ($conf->{domain}){
@@ -381,8 +383,12 @@ sub is_local {
 
 sub description {
     my ( $self ) = @_;
-
-    return $self->host_name() . '';
+    
+    if(@{$self->host_name()} > 0){
+        return $self->host_name()->[0] . '';
+    }else{
+        return '';
+    }
 }
 
 sub host_name {
@@ -390,7 +396,7 @@ sub host_name {
 
     return $self->{CONF}->{host_name} if $self->{CONF}->{host_name};
 
-    return $self->{CONF}->{name};
+    return [ $self->{CONF}->{name} ];
 }
 
 sub interface {
