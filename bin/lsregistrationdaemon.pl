@@ -21,7 +21,7 @@ use lib "$Bin/../lib";
 
 use perfSONAR_PS::Common;
 use perfSONAR_PS::Utils::Daemon qw/daemonize setids lockPIDFile unlockPIDFile/;
-use perfSONAR_PS::Utils::LookupService qw( discover_primary_lookup_service lookup_service_is_active );
+use perfSONAR_PS::Utils::LookupService qw( discover_lookup_services discover_primary_lookup_service lookup_service_is_active lookup_services_latency_diff);
 use perfSONAR_PS::LSRegistrationDaemon::Utils::Config qw( init_sites );
 use DBI;
 use Getopt::Long;
@@ -189,7 +189,13 @@ while(1){
         $conf{"check_config_interval"} = 60;
     }
     my $until_next_file_check = $conf{"check_config_interval"};
-
+    
+    unless ($conf{"ls_instance_latency_threshold"}) {
+        $logger->debug( "No clatency threshold specified for switching LSes. Defaulting to 10%" );
+        $conf{"ls_instance_latency_threshold"} = .1;
+    }
+    my $ls_latency_threshold = $conf{"ls_instance_latency_threshold"};
+    
     #initialize the key database
     unless ( $conf{"client_uuid_file"} ) {
         $conf{"client_uuid_file"} = '/var/lib/perfsonar/lsregistrationdaemon/client_uuid';
@@ -231,7 +237,8 @@ while(1){
         $flap_count = 0;
     }else{
         #auto-discover URL
-        $new_ls_instance = discover_primary_lookup_service();
+        my $lookup_services = discover_lookup_services();
+        $new_ls_instance = discover_primary_lookup_service(lookup_services => $lookup_services);
         if ($new_ls_instance) {
             $logger->debug("Auto-discovered LS: $new_ls_instance");
         }
@@ -243,8 +250,9 @@ while(1){
             $flap_count = 0;
             $logger->info("Initial LS URL set to " . $current_ls_instance);
         }elsif($new_ls_instance ne $current_ls_instance){
-            my $current_ls_is_active = lookup_service_is_active(ls_url => $current_ls_instance );
-            $flap_count++;
+            my $current_ls_is_active = lookup_service_is_active(ls_url => $current_ls_instance, lookup_services => $lookup_services );
+            my $latency_diff = lookup_services_latency_diff(ls_url1 => $current_ls_instance, ls_url2 => $new_ls_instance, lookup_services => $lookup_services);
+            $flap_count++ if($latency_diff && $latency_diff > $ls_latency_threshold);
             #only change if we have seen the new LS a few times to prevent flapping
             if(!$current_ls_is_active || $flap_count >  $conf{"server_flap_threshold"}){
                 $current_ls_instance = $new_ls_instance;
