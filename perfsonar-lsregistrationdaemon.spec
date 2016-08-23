@@ -7,7 +7,7 @@
 %define relnum 1 
 
 Name:			perfsonar-lsregistrationdaemon
-Version:		3.5.1.4
+Version:		3.5.1.5
 Release:		%{relnum}%{?dist}
 Summary:		perfSONAR Lookup Service Registration Daemon
 License:		Distributable, see LICENSE
