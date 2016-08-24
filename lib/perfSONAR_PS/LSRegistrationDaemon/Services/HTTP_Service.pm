@@ -22,6 +22,7 @@ use Digest::MD5 qw(md5_base64);
 use perfSONAR_PS::Common qw(mergeConfig);
 
 use constant DEFAULT_PORT => 80;
+use constant DEFAULT_HTTPS_PORT => 443;
 
 sub known_variables {
     my ($self) = @_;
@@ -48,6 +49,7 @@ sub init {
     if(!$conf->{port} && !$conf->{http_port} && !$conf->{https_port}){
         $conf->{port} = DEFAULT_PORT;
         $conf->{http_port} = DEFAULT_PORT;
+        $conf->{https_port} = DEFAULT_HTTPS_PORT;
     }elsif(!$conf->{port} && !$conf->{http_port}){
         $conf->{port} = $conf->{https_port};
     }elsif(!$conf->{port}){
