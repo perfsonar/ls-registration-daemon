@@ -137,8 +137,8 @@ sub build_registration {
     my ( $self ) = @_;
     
     my $service = $self->SUPER::build_registration();
-    $service->setPSchedulerTests($self->tests());
-    $service->setPSchedulerTools($self->tools());
+    $service->setPSchedulerTests($self->tests()) if($self->tests());
+    $service->setPSchedulerTools($self->tools()) if($self->tools());
 
     return $service;
 }
