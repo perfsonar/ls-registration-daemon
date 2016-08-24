@@ -285,6 +285,7 @@ while(1){
         }
         else {
             handle_site( $params->{conf}, $params->{services}, $update_id, $init_ls );
+            exit(0);
         }
     }
 
