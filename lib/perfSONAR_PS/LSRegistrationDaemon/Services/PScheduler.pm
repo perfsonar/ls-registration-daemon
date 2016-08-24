@@ -53,34 +53,34 @@ sub init {
     my ( $self, $conf ) = @_;
     
     #Autodiscover tools and test types
-    if($self->{CONF}->{'autodiscover_tests'} || $self->{CONF}->{'autodiscover_tools'} ){
-        my $auto_url = $self->{CONF}->{'autodiscover_url'};
+    if($conf->{'autodiscover_tests'} || $conf->{'autodiscover_tools'} ){
+        my $auto_url = $conf->{'autodiscover_url'};
         $auto_url = @{$self->service_locator()}[0] if(!$auto_url);
         my $filters = new perfSONAR_PS::Client::PScheduler::ApiFilters(
-                ca_certificate_file => $self->{CONF}->{'autodiscover_ca_file'},
-                ca_certificate_path => $self->{CONF}->{'autodiscover_ca_path'},
-                verify_hostname => $self->{CONF}->{'autodiscover_verify_hostname'},
+                ca_certificate_file => $conf->{'autodiscover_ca_file'},
+                ca_certificate_path => $conf->{'autodiscover_ca_path'},
+                verify_hostname => $conf->{'autodiscover_verify_hostname'},
             );
         my $client = new perfSONAR_PS::Client::PScheduler::ApiConnect("url" => $auto_url, "filters" => $filters);
-        if($self->{CONF}->{'autodiscover_tests'}){
+        if($conf->{'autodiscover_tests'}){
             my $tests =  $client->get_tests();
             if($client->error()){
                 $self->{LOGGER}->warn("Unable to get pScheduler test types: " . $client->error);
             }else{
-                $self->{CONF}->{test} = [];
+                $conf->{test} = [];
                 foreach my $test(@{$tests}){
-                    push @{$self->{CONF}->{test}}, $test->name();
+                    push @{$conf->{test}}, $test->name();
                 }
             }
         }
-        if($self->{CONF}->{'autodiscover_tools'}){
+        if($conf->{'autodiscover_tools'}){
             my $tools =  $client->get_tools();
             if($client->error()){
                 $self->{LOGGER}->warn("Unable to get pScheduler tool list: " . $client->error);
             }else{
-                $self->{CONF}->{tool} = [];
+                $conf->{tool} = [];
                 foreach my $tool(@{$tools}){
-                    push @{$self->{CONF}->{tool}}, $tool->name();
+                    push @{$conf->{tool}}, $tool->name();
                 }
             }
         }
@@ -113,21 +113,21 @@ sub service_type {
     return "pscheduler";
 }
 
-=head2 tools($self)
+=head2 tool($self)
 
 Returns the tools pScheduler supports
 =cut
-sub tools {
+sub tool {
     my ( $self ) = @_;
 
     return $self->{CONF}->{'tool'};
 }
 
-=head2 tests($self)
+=head2 test($self)
 
 Returns the tests pScheduler supports
 =cut
-sub tests {
+sub test {
     my ( $self ) = @_;
 
     return $self->{CONF}->{'test'};
@@ -137,8 +137,8 @@ sub build_registration {
     my ( $self ) = @_;
     
     my $service = $self->SUPER::build_registration();
-    $service->setPSchedulerTests($self->tests()) if($self->tests());
-    $service->setPSchedulerTools($self->tools()) if($self->tools());
+    $service->setPSchedulerTests($self->test()) if($self->test());
+    $service->setPSchedulerTools($self->tool()) if($self->tool());
 
     return $service;
 }
