@@ -52,6 +52,10 @@ Gets pScheduler specific fields
 sub init {
     my ( $self, $conf ) = @_;
     
+    #init super first
+    my $init_result = $self->SUPER::init( $conf )
+    return $init_result if($init_result != 0);
+    
     #Autodiscover tools and test types
     if($conf->{'autodiscover_tests'} || $conf->{'autodiscover_tools'} ){
         my $auto_url = $conf->{'autodiscover_url'};
@@ -86,7 +90,7 @@ sub init {
         }
     }
     
-    return $self->SUPER::init( $conf );
+    return 0;
 }
 
 =head2 type($self)
