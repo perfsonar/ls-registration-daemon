@@ -5,8 +5,8 @@ Maintainer: Antoine Delvaux <adelvaux@man.poznan.pl>
 Build-Depends: debhelper (>= 9.0.0), dh-systemd, perl, quilt, procps,
  libdbi-perl, libconfig-general-perl, libsocket6-perl, libdbd-sqlite3-perl,
  libio-socket-inet6-perl, libtest-log4perl-perl,
- net-tools, libperfsonar-perl (<< 3.9), libperfsonar-esmond-perl, libperfsonar-sls-perl,
- libperfsonar-toolkit-perl
+ net-tools, libperfsonar-perl, libperfsonar-esmond-perl, libperfsonar-sls-perl,
+ libperfsonar-toolkit-perl, libperfsonar-pscheduler-perl
 Standards-Version: 3.9.3
 Homepage: http://www.perfsonar.net
 Vcs-Git: https://github.com/perfsonar/ls-registration-daemon.git
@@ -15,7 +15,7 @@ Vcs-Browser: https://github.com/perfsonar/ls-registration-daemon/tree/debian/jes
 Package: perfsonar-lsregistrationdaemon
 Architecture: all
 Depends: ${misc:Depends}, ${perl:Depends}, perfsonar-common,
- libperfsonar-perl (<< 3.9),
+ libperfsonar-perl, libperfsonar-pscheduler-perl,
  libperfsonar-esmond-perl, libperfsonar-sls-perl, libperfsonar-toolkit-perl,
  libio-socket-inet6-perl, liblog-dispatch-filerotate-perl,
  libdbd-sqlite3-perl, libnet-ping-external-perl, liblinux-inotify2-perl
