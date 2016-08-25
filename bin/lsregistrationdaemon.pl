@@ -271,26 +271,26 @@ while(1){
     #set here so can be passed to sites
     $conf{ls_instance} = $current_ls_instance;
     
+    
     #init and register records for each site
     my $start = time;
-    my @site_params = init_sites(\%conf);
-    foreach my $params ( @site_params ) {
-
-        # every site will register separately
-        my $update_id = time .'';
-        my $pid = fork();
-        if ( $pid != 0 ) {
-            push @child_pids, $pid;
-            next;
-        }
-        else {
+    my $pid = fork();
+    if( $pid != 0 ){
+        push @child_pids, $pid;
+    }else{
+        #fork this off to prevent memory leak. not ideal but perl has trouble cleaning-up this part of code
+        my @site_params = init_sites(\%conf);
+        foreach my $params ( @site_params ) {
+            my $update_id = time .'';
             handle_site( $params->{conf}, $params->{services}, $update_id, $init_ls );
         }
+        exit(0);
     }
 
     foreach my $pid ( @child_pids ) {
         waitpid( $pid, 0 );
     }
+    @child_pids = (); #clear pids
     
     #sleep until its time to look for file updates or time to refesh
     my $end = time;
