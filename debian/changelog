@@ -1,8 +1,14 @@
-perfsonar-lsregistrationdaemon (3.5.1.4-1~bpo70+1) perfsonar-wheezy-release; urgency=low
+perfsonar-lsregistrationdaemon (3.5.1.5-1~bpo70+1) perfsonar-wheezy-release; urgency=low
 
   * Backport to Wheezy.
 
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Thu, 25 Aug 2016 19:36:35 +0000
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Thu, 25 Aug 2016 20:13:58 +0000
+
+perfsonar-lsregistrationdaemon (3.5.1.5-1) perfsonar-jessie-release; urgency=low
+
+  * New upstream version.
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Thu, 25 Aug 2016 18:42:12 +0000
 
 perfsonar-lsregistrationdaemon (3.5.1.4-1) perfsonar-jessie-release; urgency=low
 
