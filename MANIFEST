@@ -27,6 +27,7 @@ lib/perfSONAR_PS/LSRegistrationDaemon/Services/NPAD.pm
 lib/perfSONAR_PS/LSRegistrationDaemon/Services/OWAMP.pm
 lib/perfSONAR_PS/LSRegistrationDaemon/Services/Phoebus.pm
 lib/perfSONAR_PS/LSRegistrationDaemon/Services/Ping.pm
+lib/perfSONAR_PS/LSRegistrationDaemon/Services/PScheduler.pm
 lib/perfSONAR_PS/LSRegistrationDaemon/Services/REDDnet.pm
 lib/perfSONAR_PS/LSRegistrationDaemon/Services/TCP_Service.pm
 lib/perfSONAR_PS/LSRegistrationDaemon/Services/Traceroute.pm

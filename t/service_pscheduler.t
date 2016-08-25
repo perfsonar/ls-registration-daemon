@@ -8,7 +8,7 @@ use lib "$Bin/../lib";
 use Test::More;
 use perfSONAR_PS::LSRegistrationDaemon::UnitTests::Util qw( test_ls_record );
 
-use perfSONAR_PS::LSRegistrationDaemon::Services::MP_BWCTL;
+use perfSONAR_PS::LSRegistrationDaemon::Services::PScheduler;
 
 #constants
 use constant TEST_ADDRESS => "10.0.0.1";
@@ -20,7 +20,7 @@ use constant TEST_RECORD_HASH => {
                                                         ''
                                                       ],
                                     'service-name' => [
-                                                        'BWCTL Measurement Point'
+                                                        'pScheduler'
                                                       ],
                                     'type' => [
                                                 'service'
@@ -30,12 +30,12 @@ use constant TEST_RECORD_HASH => {
                                                            'https://10.0.0.1'
                                                          ],
                                     'service-type' => [
-                                                        'mp-bwctl'
+                                                        'pscheduler'
                                                       ]
                                   };
 
 #instantiate object
-my $record = new perfSONAR_PS::LSRegistrationDaemon::Services::MP_BWCTL;
+my $record = new perfSONAR_PS::LSRegistrationDaemon::Services::PScheduler;
 
 #add extra config
 my %conf = ( 'address' => TEST_ADDRESS );

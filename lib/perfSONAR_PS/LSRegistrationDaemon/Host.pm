@@ -27,6 +27,7 @@ use perfSONAR_PS::LSRegistrationDaemon::Services::BWCTL;
 use perfSONAR_PS::LSRegistrationDaemon::Services::OWAMP;
 use perfSONAR_PS::LSRegistrationDaemon::Services::MA;
 use perfSONAR_PS::LSRegistrationDaemon::Services::MeshConfig;
+use perfSONAR_PS::LSRegistrationDaemon::Services::PScheduler;
 use perfSONAR_PS::LSRegistrationDaemon::Services::Dashboard;
 use perfSONAR_PS::LSRegistrationDaemon::Services::MP_BWCTL;
 use perfSONAR_PS::LSRegistrationDaemon::Services::MP_OWAMP;
@@ -329,6 +330,9 @@ sub init_subordinates {
         }
         elsif ( lc( $service_conf->{type} ) eq "ma" ) {
             $service = perfSONAR_PS::LSRegistrationDaemon::Services::MA->new();
+        }
+        elsif ( lc( $service_conf->{type} ) eq "pscheduler" ) {
+            $service = perfSONAR_PS::LSRegistrationDaemon::Services::PScheduler->new();
         }
         elsif ( lc( $service_conf->{type} ) eq "dashboard" ) {
             $service = perfSONAR_PS::LSRegistrationDaemon::Services::Dashboard->new();

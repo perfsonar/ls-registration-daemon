@@ -26,7 +26,8 @@ use constant TEST_RECORD_HASH => {
                                                 'service'
                                               ],
                                     'service-locator' => [
-                                                           'http://10.0.0.1'
+                                                           'http://10.0.0.1',
+                                                           'https://10.0.0.1'
                                                          ],
                                     'service-type' => [
                                                         'meshconfig'
