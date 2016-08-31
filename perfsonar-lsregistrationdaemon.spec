@@ -102,6 +102,7 @@ chown -R perfsonar:perfsonar /var/lib/perfsonar
 %if 0%{?el7}
 %systemd_post %{init_script_1}.service
 %else
+/sbin/chkconfig --add %{init_script_1}
 if [ "$1" = "1" ]; then
     # clean install, check for pre 3.5.1 files
     if [ -e "/opt/perfsonar_ps/ls_registration_daemon/etc/ls_registration_daemon.conf" ]; then
@@ -123,9 +124,9 @@ if [ "$1" = "1" ]; then
     if [ -e /var/lib/perfsonar/ls_registration_daemon/lsKey.db ]; then
         mv -f /var/lib/perfsonar/ls_registration_daemon/lsKey.db /var/lib/perfsonar/lsregistrationdaemon/lsKey.db
     fi
+    /etc/init.d/%{init_script_1} start &>/dev/null || :
 fi
 
-/sbin/chkconfig --add %{init_script_1}
 %endif
 
 %preun
