@@ -100,6 +100,10 @@ mkdir -p /var/lib/perfsonar/lsregistrationdaemon
 chown -R perfsonar:perfsonar /var/lib/perfsonar
 
 %if 0%{?el7}
+if [ "$1" = "1" ]; then
+    #if new install, then enable
+    systemctl enable %{init_script_1}.service
+fi
 %systemd_post %{init_script_1}.service
 %else
 /sbin/chkconfig --add %{init_script_1}
