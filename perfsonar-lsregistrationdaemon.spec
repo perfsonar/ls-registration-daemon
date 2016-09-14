@@ -4,7 +4,7 @@
 # init scripts must be located in the 'scripts' directory
 %define init_script_1  perfsonar-lsregistrationdaemon
 
-%define relnum 0.0.rc1 
+%define relnum 0.1.rc1 
 
 Name:			perfsonar-lsregistrationdaemon
 Version:		4.0
@@ -101,7 +101,13 @@ chown -R perfsonar:perfsonar /var/lib/perfsonar
 
 %if 0%{?el7}
 %systemd_post %{init_script_1}.service
+if [ "$1" = "1" ]; then
+    #if new install, then enable
+    systemctl enable %{init_script_1}.service
+    systemctl start %{init_script_1}.service
+fi
 %else
+/sbin/chkconfig --add %{init_script_1}
 if [ "$1" = "1" ]; then
     # clean install, check for pre 3.5.1 files
     if [ -e "/opt/perfsonar_ps/ls_registration_daemon/etc/ls_registration_daemon.conf" ]; then
@@ -123,9 +129,9 @@ if [ "$1" = "1" ]; then
     if [ -e /var/lib/perfsonar/ls_registration_daemon/lsKey.db ]; then
         mv -f /var/lib/perfsonar/ls_registration_daemon/lsKey.db /var/lib/perfsonar/lsregistrationdaemon/lsKey.db
     fi
+    /etc/init.d/%{init_script_1} start &>/dev/null || :
 fi
 
-/sbin/chkconfig --add %{init_script_1}
 %endif
 
 %preun

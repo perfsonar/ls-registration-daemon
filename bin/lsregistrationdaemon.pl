@@ -173,7 +173,13 @@ $inotify->watch ("$CONFIG_FILE", IN_MODIFY) or die "config file watcher creation
 my $flap_count = 0;
 my $current_ls_instance = "";
 while(1){
-    %conf = Config::General->new( $CONFIG_FILE )->getall();
+    eval{
+        %conf = Config::General->new( $CONFIG_FILE )->getall();
+    };
+    if($@){
+         $logger->error( "Error reading config file $CONFIG_FILE. Proceeding with defaults: Caused by: $@");
+         %conf = ();
+    }
     
     unless ($conf{server_flap_threshold}){
         $conf{server_flap_threshold} = 3;
@@ -200,98 +206,101 @@ while(1){
     unless ( $conf{"client_uuid_file"} ) {
         $conf{"client_uuid_file"} = '/var/lib/perfsonar/lsregistrationdaemon/client_uuid';
     }
-
-    #initialize the key database
-    unless ( $conf{"ls_key_db"} ) {
-        $conf{"ls_key_db"} = '/var/lib/perfsonar/lsregistrationdaemon/lsKey.db';
-    }
-    my $ls_key_dbh = DBI->connect('dbi:SQLite:dbname=' . $conf{"ls_key_db"}, '', '');
-    my $ls_key_create  = $ls_key_dbh->prepare('CREATE TABLE IF NOT EXISTS lsKeys (uri VARCHAR(255) PRIMARY KEY, expires BIGINT NOT NULL, checksum VARCHAR(255) NOT NULL, duplicateChecksum VARCHAR(255) NOT NULL)');
-    $ls_key_create->execute();
-    if($ls_key_create->err){
-        $logger->error( "Error creating key database: " . $ls_key_create->errstr );
-        exit( -1 );
-    }
-    #delete expired entries from local db
-    my $ls_key_clean_expired  = $ls_key_dbh->prepare('DELETE FROM lsKeys WHERE expires < ?');
-    $ls_key_clean_expired->execute(time);
-    if($ls_key_clean_expired->err){
-        $logger->error( "Error cleaning out expired keys: " . $ls_key_clean_expired->errstr );
-        exit( -1 );
-    }
-    $ls_key_dbh->disconnect();
     
-    #determine LS URL
+    #perform operations that could otherwise kill daemon
     my $init_ls = 0;
-    my $new_ls_instance = $conf{ls_instance};
-    if($new_ls_instance){
-        #statically set URL
-        if(!$current_ls_instance){
-            $init_ls = 1;
-            $logger->info("Initial LS URL statically set to " . $new_ls_instance);
-        }elsif($current_ls_instance ne $new_ls_instance){
-            $init_ls = 1;
-            $logger->info("LS static URL changed to " . $new_ls_instance);
+    eval{
+        #initialize the key database
+        unless ( $conf{"ls_key_db"} ) {
+            $conf{"ls_key_db"} = '/var/lib/perfsonar/lsregistrationdaemon/lsKey.db';
         }
-        $current_ls_instance = $new_ls_instance;
-        $flap_count = 0;
-    }else{
-        #auto-discover URL
-        my $lookup_services = discover_lookup_services();
-        $new_ls_instance = discover_primary_lookup_service(lookup_services => $lookup_services);
-        if ($new_ls_instance) {
-            $logger->debug("Auto-discovered LS: $new_ls_instance");
+        my $ls_key_dbh = DBI->connect('dbi:SQLite:dbname=' . $conf{"ls_key_db"}, '', '');
+        my $ls_key_create  = $ls_key_dbh->prepare('CREATE TABLE IF NOT EXISTS lsKeys (uri VARCHAR(255) PRIMARY KEY, expires BIGINT NOT NULL, checksum VARCHAR(255) NOT NULL, duplicateChecksum VARCHAR(255) NOT NULL)');
+        $ls_key_create->execute();
+        if($ls_key_create->err){
+            die "Error creating key database: " . $ls_key_create->errstr;
         }
-        #check for a better lookup service
-        my $init_ls = 0;
-        if(!$current_ls_instance){
+        #delete expired entries from local db
+        my $ls_key_clean_expired  = $ls_key_dbh->prepare('DELETE FROM lsKeys WHERE expires < ?');
+        $ls_key_clean_expired->execute(time);
+        if($ls_key_clean_expired->err){
+            die  "Error cleaning out expired keys: " . $ls_key_clean_expired->errstr;
+        }
+        $ls_key_dbh->disconnect();
+    
+        #determine LS URL
+        my $new_ls_instance = $conf{ls_instance};
+        if($new_ls_instance){
+            #statically set URL
+            if(!$current_ls_instance){
+                $init_ls = 1;
+                $logger->info("Initial LS URL statically set to " . $new_ls_instance);
+            }elsif($current_ls_instance ne $new_ls_instance){
+                $init_ls = 1;
+                $logger->info("LS static URL changed to " . $new_ls_instance);
+            }
             $current_ls_instance = $new_ls_instance;
-            $init_ls = 1;
             $flap_count = 0;
-            $logger->info("Initial LS URL set to " . $current_ls_instance);
-        }elsif($new_ls_instance ne $current_ls_instance){
-            my $current_ls_is_active = lookup_service_is_active(ls_url => $current_ls_instance, lookup_services => $lookup_services );
-            my $latency_diff = lookup_services_latency_diff(ls_url1 => $current_ls_instance, ls_url2 => $new_ls_instance, lookup_services => $lookup_services);
-            $flap_count++ if($latency_diff && $latency_diff > $ls_latency_threshold);
-            #only change if we have seen the new LS a few times to prevent flapping
-            if(!$current_ls_is_active || $flap_count >  $conf{"server_flap_threshold"}){
+        }else{
+            #auto-discover URL
+            my $lookup_services = discover_lookup_services();
+            $new_ls_instance = discover_primary_lookup_service(lookup_services => $lookup_services);
+            if ($new_ls_instance) {
+                $logger->debug("Auto-discovered LS: $new_ls_instance");
+            }
+            #check for a better lookup service
+            my $init_ls = 0;
+            if(!$current_ls_instance){
                 $current_ls_instance = $new_ls_instance;
                 $init_ls = 1;
                 $flap_count = 0;
-                $logger->info("LS URL automatically changed to  " . $new_ls_instance);
+                $logger->info("Initial LS URL set to " . $current_ls_instance);
+            }elsif($new_ls_instance ne $current_ls_instance){
+                my $current_ls_is_active = lookup_service_is_active(ls_url => $current_ls_instance, lookup_services => $lookup_services );
+                my $latency_diff = lookup_services_latency_diff(ls_url1 => $current_ls_instance, ls_url2 => $new_ls_instance, lookup_services => $lookup_services);
+                $flap_count++ if($latency_diff && $latency_diff > $ls_latency_threshold);
+                #only change if we have seen the new LS a few times to prevent flapping
+                if(!$current_ls_is_active || $flap_count >  $conf{"server_flap_threshold"}){
+                    $current_ls_instance = $new_ls_instance;
+                    $init_ls = 1;
+                    $flap_count = 0;
+                    $logger->info("LS URL automatically changed to  " . $new_ls_instance);
+                }
+            }else{
+                $flap_count = 0;
             }
-        }else{
-            $flap_count = 0;
         }
+    };
+    if($@){
+        $logger->error("$@");
     }
-    unless ($current_ls_instance){
-        $logger->error("Unable to determine ls_instance");
-        exit( -1 ); 
-    }
-    #set here so can be passed to sites
-    $conf{ls_instance} = $current_ls_instance;
-    
     
     #init and register records for each site
     my $start = time;
-    my $pid = fork();
-    if( $pid != 0 ){
-        push @child_pids, $pid;
-    }else{
-        #fork this off to prevent memory leak. not ideal but perl has trouble cleaning-up this part of code
-        my @site_params = init_sites(\%conf);
-        foreach my $params ( @site_params ) {
-            my $update_id = time .'';
-            handle_site( $params->{conf}, $params->{services}, $update_id, $init_ls );
+    if($current_ls_instance){
+        #set here so can be passed to sites
+        $conf{ls_instance} = $current_ls_instance;
+        my $pid = fork();
+        if( $pid != 0 ){
+            push @child_pids, $pid;
+        }else{
+            #fork this off to prevent memory leak. not ideal but perl has trouble cleaning-up this part of code
+            my @site_params = init_sites(\%conf);
+            foreach my $params ( @site_params ) {
+                my $update_id = time .'';
+                handle_site( $params->{conf}, $params->{services}, $update_id, $init_ls );
+            }
+            exit(0);
         }
-        exit(0);
-    }
 
-    foreach my $pid ( @child_pids ) {
-        waitpid( $pid, 0 );
+        foreach my $pid ( @child_pids ) {
+            waitpid( $pid, 0 );
+        }
+        @child_pids = (); #clear pids
+    }else{
+        $logger->error("Unable to determine ls_instance so not performing any operations");
     }
-    @child_pids = (); #clear pids
-    
+        
     #sleep until its time to look for file updates or time to refesh
     my $end = time;
     my $until_next_refresh = $conf{"check_interval"} - ($end - $start);
