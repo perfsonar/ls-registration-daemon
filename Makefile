@@ -1,7 +1,7 @@
 PACKAGE=perfsonar-lsregistrationdaemon
 ROOTPATH=/usr/lib/perfsonar
 CONFIGPATH=/etc/perfsonar
-VERSION=3.5.1.7
+VERSION=3.5.1.8
 RELEASE=1
 
 default:
