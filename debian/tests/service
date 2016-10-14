@@ -3,3 +3,5 @@
 set -e
 
 service perfsonar-lsregistrationdaemon status
+
+pgrep -fl lsregistrationdaemon
