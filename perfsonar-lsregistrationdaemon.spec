@@ -4,7 +4,7 @@
 # init scripts must be located in the 'scripts' directory
 %define init_script_1  perfsonar-lsregistrationdaemon
 
-%define relnum 0.2.rc2 
+%define relnum 0.3.rc2 
 
 Name:			perfsonar-lsregistrationdaemon
 Version:		4.0
