@@ -20,11 +20,20 @@ set -e
 
 case "$1" in
     configure)
+        # Generate configuration file if needed
+        conf=lsregistrationdaemon.conf
+        if ! [ -e /etc/perfsonar/$conf ]; then
+            if [ -e /etc/perfsonar/$conf.dpkg-backup ]; then
+                mv /etc/perfsonar/$conf.dpkg-backup /etc/perfsonar/$conf
+            else
+                cp /usr/share/doc/perfsonar-lsregistrationdaemon/examples/$conf \
+                   /etc/perfsonar/$conf
+            fi
+        fi
 
-    # DB directory
-    mkdir -p /var/lib/perfsonar/lsregistrationdaemon
-    chown perfsonar:perfsonar /var/lib/perfsonar/lsregistrationdaemon
-
+        # DB directory
+        mkdir -p /var/lib/perfsonar/lsregistrationdaemon
+        chown perfsonar:perfsonar /var/lib/perfsonar/lsregistrationdaemon
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)
