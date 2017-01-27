@@ -153,6 +153,7 @@ sub checksum_fields {
         "service_type",
         "service_name",
         "service_version",
+        "service_host",
         "domain",
         "administrator",
         "site_name",
