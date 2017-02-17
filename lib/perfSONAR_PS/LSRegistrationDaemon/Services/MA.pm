@@ -220,6 +220,7 @@ sub checksum_fields {
         "service_name",
         "service_event_type",
         "service_version",
+        "service_host",
         "domain",
         "administrator",
         "site_name",
