@@ -18,7 +18,7 @@ use warnings;
 
 our $VERSION = 3.3;
 
-use base 'perfSONAR_PS::LSRegistrationDaemon::Services::HTTP_Service';
+use base 'perfSONAR_PS::LSRegistrationDaemon::Services::HTTPS_Service';
 
 use Digest::MD5 qw(md5_base64);
 use perfSONAR_PS::Common qw(mergeConfig);
@@ -153,6 +153,7 @@ sub checksum_fields {
         "service_type",
         "service_name",
         "service_version",
+        "service_host",
         "domain",
         "administrator",
         "site_name",
