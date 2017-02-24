@@ -86,6 +86,7 @@ sub known_variables {
         { variable => "role", type => "array" },
         { variable => "bundle_type", type => "scalar" },
         { variable => "bundle_version", type => "scalar" },
+        { variable => "install_method", type => "scalar" },
         { variable => "access_policy", type => "scalar" },
         { variable => "access_policy_notes", type => "scalar" },
         { variable => "is_virtual_machine", type => "scalar" },
@@ -195,11 +196,12 @@ sub init {
         }
 
         # Grab the bundle version
-        unless($conf->{bundle_version} && $conf->{bundle_type}) {
+        unless($conf->{bundle_version} && $conf->{bundle_type} && $conf->{install_method}) {
             my $toolkit_version_conf = perfSONAR_PS::NPToolkit::Config::Version->new();
             $toolkit_version_conf->init();
             $conf->{bundle_version} = $toolkit_version_conf->get_version() if(!$conf->{bundle_version} && $toolkit_version_conf->get_version());
             $conf->{bundle_type} = $toolkit_version_conf->get_install_type() if(!$conf->{bundle_type} && $toolkit_version_conf->get_install_type());
+            $conf->{install_method} = $toolkit_version_conf->get_install_method() if(!$conf->{install_method} && $toolkit_version_conf->get_install_method());
         }
     }
  
@@ -534,6 +536,12 @@ sub bundle_version {
     return $self->{CONF}->{bundle_version};
 }
 
+sub install_method {
+    my ( $self ) = @_;
+    
+    return $self->{CONF}->{install_method};
+}
+
 sub access_policy {
     my ( $self ) = @_;
     
@@ -670,6 +678,7 @@ sub build_registration {
     $service->setRole($self->role()) if(defined $self->role());
     $service->setBundle($self->bundle_type()) if(defined $self->bundle_type());
     $service->setBundleVersion($self->bundle_version()) if(defined $self->bundle_version());
+    $service->setInstallMethod($self->install_method()) if(defined $self->install_method());
     $service->setAccessPolicy($self->access_policy()) if(defined $self->access_policy());
     $service->setAccessNotes($self->access_policy_notes()) if(defined $self->access_policy_notes());
     $service->setToolkitVersion($self->toolkit_version()) if(defined $self->toolkit_version());
@@ -712,6 +721,7 @@ sub checksum_fields {
         "role",
         "bundle_type",
         "bundle_version",
+        "install_method",
         "access_policy",
         "access_policy_notes",
         "is_virtual_machine",
