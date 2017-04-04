@@ -79,6 +79,7 @@ sub is_up {
     my ( $self ) = @_;
 
     foreach my $addr ( @{ $self->{ADDRESSES} } ) {
+        ($addr) = ($addr =~ /(.*)/); #untaint
         if ( $addr =~ /:/ ) {
             next;
         }

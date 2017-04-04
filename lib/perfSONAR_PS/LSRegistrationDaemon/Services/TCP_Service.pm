@@ -74,7 +74,8 @@ sub is_up {
 
     foreach my $addr ( @{ $self->{ADDRESSES} } ) {
         my $sock;
-
+        ($addr) = ($addr =~ /(.*)/); #untaint
+        
         $self->{LOGGER}->debug( "Connecting to ".$self->type()." server: " . $addr . ":" . $self->{PORT} );
 
         $sock = IO::Socket::INET6->new( PeerAddr => $addr, PeerPort => $self->{PORT}, Proto => 'tcp', Timeout => 5 );
