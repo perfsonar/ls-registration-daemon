@@ -492,6 +492,7 @@ sub build_checksum {
     
     $self->{LOGGER}->debug("Checksum prior to md5 is " . $checksum);
 
+    utf8::encode($checksum); # convert to binary for md5 to work
     $checksum = md5_base64($checksum);
 
     $self->{LOGGER}->debug("Checksum is " . $checksum);
@@ -509,6 +510,7 @@ sub build_duplicate_checksum {
     
     $self->{LOGGER}->debug("Duplicate checksum prior to md5 is " . $checksum);
 
+    utf8::encode($checksum); # convert to binary for md5 to work
     $checksum = md5_base64($checksum);
 
     $self->{LOGGER}->debug("Duplicate checksum is " . $checksum);
