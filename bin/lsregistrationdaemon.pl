@@ -174,7 +174,7 @@ my $flap_count = 0;
 my $current_ls_instance = "";
 while(1){
     eval{
-        %conf = Config::General->new( $CONFIG_FILE )->getall();
+        %conf = Config::General->new( -ConfigFile => $CONFIG_FILE, -UTF8 => 1 )->getall();
     };
     if($@){
          $logger->error( "Error reading config file $CONFIG_FILE. Proceeding with defaults: Caused by: $@");
