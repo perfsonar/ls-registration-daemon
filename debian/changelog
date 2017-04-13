@@ -1,10 +1,10 @@
-perfsonar-lsregistrationdaemon (4.0~6.rc3-1) perfsonar-jessie-staging; urgency=low
+perfsonar-lsregistrationdaemon (4.0-1) perfsonar-jessie-release; urgency=low
 
   * New upstream version.
   * Adding dependency to libperfsonar-pscheduler-perl
   * lsregistrationdaemon.conf is now generated at install time
 
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Mon, 10 Apr 2017 12:16:17 +0000
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Thu, 13 Apr 2017 16:26:54 +0000
 
 perfsonar-lsregistrationdaemon (3.5.1.4-1) perfsonar-jessie-release; urgency=low
 
