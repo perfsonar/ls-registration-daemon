@@ -197,7 +197,7 @@ while(1){
     my $until_next_file_check = $conf{"check_config_interval"};
     
     unless ($conf{"ls_instance_latency_threshold"}) {
-        $logger->debug( "No clatency threshold specified for switching LSes. Defaulting to 10%" );
+        $logger->debug( "No latency threshold specified for switching LSes. Defaulting to 10%" );
         $conf{"ls_instance_latency_threshold"} = .1;
     }
     my $ls_latency_threshold = $conf{"ls_instance_latency_threshold"};
