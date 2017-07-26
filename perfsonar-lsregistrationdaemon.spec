@@ -4,10 +4,10 @@
 # init scripts must be located in the 'scripts' directory
 %define init_script_1  perfsonar-lsregistrationdaemon
 
-%define relnum 1 
+%define relnum  0.1.rc1 
 
 Name:			perfsonar-lsregistrationdaemon
-Version:		4.0
+Version:		4.0.1
 Release:		%{relnum}%{?dist}
 Summary:		perfSONAR Lookup Service Registration Daemon
 License:		Distributable, see LICENSE
@@ -43,7 +43,6 @@ Requires:		perl(Regexp::Common)
 Requires:		perl(Socket)
 Requires:		perl(Time::HiRes)
 Requires:		perl(XML::LibXML)
-Requires:		perl(Net::Interface)
 Requires:		perl(base)
 Requires:		coreutils
 Requires:		shadow-utils

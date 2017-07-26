@@ -25,7 +25,6 @@ Mouse
 Net::CIDR
 Net::DNS
 Net::IP
-Net::Interface
 Net::Ping
 Net::Ping::External
 NetAddr::IP
