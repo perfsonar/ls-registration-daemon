@@ -66,6 +66,7 @@ sub known_variables {
         { variable => "memory", type => "scalar" },
         { variable => "name", type => "scalar" },
         { variable => "os_kernel", type => "scalar" },
+        { variable => "os_architecture", type => "scalar" },
         { variable => "os_name", type => "scalar" },
         { variable => "os_version", type => "scalar" },
         { variable => "processor_cores", type => "scalar" },
@@ -158,6 +159,7 @@ sub init {
             $conf->{os_name} = $os_info->{distribution_name} unless $conf->{os_name};
             $conf->{os_version} = $os_info->{distribution_version} unless $conf->{os_version};
             $conf->{os_kernel} = $os_info->{os_name}." ".$os_info->{kernel_version} unless $conf->{os_kernel};
+            $conf->{os_architecture} = $os_info->{architecture} unless $conf->{os_architecture};
         }
  
         my $cpu_info = get_processor_info();
@@ -464,6 +466,12 @@ sub os_kernel {
     return $self->{CONF}->{os_kernel};
 }
 
+sub os_architecture {
+    my ( $self ) = @_;
+
+    return $self->{CONF}->{os_architecture};
+}
+
 sub tcp_cc_algorithm {
     my ( $self ) = @_;
 
@@ -655,6 +663,7 @@ sub build_registration {
     	osName=> $self->os_name(), 
     	osVersion=> $self->os_version(), 
     	osKernel => $self->os_kernel(), 
+    	osArchitecture => $self->os_architecture(),
     	tcpCongestionAlgorithm => $self->tcp_cc_algorithm(),
     	tcpMaxBufferSend => $self->tcp_max_buffer_send(), 
     	tcpMaxBufferRecv => $self->tcp_max_buffer_recv(), 
@@ -709,6 +718,7 @@ sub checksum_fields {
         "os_name",
         "os_version",
         "os_kernel",
+        "os_architecture",
         "tcp_cc_algorithm",
         "tcp_max_buffer_send",
         "tcp_max_buffer_recv",
