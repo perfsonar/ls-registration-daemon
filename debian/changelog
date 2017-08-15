@@ -1,24 +1,14 @@
-perfsonar-lsregistrationdaemon (4.0.1~1.rc1-1~bpo70+1) perfsonar-wheezy-staging; urgency=low
+perfsonar-lsregistrationdaemon (4.0.1-1~bpo70+1) perfsonar-wheezy-release; urgency=low
 
   * Backport to Wheezy.
 
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Wed, 26 Jul 2017 14:48:48 +0200
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Tue, 15 Aug 2017 10:27:15 +0100
 
-perfsonar-lsregistrationdaemon (4.0-1) perfsonar-jessie-release; urgency=low
-
-  * New upstream version.
-  * Adding dependency to libperfsonar-pscheduler-perl
-  * lsregistrationdaemon.conf is now generated at install time
-
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Thu, 13 Apr 2017 16:26:54 +0000
-
-perfsonar-lsregistrationdaemon (3.5.1.4-1) perfsonar-jessie-release; urgency=low
-
-perfsonar-lsregistrationdaemon (4.0.1~1.rc1-1) perfsonar-jessie-staging; urgency=low
+perfsonar-lsregistrationdaemon (4.0.1-1) perfsonar-jessie-release; urgency=low
 
   * New upstream version.
 
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Wed, 26 Jul 2017 14:46:50 +0200
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Tue, 15 Aug 2017 10:24:57 +0100
 
 perfsonar-lsregistrationdaemon (4.0-1) perfsonar-jessie-release; urgency=low
 
