@@ -94,6 +94,9 @@ use constant TEST_RECORD_HASH => {
                                     'host-net-tcp-maxbuffer-send' => [
                                                                        '124928 bytes'
                                                                      ],
+                                    'host-net-ipv6-enabled' => [
+                                                                       '0'
+                                                                     ],
                                     'location-country' => [
                                                             'US'
                                                           ],
