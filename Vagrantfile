@@ -60,6 +60,8 @@ EOF
             make \
             bzip2 \
             perl \
+            perl-devel\
+            perl-ExtUtils-MakeMaker\
             mongodb-org\
             lookup-service \
             net-tools \
