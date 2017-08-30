@@ -81,11 +81,11 @@ This repository allows you to use [Vagrant](https://www.vagrantup.com) to create
 ### Installation
 1. Install [VirtualBox](https://www.virtualbox.org) according the the instructions on their site for your system. 
 1. Install [Vagrant](https://www.vagrantup.com) according the the instructions on their site for your system. 
-1. Install the vagrant-vbguest and vagrant-reload plugins with the following commands::
-
+1. Install the vagrant-vbguest and vagrant-reload plugins with the following commands:
+    ```bash
     vagrant plugin install vagrant-vbguest
     vagrant plugin install vagrant-reload
-
+    ```
 ### Starting the VM
 1. Clone this github repo
 1. Start the VM with `vagrant up`. The first time you do this it will take awhile to create the initial VM.
