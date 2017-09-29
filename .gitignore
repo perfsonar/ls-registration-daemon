@@ -4,3 +4,6 @@
 .pc
 #ignore test data
 t/test_data/*
+#ignore vagrant data
+.vagrant
+vagrant-data

@@ -60,6 +60,7 @@ sub known_variables {
         { variable => "disable_ipv6_reverse_lookup", type => "scalar" },
         { variable => "domain", type => "array" },
         { variable => "host_name", type => "array" },
+        { variable => "ipv6_enabled", type => "scalar" },
         { variable => "is_local", type => "scalar" },
         { variable => "latitude", type => "scalar" },
         { variable => "longitude", type => "scalar" },
@@ -253,11 +254,15 @@ sub init_dependencies {
 
     #create interfaces
     my @interfaces = ();
-
+    
+    $self->{CONF}->{ipv6_enabled} = 0;
     foreach my $iface(@{$self->{CONF}->{interface}}){
         $self->{LOGGER}->debug("Creating new interface object");
         my $iface_reg = perfSONAR_PS::LSRegistrationDaemon::Interface->new();
         $iface_reg->init(mergeConfig($self->{CONF}, $iface));
+        if (!$self->{CONF}->{ipv6_enabled}){
+            $self->{CONF}->{ipv6_enabled} = $iface_reg->has_ipv6();
+        }
         push @interfaces, $iface_reg;
     }
 
@@ -416,6 +421,13 @@ sub interface {
     }
 
     return \@ifaces; 
+}
+
+sub ipv6_enabled {
+    my ( $self ) = @_;
+    
+    #make sure its a string so gets included
+    return ($self->{CONF}->{ipv6_enabled} ? '1' : '0');
 }
 
 sub memory {
@@ -655,6 +667,7 @@ sub build_registration {
     $service->init(
         hostName => $self->host_name(), 
         interfaces => $self->interface(),
+        ipv6Enabled => $self->ipv6_enabled(),
         memory => $self->memory(), 
     	processorSpeed => $self->processor_speed(), 
     	processorCount => $self->processor_count(), 
@@ -710,6 +723,7 @@ sub checksum_fields {
     return [
         "host_name",
         "interface",
+        "ipv6_enabled",
         "memory",
         "processor_speed",
         "processor_count", 
