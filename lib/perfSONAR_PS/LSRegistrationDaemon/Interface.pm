@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use base 'perfSONAR_PS::LSRegistrationDaemon::Base';
+use Data::Validate::IP qw(is_ipv6);
 use Digest::MD5 qw(md5_base64);
 use perfSONAR_PS::Client::LS::PSRecords::PSInterface;
 
@@ -165,6 +166,19 @@ sub domain {
     my ( $self ) = @_;
 
     return $self->{CONF}->{domain};
+}
+
+#not a field, just a utility function
+sub has_ipv6 {
+    my ( $self ) = @_;
+    
+    foreach my $address (@{ $self->{CONF}->{address} }) {
+        if(is_ipv6($address)){
+            return 1;
+        }
+    }
+    
+    return 0;
 }
 
 sub build_registration {
