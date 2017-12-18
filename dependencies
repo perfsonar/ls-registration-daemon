@@ -26,7 +26,6 @@ Net::CIDR
 Net::DNS
 Net::IP
 Net::Ping
-Net::Ping::External
 NetAddr::IP
 POSIX
 Params::Validate

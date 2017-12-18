@@ -380,9 +380,7 @@ L<perfSONAR_PS::Utils::Host>, L<perfSONAR_PS::LSRegistrationDaemon::Services::Ph
 L<perfSONAR_PS::LSRegistrationDaemon::Services::BWCTL>,
 L<perfSONAR_PS::LSRegistrationDaemon::Services::OWAMP>,
 L<perfSONAR_PS::LSRegistrationDaemon::Services::NDT>,
-L<perfSONAR_PS::LSRegistrationDaemon::Services::NPAD>,
-L<perfSONAR_PS::LSRegistrationDaemon::Services::Ping>,
-L<perfSONAR_PS::LSRegistrationDaemon::Services::Traceroute>
+L<perfSONAR_PS::LSRegistrationDaemon::Services::NPAD>
 
 To join the 'perfSONAR Users' mailing list, please visit:
 
