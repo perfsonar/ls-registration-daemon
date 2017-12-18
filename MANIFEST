@@ -18,7 +18,6 @@ lib/perfSONAR_PS/LSRegistrationDaemon/Services/Dashboard.pm
 lib/perfSONAR_PS/LSRegistrationDaemon/Services/GridFTP.pm
 lib/perfSONAR_PS/LSRegistrationDaemon/Services/HTTP_Service.pm
 lib/perfSONAR_PS/LSRegistrationDaemon/Services/HTTPS_Service.pm
-lib/perfSONAR_PS/LSRegistrationDaemon/Services/ICMP_Service.pm
 lib/perfSONAR_PS/LSRegistrationDaemon/Services/MA.pm
 lib/perfSONAR_PS/LSRegistrationDaemon/Services/MeshConfig.pm
 lib/perfSONAR_PS/LSRegistrationDaemon/Services/MP_BWCTL.pm
@@ -27,11 +26,9 @@ lib/perfSONAR_PS/LSRegistrationDaemon/Services/NDT.pm
 lib/perfSONAR_PS/LSRegistrationDaemon/Services/NPAD.pm
 lib/perfSONAR_PS/LSRegistrationDaemon/Services/OWAMP.pm
 lib/perfSONAR_PS/LSRegistrationDaemon/Services/Phoebus.pm
-lib/perfSONAR_PS/LSRegistrationDaemon/Services/Ping.pm
 lib/perfSONAR_PS/LSRegistrationDaemon/Services/PScheduler.pm
 lib/perfSONAR_PS/LSRegistrationDaemon/Services/REDDnet.pm
 lib/perfSONAR_PS/LSRegistrationDaemon/Services/TCP_Service.pm
-lib/perfSONAR_PS/LSRegistrationDaemon/Services/Traceroute.pm
 lib/perfSONAR_PS/LSRegistrationDaemon/Utils/Config.pm
 scripts/perfsonar-lsregistrationdaemon
 scripts/perfsonar-lsregistrationdaemon.service
