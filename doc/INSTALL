@@ -66,7 +66,6 @@ the following Perl libraries, libraries, and external tools to function:
     - Log::Log4perl
     - Net::DNS
     - Net::Ping
-    - Net::Ping::External
     - NetAddr::IP
     - POSIX
     - Params::Validate

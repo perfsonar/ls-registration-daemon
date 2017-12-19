@@ -164,7 +164,6 @@ EOF
             perl-Net-IP \
             perl-Net-LibIDN \
             perl-Net-Netmask \
-            perl-Net-Ping-External \
             perl-Net-SMTP-SSL \
             perl-Net-SSLeay \
             perl-Net-Server \
