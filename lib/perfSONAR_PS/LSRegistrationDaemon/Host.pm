@@ -34,8 +34,6 @@ use perfSONAR_PS::LSRegistrationDaemon::Services::MP_OWAMP;
 use perfSONAR_PS::LSRegistrationDaemon::Services::NDT;
 use perfSONAR_PS::LSRegistrationDaemon::Services::NPAD;
 use perfSONAR_PS::LSRegistrationDaemon::Services::GridFTP;
-use perfSONAR_PS::LSRegistrationDaemon::Services::Ping;
-use perfSONAR_PS::LSRegistrationDaemon::Services::Traceroute;
 
 use fields 'INTERFACES', 'SERVICES';
 
@@ -317,10 +315,14 @@ sub init_subordinates {
             $service = perfSONAR_PS::LSRegistrationDaemon::Services::OWAMP->new();
         }
         elsif ( lc( $service_conf->{type} ) eq "ping" ) {
-            $service = perfSONAR_PS::LSRegistrationDaemon::Services::Ping->new();
+            #backward compatibility, ignore services that are no longer supported
+            $self->{LOGGER}->warn( "Service of type " . $service_conf->{type} . " is no longer supported. It will be ignored and can be safely removed from your configuration file" );
+            next;
         }
         elsif ( lc( $service_conf->{type} ) eq "traceroute" ) {
-            $service = perfSONAR_PS::LSRegistrationDaemon::Services::Traceroute->new();
+            #backward compatibility, ignore services that are no longer supported
+            $self->{LOGGER}->warn( "Service of type " . $service_conf->{type} . " is no longer supported. It will be ignored and can be safely removed from your configuration file" );
+            next;
         }
         elsif ( lc( $service_conf->{type} ) eq "phoebus" ) {
             $service = perfSONAR_PS::LSRegistrationDaemon::Services::Phoebus->new();
