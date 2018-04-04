@@ -1,8 +1,8 @@
 PACKAGE=perfsonar-lsregistrationdaemon
 ROOTPATH=/usr/lib/perfsonar
 CONFIGPATH=/etc/perfsonar
-VERSION=4.0.2.1
-RELEASE=1
+VERSION=4.1
+RELEASE=0.0.a1
 
 default:
 	@echo No need to build the package. Just run \"make install\"
