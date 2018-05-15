@@ -26,18 +26,11 @@ Vagrant.configure("2") do |config|
     # reserved local address range for IPv6
     el7.vm.network "private_network", ip: "fdac:218a:75e5:69c8::20"
     
-    #Disable selinux
+    #Disable selinux and setup yum. Doo this hear so vbguest has what it needs and kernel versions match
     el7.vm.provision "shell", inline: <<-SHELL
         sed -i s/SELINUX=enforcing/SELINUX=permissive/g /etc/selinux/config
-    SHELL
-    
-    #reload VM since selinux requires reboot. Requires `vagrant plugin install vagrant-reload`
-    el7.vm.provision :reload
-    
-    #Install all requirements and perform initial setup
-    el7.vm.provision "shell", inline: <<-SHELL
-    
-        ##setup mongodb repo
+        
+         ##setup mongodb repo
         cat > /etc/yum.repos.d/mongodb-org-3.4.repo <<EOF
 [mongodb-org-3.4]
 name=MongoDB Repository
@@ -53,12 +46,22 @@ EOF
         yum clean all
         yum install -y perfSONAR-repo-staging perfSONAR-repo-nightly
         yum clean all
+        yum update -y
         yum install -y gcc \
             kernel-devel \
             kernel-headers \
             dkms \
             make \
-            bzip2 \
+            bzip2
+    SHELL
+    
+    #reload VM since selinux requires reboot. Requires `vagrant plugin install vagrant-reload`
+    el7.vm.provision :reload
+    
+    #Install all requirements and perform initial setup
+    el7.vm.provision "shell", inline: <<-SHELL
+
+        yum install -y \
             perl \
             perl-devel\
             perl-ExtUtils-MakeMaker\
@@ -152,6 +155,7 @@ EOF
             perl-Module-Implementation \
             perl-Module-Load \
             perl-Module-Runtime \
+            perl-Mojolicious \
             perl-Moose \
             perl-Mouse \
             perl-Mozilla-CA \

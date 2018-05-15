@@ -28,6 +28,9 @@ sub known_variables {
         { variable => "mtu", type => "scalar" },
         { variable => "subnet", type => "scalar" },
         { variable => "urn", type => "scalar" },
+        { variable => "disable_autodiscover_tests", type => "scalar" },
+        { variable => "test", type => "array" },
+        { variable => "disable_test", type => "array" },
     );
 
     return @variables;
@@ -66,6 +69,57 @@ sub init {
         $conf->{capacity} = $addresses->{primary_iface_speed} if($addresses->{primary_iface_speed});
         $conf->{mtu} = $addresses->{primary_iface_mtu} if($addresses->{primary_iface_mtu});
         $conf->{mac_address} = $addresses->{primary_iface_mac} if($addresses->{primary_iface_mac});
+        #Autodiscover tools and test types
+        unless($conf->{'disable_autodiscover_tests'}){
+            #get disabled tests
+            my $disabled_test = {};
+            $conf->{disable_test} = [] unless $conf->{disable_test};
+            $conf->{disable_test} = [ $conf->{disable_test} ] unless ref($conf->{disable_test}) eq "ARRAY";
+            foreach my $dt(@{$conf->{disable_test}}){
+                $disabled_test->{$dt} = 1;
+            }
+            
+            my @auto_urls = ();
+            if($conf->{'autodiscover_tests_url'}){
+                push @auto_urls, $conf->{'autodiscover_tests_url'};
+            }else{
+                foreach my $addr(@{$conf->{address}}){
+                    if(is_ipv6($addr)){
+                        push @auto_urls, "https://[$addr]/pscheduler";
+                    }else{
+                        push @auto_urls, "https://$addr/pscheduler";
+                    }
+                }
+            }
+            my $filters = new perfSONAR_PS::Client::PScheduler::ApiFilters(
+                    ca_certificate_file => $conf->{'autodiscover_ca_file'},
+                    ca_certificate_path => $conf->{'autodiscover_ca_path'},
+                    verify_hostname => $conf->{'autodiscover_verify_hostname'},
+                );
+            foreach my $auto_url(@auto_urls){
+                my $client = new perfSONAR_PS::Client::PScheduler::ApiConnect("url" => $auto_url, "filters" => $filters);
+                my $tests =  $client->get_tests();
+                if($client->error()){
+                    $self->{LOGGER}->warn("Unable to get pScheduler test types from $auto_url: " . $client->error);
+                }else{
+                    $conf->{test} = [];
+                    foreach my $test(@{$tests}){
+                        push @{$conf->{test}}, $test->name() unless($disabled_test->{$test->name()});
+                    }
+                    last;
+                }
+            }
+        }
+        
+        #remove any duplicates
+        my %test_map = ();
+        $conf->{test} = [] unless $conf->{test};
+        $conf->{test} = [ $conf->{test} ] unless ref($conf->{test}) eq "ARRAY";
+        foreach my $t(@{$conf->{test}}){
+            $test_map{$t} = 1;
+        }
+        my @tmp_test = keys %test_map;
+        $conf->{test} = \@tmp_test;
     }
 
     # Make sure that addresses are unique
@@ -168,6 +222,12 @@ sub domain {
     return $self->{CONF}->{domain};
 }
 
+sub test {
+    my ( $self ) = @_;
+
+    return $self->{CONF}->{test};
+}
+
 #not a field, just a utility function
 sub has_ipv6 {
     my ( $self ) = @_;
@@ -192,6 +252,7 @@ sub build_registration {
         macAddress=> $self->mac_address(), 
         domains=> $self->domain(),
     );
+    $iface->setPSchedulerTests($self->test()) if($self->test());
     $iface->setInterfaceCapacity($self->capacity()) if($self->capacity());
     $iface->setInterfaceMTU($self->mtu()) if(defined $self->mtu());
     $iface->setInterfaceType($self->if_type()) if(defined $self->if_type());
