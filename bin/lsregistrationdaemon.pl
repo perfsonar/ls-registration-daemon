@@ -5,8 +5,7 @@ use warnings;
 
 =head1 NAME
 
-lsregistrationdaemon.pl - Registers services (e.g. daemons such as owamp,
-bwctl) into the global information service.
+lsregistrationdaemon.pl - Registers services into the global information service.
 
 =head1 DESCRIPTION
 
@@ -372,36 +371,9 @@ sub signalHandler {
 
 __END__
 
-=head1 SEE ALSO
-
-L<FindBin>, L<Getopt::Long>, L<Config::General>, L<Log::Log4perl>,
-L<perfSONAR_PS::Common>, L<perfSONAR_PS::Utils::Daemon>,
-L<perfSONAR_PS::Utils::Host>, L<perfSONAR_PS::LSRegistrationDaemon::Services::Phoebus>,
-L<perfSONAR_PS::LSRegistrationDaemon::Services::BWCTL>,
-L<perfSONAR_PS::LSRegistrationDaemon::Services::OWAMP>,
-L<perfSONAR_PS::LSRegistrationDaemon::Services::NDT>,
-L<perfSONAR_PS::LSRegistrationDaemon::Services::NPAD>
-
-To join the 'perfSONAR Users' mailing list, please visit:
-
-  https://mail.internet2.edu/wws/info/perfsonar-user
-
-The perfSONAR-PS git repository is located at:
-
-  https://code.google.com/p/perfsonar-ps/
-
-Questions and comments can be directed to the author, or the mailing list.
-Bugs, feature requests, and improvements can be directed here:
-
-  http://code.google.com/p/perfsonar-ps/issues/list
-
 =head1 VERSION
 
 $Id$
-
-=head1 AUTHOR
-
-Aaron Brown, aaron@internet2.edu
 
 =head1 LICENSE
 
@@ -416,11 +388,3 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-
-=head1 COPYRIGHT
-
-Copyright (c) 2009, Internet2
-
-All rights reserved.
-
-=cut

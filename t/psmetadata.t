@@ -34,7 +34,7 @@ use constant TEST_RECORD_HASH => {
                                                                   '10.0.0.2'
                                                                 ],
                                     'psmetadata-tool-name' => [
-                                                                'bwctl/iperf3'
+                                                                'pscheduler/iperf3'
                                                               ],
                                     'type' => [
                                                 'psmetadata'
@@ -56,7 +56,7 @@ my %conf = ( 'source' => '10.0.0.1',
              'destination' => '10.0.0.2',
              'event_type' => 'throughput',
              'measurement_agent' => '10.0.0.1',
-             'tool_name' => 'bwctl/iperf3',
+             'tool_name' => 'pscheduler/iperf3',
              'ma_locator' => 'http://foo.bar/esmond/perfsonar/archive',
              'domain' => 'foo.bar',
              'site_project' => 'Test',

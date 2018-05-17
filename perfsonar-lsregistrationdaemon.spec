@@ -59,9 +59,8 @@ Requires:		chkconfig
 %endif
 
 %description
-The LS Registration Daemon is used to register service instances for services
-like bwctl, owamp, etc. that don't currently support registering
-themselves.
+The LS Registration Daemon is used to register information about the perfSONAR host and
+the services it runs to the global perfSONAR Lookup Service
 
 %pre
 /usr/sbin/groupadd perfsonar 2> /dev/null || :
