@@ -19,6 +19,7 @@ sub known_variables {
         { variable => "address", type => "array" },
 
         { variable => "autodiscover", type => "scalar" },
+        { variable => "autodiscover_tests_url", type => "scalar" },
         { variable => "capacity", type => "scalar" },
         { variable => "domain", type => "array" },
         { variable => "if_name", type => "scalar" },
