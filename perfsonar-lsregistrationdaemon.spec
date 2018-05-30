@@ -10,7 +10,7 @@ Name:			perfsonar-lsregistrationdaemon
 Version:		4.1
 Release:		%{relnum}%{?dist}
 Summary:		perfSONAR Lookup Service Registration Daemon
-License:		Distributable, see LICENSE
+License:		ASL 2.0
 Group:			Development/Libraries
 URL:			http://www.perfsonar.net
 Source0:		perfsonar-lsregistrationdaemon-%{version}.%{relnum}.tar.gz
@@ -153,6 +153,7 @@ fi
 
 %files
 %defattr(0644,perfsonar,perfsonar,0755)
+%license LICENSE
 %config(noreplace) %{config_base}/*
 %attr(0755,perfsonar,perfsonar) %{install_base}/bin/*
 %{install_base}/lib/perfSONAR_PS/*
