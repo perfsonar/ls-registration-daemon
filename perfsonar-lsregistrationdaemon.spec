@@ -10,7 +10,7 @@ Name:			perfsonar-lsregistrationdaemon
 Version:		4.1
 Release:		%{relnum}%{?dist}
 Summary:		perfSONAR Lookup Service Registration Daemon
-License:		Distributable, see LICENSE
+License:		ASL 2.0
 Group:			Development/Libraries
 URL:			http://www.perfsonar.net
 Source0:		perfsonar-lsregistrationdaemon-%{version}.%{relnum}.tar.gz
@@ -59,9 +59,8 @@ Requires:		chkconfig
 %endif
 
 %description
-The LS Registration Daemon is used to register service instances for services
-like bwctl, owamp, etc. that don't currently support registering
-themselves.
+The LS Registration Daemon is used to register information about the perfSONAR host and
+the services it runs to the global perfSONAR Lookup Service
 
 %pre
 /usr/sbin/groupadd perfsonar 2> /dev/null || :
@@ -154,6 +153,7 @@ fi
 
 %files
 %defattr(0644,perfsonar,perfsonar,0755)
+%license LICENSE
 %config(noreplace) %{config_base}/*
 %attr(0755,perfsonar,perfsonar) %{install_base}/bin/*
 %{install_base}/lib/perfSONAR_PS/*

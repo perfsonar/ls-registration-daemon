@@ -21,17 +21,10 @@ use perfSONAR_PS::Common qw(mergeConfig);
 
 use perfSONAR_PS::LSRegistrationDaemon::Person;
 
-use perfSONAR_PS::LSRegistrationDaemon::Services::Phoebus;
-use perfSONAR_PS::LSRegistrationDaemon::Services::REDDnet;
-use perfSONAR_PS::LSRegistrationDaemon::Services::BWCTL;
 use perfSONAR_PS::LSRegistrationDaemon::Services::OWAMP;
 use perfSONAR_PS::LSRegistrationDaemon::Services::MA;
 use perfSONAR_PS::LSRegistrationDaemon::Services::PScheduler;
 use perfSONAR_PS::LSRegistrationDaemon::Services::Dashboard;
-use perfSONAR_PS::LSRegistrationDaemon::Services::MP_BWCTL;
-use perfSONAR_PS::LSRegistrationDaemon::Services::MP_OWAMP;
-use perfSONAR_PS::LSRegistrationDaemon::Services::NDT;
-use perfSONAR_PS::LSRegistrationDaemon::Services::NPAD;
 use perfSONAR_PS::LSRegistrationDaemon::Services::GridFTP;
 
 use fields 'INTERFACES', 'SERVICES';
@@ -307,33 +300,8 @@ sub init_subordinates {
 
         my $service;
 
-        if ( lc( $service_conf->{type} ) eq "bwctl" ) {
-            $service = perfSONAR_PS::LSRegistrationDaemon::Services::BWCTL->new();
-        }
-        elsif ( lc( $service_conf->{type} ) eq "owamp" ) {
+        if ( lc( $service_conf->{type} ) eq "owamp" ) {
             $service = perfSONAR_PS::LSRegistrationDaemon::Services::OWAMP->new();
-        }
-        elsif ( lc( $service_conf->{type} ) eq "ping" ) {
-            #backward compatibility, ignore services that are no longer supported
-            $self->{LOGGER}->warn( "Service of type " . $service_conf->{type} . " is no longer supported. It will be ignored and can be safely removed from your configuration file" );
-            next;
-        }
-        elsif ( lc( $service_conf->{type} ) eq "traceroute" ) {
-            #backward compatibility, ignore services that are no longer supported
-            $self->{LOGGER}->warn( "Service of type " . $service_conf->{type} . " is no longer supported. It will be ignored and can be safely removed from your configuration file" );
-            next;
-        }
-        elsif ( lc( $service_conf->{type} ) eq "phoebus" ) {
-            $service = perfSONAR_PS::LSRegistrationDaemon::Services::Phoebus->new();
-        }
-        elsif ( lc( $service_conf->{type} ) eq "reddnet" ) {
-            $service = perfSONAR_PS::LSRegistrationDaemon::Services::REDDnet->new();
-        }
-        elsif ( lc( $service_conf->{type} ) eq "ndt" ) {
-            $service = perfSONAR_PS::LSRegistrationDaemon::Services::NDT->new();
-        }
-        elsif ( lc( $service_conf->{type} ) eq "npad" ) {
-            $service = perfSONAR_PS::LSRegistrationDaemon::Services::NPAD->new();
         }
         elsif ( lc( $service_conf->{type} ) eq "gridftp" ) {
             $service = perfSONAR_PS::LSRegistrationDaemon::Services::GridFTP->new();
@@ -347,16 +315,10 @@ sub init_subordinates {
         elsif ( lc( $service_conf->{type} ) eq "dashboard" ) {
             $service = perfSONAR_PS::LSRegistrationDaemon::Services::Dashboard->new();
         }
-        elsif ( lc( $service_conf->{type} ) eq "mp_bwctl" ) {
-            $service = perfSONAR_PS::LSRegistrationDaemon::Services::MP_BWCTL->new();
-        }
-        elsif ( lc( $service_conf->{type} ) eq "mp_owamp" ) {
-            $service = perfSONAR_PS::LSRegistrationDaemon::Services::MP_OWAMP->new();
-        }
         else {
             # error
-            $self->{LOGGER}->error( "Error: Unknown service type: " . $service_conf->{type} );
-            return -1;
+            $self->{LOGGER}->warn( "Error: Unknown service type: " . $service_conf->{type} );
+            next;
         }
 
         if ( $service->init( $service_conf ) != 0 ) {
