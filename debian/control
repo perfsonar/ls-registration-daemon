@@ -4,7 +4,7 @@ Priority: extra
 Maintainer: Antoine Delvaux <adelvaux@man.poznan.pl>
 Build-Depends: debhelper (>= 9.0.0), dh-systemd, perl, quilt, procps,
  libdbi-perl, libconfig-general-perl, libsocket6-perl, libdbd-sqlite3-perl,
- libio-socket-inet6-perl, libtest-log4perl-perl,
+ libio-socket-inet6-perl, libtest-log4perl-perl, perfsonar-psconfig-pscheduler-dev,
  net-tools, libperfsonar-perl, libperfsonar-esmond-perl, libperfsonar-sls-perl,
  libperfsonar-toolkit-perl, libperfsonar-pscheduler-perl
 Standards-Version: 3.9.3
