@@ -22,6 +22,7 @@ use perfSONAR_PS::Common qw(mergeConfig);
 use perfSONAR_PS::LSRegistrationDaemon::Person;
 
 use perfSONAR_PS::LSRegistrationDaemon::Services::OWAMP;
+use perfSONAR_PS::LSRegistrationDaemon::Services::TWAMP;
 use perfSONAR_PS::LSRegistrationDaemon::Services::MA;
 use perfSONAR_PS::LSRegistrationDaemon::Services::PScheduler;
 use perfSONAR_PS::LSRegistrationDaemon::Services::Dashboard;
@@ -314,6 +315,9 @@ sub init_subordinates {
         }
         elsif ( lc( $service_conf->{type} ) eq "dashboard" ) {
             $service = perfSONAR_PS::LSRegistrationDaemon::Services::Dashboard->new();
+        }
+        elsif ( lc( $service_conf->{type} ) eq "twamp" ) {
+            $service = perfSONAR_PS::LSRegistrationDaemon::Services::TWAMP->new();
         }
         else {
             # error
