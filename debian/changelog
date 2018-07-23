@@ -1,8 +1,8 @@
-perfsonar-lsregistrationdaemon (4.1~1.b1-1) perfsonar-jessie-staging; urgency=low
+perfsonar-lsregistrationdaemon (4.1~2.b1-1) perfsonar-jessie-staging; urgency=low
 
   * New upstream version.
 
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Tue, 26 Jun 2018 17:13:05 +0000
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Mon, 23 Jul 2018 18:03:50 +0000
 
 perfsonar-lsregistrationdaemon (4.0.2.1-1) perfsonar-jessie-release; urgency=low
 
