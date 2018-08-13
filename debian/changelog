@@ -1,8 +1,9 @@
-perfsonar-lsregistrationdaemon (4.1~2.b1-1) perfsonar-jessie-staging; urgency=low
+perfsonar-lsregistrationdaemon (4.1-1) perfsonar-release; urgency=low
 
   * New upstream version.
+  * Adding dependency to perfsonar-psconfig-pscheduler-dev
 
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Mon, 23 Jul 2018 18:03:50 +0000
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Mon, 13 Aug 2018 18:33:31 +0000
 
 perfsonar-lsregistrationdaemon (4.0.2.1-1) perfsonar-jessie-release; urgency=low
 
