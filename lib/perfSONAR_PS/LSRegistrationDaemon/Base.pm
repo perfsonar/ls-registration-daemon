@@ -29,6 +29,10 @@ use perfSONAR_PS::Utils::LookupService qw(get_client_uuid set_client_uuid);
 use Digest::MD5 qw(md5_base64);
 use SimpleLookupService::Client::Registration;
 use SimpleLookupService::Client::RecordManager;
+use SimpleLookupService::BulkRenewMessage;
+use SimpleLookupService::Client::BulkRenewManager;
+use SimpleLookupService::BulkRenewResponse;
+use Data::Dumper;
 
 use fields 'CONF', 'STATUS', 'LOGGER', 'KEY', 'NEXT_REFRESH', 'LS_CLIENT', 'DEPENDENCIES', 'SUBORDINATES', 'CLIENT_UUID';
 
@@ -280,6 +284,180 @@ sub refresh {
 
     return;
 }
+
+sub bulk_refresh {
+
+    my ( $self ) = @_;
+
+    #if disabled then return
+    if($self->{CONF}->{disabled}){
+        return 0;
+    }
+
+    if ( $self->{STATUS} eq "BROKEN" ) {
+        $self->{LOGGER}->error( "Refreshing misconfigured record (key=" . $self->{KEY} . ", description=" . $self->description() . ")" );
+        return;
+    }
+
+    my $flattened_services_list = [];
+
+    my $refresh_list= ();
+
+    if(@{$self->{DEPENDENCIES}}){
+        foreach my $child_reg(@{$self->{DEPENDENCIES}}){
+            push(@{$flattened_services_list}, $child_reg )
+        }
+    }
+    push(@{$flattened_services_list}, $self);
+
+    if(@{$self->{SUBORDINATES}}){
+        foreach my $child_reg(@{$self->{SUBORDINATES}}){
+            push(@{$flattened_services_list}, $child_reg )
+        }
+    }
+
+
+    #Refresh current registration
+    $self->{LOGGER}->debug( "Refreshing: " . $self->description() );
+
+
+    for (my $i=0; $i <= $#$flattened_services_list; $i++) {
+
+        my $current_reg = $flattened_services_list->[$i];
+
+        $self->{LOGGER}->debug( "Hashcontents: " . $current_reg);
+        if ( $current_reg->{CONF}->{force_up_status} || $current_reg->is_up ) {
+            $current_reg->{LOGGER}->debug( "Service is up" );
+
+            #check if record has changed, if it has then need to re-register
+            my ($existing_key, $next_refresh) = $current_reg->find_key();
+            if($current_reg->{KEY} && !$existing_key){
+                $current_reg->{LOGGER}->info( "didn't find existing key " . $self->{KEY} );
+                $current_reg->unregister();
+            }
+
+            #perform needed LS operation
+            if ( $current_reg->{STATUS} ne "REGISTERED" ) {
+                $current_reg->{LOGGER}->info( "Record is up, registering (description=" .  $current_reg->description() . ")" );
+                $current_reg->register();
+            }
+            elsif ( time >= $self->{NEXT_REFRESH} ) {
+                $current_reg->{LOGGER}->info( "Record is up, adding registration to refresh list(key=" . $current_reg->{KEY} . ", description=" . $current_reg->description() . ")" );
+                $refresh_list->{$current_reg->{KEY}} = $current_reg;
+            }
+            else {
+                $current_reg->{LOGGER}->debug( "No need to refresh" );
+            }
+        }
+        elsif ( $self->{STATUS} eq "REGISTERED" ) {
+            $current_reg->{LOGGER}->info( "Record is down, unregistering (key=" . $self->{KEY} . ", description=" . $self->description() . ")" );
+            $current_reg->unregister();
+        }
+        else {
+            $current_reg->{LOGGER}->info( "Record is down (key=" . ($self->{KEY} ? $self->{KEY} : 'NONE') . ", description=" . $self->description() . ")" );
+        }
+    }
+
+
+    #call bulk_keepalive
+    if($refresh_list){
+        $self->{LOGGER}->info( "Calling bulk_keepalive() " );
+        $self->bulk_keepalive($refresh_list);
+    }
+
+
+    return;
+
+}
+
+
+sub bulk_keepalive {
+
+    my ( $self, $services_map ) = @_;
+
+    my $record_uris = [];
+    push(@{$record_uris}, (keys %{$services_map}));
+
+    my $bulk_renew_message = new SimpleLookupService::BulkRenewMessage();
+    $bulk_renew_message->init({record_uris => $record_uris});
+
+    if($self->{CONF}->{ls_lease_duration}){
+        my $val = $self->{CONF}->{ls_lease_duration}/60;
+        my $ttl = int($val+0.5); #round to nearest integer
+        $bulk_renew_message->setRecordTtlInMinutes($ttl);
+    }
+
+    $self->{LOGGER}->debug("Created Bulk renew message");
+    $self->{LOGGER}->debug(Dumper($bulk_renew_message));
+
+
+    my $ls_client = new SimpleLookupService::Client::BulkRenewManager();
+    $ls_client->init(server => $self->{LS_CLIENT}, message=>$bulk_renew_message);
+
+    my ($resCode, $res) = $ls_client->renew();
+
+    my %failed_keys = ();
+    my %renewed_keys = ();
+
+    if ( $resCode == 0 ) {
+
+        if($res->getTotal() == $res->getRenewed()){
+            $self->{LOGGER}->info("Bulk keepalive succeeded.");
+            %renewed_keys = %{$services_map};
+        }elsif ($res->getTotal() == $res->getFailed()){
+            $self->{LOGGER}->info("Bulk keepalive did not succeed. Added services to failed list. Will try registering in the next interval");
+            %failed_keys = %{$services_map} ;
+        }else{
+            for my $key (@{$res->getFailedUris()}) {
+                $failed_keys{$key} = $services_map->{$key};
+                delete $services_map->{$key};
+            }
+
+            %renewed_keys = %{$services_map};
+        }
+    }else{
+        $self->{LOGGER}->info("Bulk keepalive did not succeed. Reason:". $res->{message});
+        %failed_keys = %{$services_map} ;
+    }
+
+    if(%renewed_keys){
+        $self->_handle_bulk_update_success(\%renewed_keys);
+    }
+
+    if(%failed_keys){
+        $self->_handle_bulk_update_failure(\%failed_keys);
+    }
+
+    return;
+
+}
+
+sub _handle_bulk_update_success {
+    my ($self, $service_map) = @_;
+
+    for my $key (keys %{$service_map}){
+        $service_map->{$key}->{NEXT_REFRESH} = time + $service_map->{$key}->{CONF}->{ls_lease_duration} - $service_map->{$key}->{CONF}->{check_interval} - 10;
+        $service_map->{$key}->{LOGGER}->info("Service renewed. Current time". time);
+        $service_map->{$key}->update_key();
+
+        $service_map->{$key}->{LOGGER}->info("Service renewed. Next Refresh: " . $service_map->{$key}->{NEXT_REFRESH} . "(key=" . $service_map->{$key}->{KEY} . ", description=" . $service_map->{$key}->description() . ")");
+    }
+    return;
+}
+
+sub _handle_bulk_update_failure {
+
+    my ($self, $service_map) = @_;
+
+    for my $key (keys %{$service_map}){
+        $service_map->{$key}->{STATUS} = "UNREGISTERED";
+        $service_map->{$key}->{LOGGER}->error( "Couldn't send Keepalive. Will send full registration next time.". "(key=" . $service_map->{$key}->{KEY} . ", description=" . $service_map->{$key}->description() . ")");
+        $service_map->{$key}->delete_key();
+        }
+    return;
+
+}
+
 
 =head2 register ($self)
 
