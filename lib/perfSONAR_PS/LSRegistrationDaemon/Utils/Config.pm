@@ -19,6 +19,7 @@ use Log::Log4perl qw/get_logger/;
 use perfSONAR_PS::Common;
 use perfSONAR_PS::LSRegistrationDaemon::Person;
 use perfSONAR_PS::LSRegistrationDaemon::Host;
+use perfSONAR_PS::LSRegistrationDaemon::Signature;
 
 our @EXPORT_OK = qw( init_sites init_site );
 
@@ -88,6 +89,21 @@ sub init_site {
             exit( -1 );
         }
         push @services, $person;
+    }
+
+    ##
+    # Add signing certificate records to registration list first - We add these before hosts
+    # and services so they can be referenced
+    $logger->info( "Checking for  signature record" );
+    if($site_conf->{signature}) {
+        $logger->info( "Found signature record" );
+        my $signature_conf = mergeConfig( $site_conf, $site_conf->{signature} );
+        my $signing_record = perfSONAR_PS::LSRegistrationDaemon::Signature->new();
+        if ( $signing_record->init( $signature_conf ) != 0 ) {
+            $logger->error( "Error: Couldn't initialize signature record" );
+            exit( -1 );
+        }
+        push @services, $signing_record;
     }
 
     ##

@@ -419,7 +419,6 @@ sub find_duplicate {
         $self->{LOGGER}->debug( "Found duplicate checksum $key with $checksum for " . $self->description());
     }
     $dbh->disconnect();
-    
     return $key;
 }
 

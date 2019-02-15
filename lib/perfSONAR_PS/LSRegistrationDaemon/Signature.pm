@@ -17,7 +17,7 @@ sub known_variables {
     my @variables = $self->SUPER::known_variables();
 
     push @variables, (
-        { variable => "x509certificateurl", type => "scalar" },
+        { variable => "certificate", type => "scalar" },
     );
 
     return @variables;
@@ -30,23 +30,25 @@ in the $conf hash.
 =cut
 sub init {
     my ( $self, $conf ) = @_;
-    unless ($conf->{x509certificateurl}){
-        $self->{LOGGER}->error("certificate url is required");
+    unless ($conf->{certificate_path} && $conf->{certificate_name}){
+        $self->{LOGGER}->error("certificate path and name are required");
     	return -1;
     }
 
-    return $self->SUPER::init( $conf );
+    $self->SUPER::init( $conf );
+    $self->{CONF}->{certificate} = _get_key_string($conf->{certificate_path});
+    return 0;
 }
 
 ##
-# Overload to lookup contact prior to trying to register
+# Overload to lookup signature prior to trying to register
 sub refresh {
     my ( $self ) = @_;
     
     #lookup host
     my $signature_query = perfSONAR_PS::Client::LS::PSQueryObjects::PSSignatureQueryObject->new();
     $signature_query->init();
-    $signature_query->setCertificate($self->x509certificateurl()) if $self->certificate();
+    $signature_query->setCertificate($self->certificate()) if $self->certificate();
     
     my $query_client = SimpleLookupService::Client::Query->new();
     $query_client->init(server => $self->{LS_CLIENT}, query => $signature_query);
@@ -85,16 +87,21 @@ sub is_up {
 sub certificate {
     my ( $self ) = @_;
 
-    return $self->{CONF}->{x509certificateurl};
+    return $self->{CONF}->{certificate};
 }
 
+sub description {
+    my ( $self ) = @_;
+
+    return $self->{CONF}->{certificate_name};
+}
 
 sub build_registration {
     my ( $self ) = @_;
     
     my $signature = new perfSONAR_PS::Client::LS::PSRecords::PSSignature();
     $signature->init(
-        x509certificate => $self->certificate()
+        certificate => $self->certificate()
     );
     
     return $signature;
@@ -114,6 +121,16 @@ sub duplicate_checksum_fields {
     return [
         "certificate"
     ];
+}
+
+sub _get_key_string {
+    my ($key_file) = @_;
+    my $key_string = '';
+    open(my $fh, '<:encoding(UTF-8)', $key_file);
+    while (my $row = <$fh>) {
+        $key_string .= $row;
+    }
+    return $key_string;
 }
 
 1;
