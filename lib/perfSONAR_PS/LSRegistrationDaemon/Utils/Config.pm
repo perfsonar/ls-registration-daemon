@@ -105,6 +105,7 @@ sub init_site {
         }
         push @services, $signing_record;
     }
+    $logger->info( "No signature record found" );
 
     ##
     # Parse host configurations - We add these before services 

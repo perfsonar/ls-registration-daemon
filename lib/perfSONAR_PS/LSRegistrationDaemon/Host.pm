@@ -580,9 +580,9 @@ sub administrator {
 sub certificate {
     my ( $self ) = @_;
 
-    #Skip host registration if value not set
+    #Skip certificate registration if value not set
     unless ($self->{CONF}->{signature}) {
-        $self->{LOGGER}->error("No certificate found. So returning");
+        $self->{LOGGER}->info("No certificate found. Skipping certificate registration");
         return '';
     }
 
@@ -596,7 +596,6 @@ sub certificate {
 
     my $dup = $sign_record->find_duplicate();
 
-    $self->{LOGGER}->error("Duplicate key:" , $dup);
         return $dup;
 }
 
