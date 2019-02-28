@@ -1,0 +1,10 @@
+/etc/perfsonar/lsregistrationdaemon-logger\.conf		--	gen_context(system_u:object_r:lsregistrationdaemon_etc_t,s0)
+/etc/perfsonar/lsregistrationdaemon\.conf			--	gen_context(system_u:object_r:lsregistrationdaemon_etc_t,s0)
+
+/usr/lib/perfsonar/bin/lsregistrationdaemon\.pl			--	gen_context(system_u:object_r:lsregistrationdaemon_exec_t,s0)
+
+/usr/lib/systemd/system/perfsonar-lsregistrationdaemon\.service	--	gen_context(system_u:object_r:lsregistrationdaemon_unit_file_t,s0)
+
+/var/lib/perfsonar/lsregistrationdaemon(/.*)?				gen_context(system_u:object_r:lsregistrationdaemon_var_lib_t,s0)
+
+/var/run/lsregistrationdaemon\.pid				--	gen_context(system_u:object_r:lsregistrationdaemon_pid_t,s0)
