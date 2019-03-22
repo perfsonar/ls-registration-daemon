@@ -6,7 +6,7 @@ use FindBin qw($Bin);
 use lib "$Bin/lib";
 use lib "$Bin/../lib";
 use Test::More;
-use perfSONAR_PS::LSRegistrationDaemon::UnitTests::Util qw( test_ls_record );
+use perfSONAR_PS::LSRegistrationDaemon::UnitTests::Util qw( test_ls_record);
 
 use perfSONAR_PS::LSRegistrationDaemon::Person;
 

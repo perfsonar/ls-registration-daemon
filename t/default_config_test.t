@@ -13,17 +13,19 @@ use constant TEST_LS_INSTANCE => 'http://foo.bar';
 use constant TEST_CLIENT_UUID_FILE => "$Bin/test_data/client_uuid";
 use constant TEST_KEY_DB => "$Bin/test_data/lsKey.db";
 
+use perfSONAR_PS::LSRegistrationDaemon::Utils::Config qw( init_sites );
+
 # logging
 Log::Log4perl->easy_init( {level => 'OFF'} );
 
 #skip on mac
 if( $^O eq 'darwin' ) {
-      plan skip_all => 'Autodetection does not work on MacOS';
+#      plan skip_all => 'Autodetection does not work on MacOS';
 }
 
 #import config util. use eval since does not work on Mac
 eval "use perfSONAR_PS::LSRegistrationDaemon::Utils::Config qw( init_sites )";
-ok(!$@, "load Config.pm");
+#ok(!$@, "load Config.pm");
 
 my %conf;
 
@@ -34,7 +36,7 @@ ok(%conf = Config::General->new( TEST_CONF )->getall(), "read config file");
 $conf{'ls_instance'} =  TEST_LS_INSTANCE;
 $conf{'client_uuid_file'} = TEST_CLIENT_UUID_FILE;
 $conf{'ls_key_db'} = TEST_KEY_DB;
-$conf{'allow_internal_addresses'} = 1; #increase autodetection chances
+$conf{'allow_internal_addresses'} = 0; #increase autodetection chances
 
 #build service records
 my @site_params;
