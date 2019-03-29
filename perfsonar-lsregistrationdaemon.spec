@@ -52,7 +52,6 @@ Requires:       libperfsonar-esmond-perl
 Requires:       libperfsonar-pscheduler-perl
 Requires:       libperfsonar-sls-perl
 Requires:       libperfsonar-toolkit-perl
-BuildRequires:  perl(Crypt-OpenSSL-X509)
 Obsoletes:		perl-perfSONAR_PS-LSRegistrationDaemon
 Provides:		perl-perfSONAR_PS-LSRegistrationDaemon
 %if 0%{?el7}
