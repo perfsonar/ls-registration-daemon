@@ -583,7 +583,7 @@ sub certificate {
     #Skip certificate registration if value not set
     unless ($self->{CONF}->{signature}) {
         $self->{LOGGER}->info("No certificate found. Skipping certificate registration");
-        return '';
+        return;
     }
 
     my $signature_conf = mergeConfig( $self->{CONF}, $self->{CONF}->{signature} );
@@ -591,12 +591,12 @@ sub certificate {
 
     if ( $sign_record->init( $signature_conf ) != 0 ) {
         $self->{LOGGER}->error( "Error: Couldn't initialize certificate record" );
-        return '';
+        return;
     }
 
     my $dup = $sign_record->find_duplicate();
 
-        return $dup;
+    return $dup;
 }
 
 sub site_name {

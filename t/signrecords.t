@@ -68,7 +68,7 @@ my %conf = ( 'name' => 'Foo Bar',
 );
 
 #run standard tests
-test_ls_record_with_signature($record, \%conf, TEST_RECORD_HASH);
+my $registration = test_ls_record_with_signature($record, \%conf, TEST_RECORD_HASH);
 
 #run any extra tests
 #...

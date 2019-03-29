@@ -68,8 +68,7 @@ sub test_ls_record_with_signature {
     foreach my $opt(keys %{ $extra_conf }){
         $conf{$opt} = $extra_conf->{$opt};
     }
-    $record->init(\%conf);
-
+    ok($record->init(\%conf) == 0, "service init");
 
     #test building registration
     my $registration;
@@ -77,14 +76,14 @@ sub test_ls_record_with_signature {
     is_deeply($registration->{RECORD_HASH}, $reg_hash, "record check");
 
 
-    $registration->addsign($record->{PS_PRIVATE_KEY});
+    ok($registration->addsign($record->{PS_PRIVATE_KEY}) == 0, "first record signing");
 
     my $first_signature = $registration->{RECORD_HASH}->{'signature'}->[0];
 
     ok(defined($registration->{RECORD_HASH}->{'signature'}), "check if signature has been added");
-    print $registration->toJson;
+    #diag($registration->toJson);
 
-    $registration->addsign($record->{PS_PRIVATE_KEY});
+    ok($registration->addsign($record->{PS_PRIVATE_KEY}) == 0, "second record signing");
 
     my $second_signature = $registration->{RECORD_HASH}->{'signature'}->[0];
 
