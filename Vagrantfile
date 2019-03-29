@@ -44,8 +44,6 @@ EOF
         yum install -y epel-release
         yum install -y  http://software.internet2.edu/rpms/el7/x86_64/RPMS.main/perfSONAR-repo-0.8-1.noarch.rpm
         yum clean all
-        yum install -y perfSONAR-repo-staging perfSONAR-repo-nightly
-        yum clean all
         yum update -y
         yum install -y gcc \
             kernel-devel \
@@ -82,6 +80,8 @@ EOF
             perl-Compress-Raw-Bzip2 \
             perl-Compress-Raw-Zlib \
             perl-Config-General \
+            perl-Crypt-OpenSSL-RSA\
+            perl-Crypt-OpenSSL-X509\
             perl-Curses \
             perl-DBD-Pg \
             perl-DBD-SQLite \

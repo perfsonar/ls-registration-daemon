@@ -1,0 +1,119 @@
+policy_module(lsregistrationdaemon, 1.0.0)
+
+require {
+	type autofs_t;
+	type cgroup_t;
+	type configfs_t;
+	type device_t;
+	type fs_t;
+	type hugetlbfs_t;
+	type pstore_t;
+	type rpc_pipefs_t;
+	type sysctl_fs_t;
+	type tmpfs_t;
+        type var_lib_nfs_t;
+        type var_lib_t;
+        type var_log_t;
+
+        type http_port_t;
+        type owamp_port_t;
+        type twamp_port_t;
+}
+
+########################################
+#
+# Declarations
+#
+
+type lsregistrationdaemon_t;
+type lsregistrationdaemon_exec_t;
+init_daemon_domain(lsregistrationdaemon_t, lsregistrationdaemon_exec_t)
+
+type lsregistrationdaemon_etc_t;
+files_type(lsregistrationdaemon_etc_t)
+
+type lsregistrationdaemon_unit_file_t;
+systemd_unit_file(lsregistrationdaemon_unit_file_t)
+
+type lsregistrationdaemon_var_lib_t;
+files_type(lsregistrationdaemon_var_lib_t)
+
+type lsregistrationdaemon_pid_t;
+files_pid_file(lsregistrationdaemon_pid_t)
+
+########################################
+#
+# lsregistrationdaemon policy
+#
+
+# daemonize
+allow lsregistrationdaemon_t self:capability { setgid setuid };
+allow lsregistrationdaemon_t self:process { fork setpgid setrlimit signal_perms };
+
+# read configuration
+allow lsregistrationdaemon_t lsregistrationdaemon_etc_t:dir search_dir_perms;
+allow lsregistrationdaemon_t lsregistrationdaemon_etc_t:file read_file_perms;
+
+# write pid files
+allow lsregistrationdaemon_t lsregistrationdaemon_pid_t:file { create_file_perms rw_file_perms };
+files_pid_filetrans(lsregistrationdaemon_t, lsregistrationdaemon_pid_t, file)
+
+# logs
+append_files_pattern(lsregistrationdaemon_t, var_log_t, var_log_t)
+create_files_pattern(lsregistrationdaemon_t, var_log_t, var_log_t)
+manage_files_pattern(lsregistrationdaemon_t, var_log_t, var_log_t)
+manage_dirs_pattern(lsregistrationdaemon_t, var_log_t, var_log_t)
+
+# write /var/lib/perfsonar/lsregistrationdaemon
+manage_dirs_pattern(lsregistrationdaemon_t, lsregistrationdaemon_var_lib_t, lsregistrationdaemon_var_lib_t)
+manage_files_pattern(lsregistrationdaemon_t, lsregistrationdaemon_var_lib_t, lsregistrationdaemon_var_lib_t)
+
+# resolver
+sysnet_dns_name_resolve(lsregistrationdaemon_t)
+
+# network access to port 8096
+corenet_tcp_connect_all_unreserved_ports(lsregistrationdaemon_t)
+
+# read bundle_vers, bundle_type
+read_files_pattern(lsregistrationdaemon_t, var_lib_t, var_lib_t)
+
+# network status
+kernel_read_network_state(lsregistrationdaemon_t)
+allow lsregistrationdaemon_t http_port_t:tcp_socket name_connect;
+allow lsregistrationdaemon_t owamp_port_t:tcp_socket name_connect;
+allow lsregistrationdaemon_t twamp_port_t:tcp_socket name_connect;
+
+# network interface parameters
+allow lsregistrationdaemon_t self:unix_dgram_socket { create ioctl };
+
+# date call
+corecmd_exec_all_executables(lsregistrationdaemon_t)
+
+# meminfo call
+kernel_read_system_state(lsregistrationdaemon_t)
+
+# sysctl call
+kernel_read_net_sysctls(lsregistrationdaemon_t)
+
+# lscpu call
+dev_read_sysfs(lsregistrationdaemon_t)
+
+# df call
+allow lsregistrationdaemon_t cgroup_t:dir getattr;
+allow lsregistrationdaemon_t cgroup_t:filesystem getattr;
+allow lsregistrationdaemon_t configfs_t:dir getattr;
+allow lsregistrationdaemon_t configfs_t:filesystem getattr;
+allow lsregistrationdaemon_t device_t:dir getattr;
+allow lsregistrationdaemon_t device_t:filesystem getattr;
+allow lsregistrationdaemon_t fs_t:dir getattr;
+allow lsregistrationdaemon_t fs_t:filesystem getattr;
+allow lsregistrationdaemon_t hugetlbfs_t:dir getattr;
+allow lsregistrationdaemon_t hugetlbfs_t:filesystem getattr;
+allow lsregistrationdaemon_t pstore_t:dir getattr;
+allow lsregistrationdaemon_t pstore_t:filesystem getattr;
+allow lsregistrationdaemon_t tmpfs_t:dir getattr;
+allow lsregistrationdaemon_t tmpfs_t:filesystem getattr;
+allow lsregistrationdaemon_t autofs_t:dir getattr;
+allow lsregistrationdaemon_t rpc_pipefs_t:dir getattr;
+allow lsregistrationdaemon_t sysctl_fs_t:dir search;
+allow lsregistrationdaemon_t var_lib_nfs_t:dir search;

@@ -29,8 +29,9 @@ use perfSONAR_PS::Utils::LookupService qw(get_client_uuid set_client_uuid);
 use Digest::MD5 qw(md5_base64);
 use SimpleLookupService::Client::Registration;
 use SimpleLookupService::Client::RecordManager;
+use Crypt::OpenSSL::X509;
 
-use fields 'CONF', 'STATUS', 'LOGGER', 'KEY', 'NEXT_REFRESH', 'LS_CLIENT', 'DEPENDENCIES', 'SUBORDINATES', 'CLIENT_UUID';
+use fields 'CONF', 'STATUS', 'LOGGER', 'KEY', 'NEXT_REFRESH', 'LS_CLIENT', 'DEPENDENCIES', 'SUBORDINATES', 'CLIENT_UUID', 'PS_PRIVATE_KEY', 'PS_PUBLIC_KEY', 'PS_X509CERTIFICATE';
 
 =head1 API
 
@@ -67,6 +68,8 @@ sub known_variables {
         { variable => "ls_instance", type => "scalar" },
         { variable => "ls_key_db", type => "scalar" },
         { variable => "check_interval", type => "scalar" },
+        { variable => "add_signature", type => "scalar", },
+        { variable => "signing_key", type => "string", },
     );
 }
 
@@ -87,10 +90,17 @@ sub init {
     unless($self->{CLIENT_UUID}){
          $self->{CLIENT_UUID} = set_client_uuid(file => $self->{CONF}->{'client_uuid_file'});
     }
-    
+
+
     #if disabled then return
     if($self->{CONF}->{disabled}){
         return 0;
+    }
+
+    #if add_signature is true, set up private key
+    if (defined $self->{CONF}->{add_signature} && $self->{CONF}->{add_signature} == 1){
+        my $key_file = $self->{CONF}->{'signing_key'};
+        $self->{PS_PRIVATE_KEY} = _read_key_from_file($key_file);
     }
     
     #setup ls client
@@ -293,7 +303,11 @@ sub register {
     #Register
     my $reg = $self->build_registration();
     $reg->setRecordClientUUID($self->client_uuid());
-    
+
+    if($self->{CONF}->{add_signature} == 1){
+        $reg->addsign($self->{PS_PRIVATE_KEY});
+    }
+
     my $ls_client = new SimpleLookupService::Client::Registration();
     $ls_client->init({server => $self->{LS_CLIENT}, record => $reg});
     my ($resCode, $res) = $ls_client->register();
@@ -405,7 +419,6 @@ sub find_duplicate {
         $self->{LOGGER}->debug( "Found duplicate checksum $key with $checksum for " . $self->description());
     }
     $dbh->disconnect();
-    
     return $key;
 }
 
@@ -535,6 +548,16 @@ sub _add_checksum_val {
     }
     
     return $result;
+}
+
+sub _read_key_from_file {
+    my ($key_file) = @_;
+    my $key_string = '';
+    open(my $fh, '<:encoding(UTF-8)', $key_file);
+    while (my $row = <$fh>) {
+        $key_string .= $row;
+    }
+    return $key_string;
 }
 
 1;
