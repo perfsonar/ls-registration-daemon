@@ -26,3 +26,5 @@ lib/perfSONAR_PS/LSRegistrationDaemon/Services/TWAMP.pm
 lib/perfSONAR_PS/LSRegistrationDaemon/Utils/Config.pm
 scripts/perfsonar-lsregistrationdaemon
 scripts/perfsonar-lsregistrationdaemon.service
+selinux/lsregistrationdaemon.fc
+selinux/lsregistrationdaemon.te
