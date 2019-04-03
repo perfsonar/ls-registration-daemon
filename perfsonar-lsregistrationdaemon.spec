@@ -42,8 +42,8 @@ Requires:		perl(Regexp::Common)
 Requires:		perl(Socket)
 Requires:		perl(Time::HiRes)
 Requires:		perl(XML::LibXML)
-Requires:		perl(Crypt-OpenSSL-X509)
-Requires:		perl(Crypt-OpenSSL-RSA)
+Requires:		perl(Crypt::OpenSSL::X509)
+Requires:		perl(Crypt::OpenSSL::RSA)
 Requires:		perl(base)
 Requires:		coreutils
 Requires:		shadow-utils
