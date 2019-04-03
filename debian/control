@@ -1,7 +1,9 @@
 Source: perfsonar-lsregistrationdaemon
 Section: misc
 Priority: extra
-Maintainer: Antoine Delvaux <adelvaux@man.poznan.pl>
+Maintainer: perfSONAR developers <debian@perfsonar.net>
+Uploaders: Antoine Delvaux <antoine.delvaux@man.poznan.pl>,
+ Valentin Vidic <Valentin.Vidic@CARNet.hr>
 Build-Depends: debhelper (>= 9.0.0), dh-systemd, perl, quilt, procps,
  libdbi-perl, libconfig-general-perl, libsocket6-perl, libdbd-sqlite3-perl,
  libio-socket-inet6-perl, libtest-log4perl-perl, perfsonar-psconfig-pscheduler-dev,
