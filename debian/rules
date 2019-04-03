@@ -1,0 +1,21 @@
+#!/usr/bin/make -f
+
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
+
+%:
+	dh $@ --with quilt,systemd
+
+# Standard make install not needed
+override_dh_auto_install:
+
+# Daemon start fails on private networks (RFC1918)
+override_dh_installinit:
+	dh_installinit --error-handler=true
+
+override_dh_install:
+	dh_install
+	chmod +x $(CURDIR)/debian/perfsonar-lsregistrationdaemon/usr/lib/perfsonar/bin/lsregistrationdaemon.pl
+
+override_dh_compress:
+	dh_compress -X.conf
