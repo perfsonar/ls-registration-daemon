@@ -4,16 +4,17 @@
 # init scripts must be located in the 'scripts' directory
 %define init_script_1  perfsonar-lsregistrationdaemon
 
-%define relnum  1 
+%define perfsonar_auto_version 4.1
+%define perfsonar_auto_relnum  1 
 
 Name:			perfsonar-lsregistrationdaemon
-Version:		4.1
-Release:		%{relnum}%{?dist}
+Version:		%{perfsonar_auto_version}
+Release:		%{perfsonar_auto_relnum}%{?dist}
 Summary:		perfSONAR Lookup Service Registration Daemon
 License:		ASL 2.0
 Group:			Development/Libraries
 URL:			http://www.perfsonar.net
-Source0:		perfsonar-lsregistrationdaemon-%{version}.%{relnum}.tar.gz
+Source0:		perfsonar-lsregistrationdaemon-%{version}.%{perfsonar_auto_relnum}.tar.gz
 BuildRoot:		%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch:		noarch
 Requires:		perl
@@ -52,8 +53,12 @@ Requires:       libperfsonar-toolkit-perl
 Obsoletes:		perl-perfSONAR_PS-LSRegistrationDaemon
 Provides:		perl-perfSONAR_PS-LSRegistrationDaemon
 %if 0%{?el7}
-BuildRequires: systemd
+BuildRequires: systemd, selinux-policy-devel
 %{?systemd_requires: %systemd_requires}
+# SELinux support
+Requires: policycoreutils-python, libselinux-utils
+Requires(post): selinux-policy-targeted, policycoreutils-python
+Requires(postun): policycoreutils-python
 %else
 Requires:		chkconfig
 %endif
@@ -67,9 +72,12 @@ the services it runs to the global perfSONAR Lookup Service
 /usr/sbin/useradd -g perfsonar -r -s /sbin/nologin -c "perfSONAR User" -d /tmp perfsonar 2> /dev/null || :
 
 %prep
-%setup -q -n perfsonar-lsregistrationdaemon-%{version}.%{relnum}
+%setup -q -n perfsonar-lsregistrationdaemon-%{version}.%{perfsonar_auto_relnum}
 
 %build
+%if 0%{?el7}
+make -f /usr/share/selinux/devel/Makefile -C selinux lsregistrationdaemon.pp
+%endif
 
 %install
 rm -rf %{buildroot}
@@ -85,6 +93,12 @@ install -D -m 0755 scripts/%{init_script_1} %{buildroot}/etc/init.d/%{init_scrip
 %endif
 rm -rf %{buildroot}/%{install_base}/scripts/
 
+%if 0%{?el7}
+mkdir -p %{buildroot}/usr/share/selinux/packages/
+mv selinux/*.pp %{buildroot}/usr/share/selinux/packages/
+rm -rf %{buildroot}/usr/lib/perfsonar/selinux
+%endif
+
 %clean
 rm -rf %{buildroot}
 
@@ -96,6 +110,18 @@ mkdir -p /var/lib/perfsonar/lsregistrationdaemon
 chown -R perfsonar:perfsonar /var/lib/perfsonar
 
 %if 0%{?el7}
+semodule -n -i %{_datadir}/selinux/packages/lsregistrationdaemon.pp
+if /usr/sbin/selinuxenabled; then
+    /usr/sbin/load_policy
+    restorecon -iR /etc/perfsonar/lsregistrationdaemon-logger.conf \
+                   /etc/perfsonar/lsregistrationdaemon.conf \
+                   /usr/lib/perfsonar/bin/lsregistrationdaemon.pl \
+                   /usr/lib/systemd/system/perfsonar-lsregistrationdaemon.service \
+                   /var/lib/perfsonar/lsregistrationdaemon \
+                   /var/run/lsregistrationdaemon.pid \
+                   /var/log/perfsonar/lsregistrationdaemon.log*
+fi
+
 %systemd_post %{init_script_1}.service
 if [ "$1" = "1" ]; then
     #if new install, then enable
@@ -144,6 +170,20 @@ fi
 %postun
 %if 0%{?el7}
 %systemd_postun_with_restart %{init_script_1}.service
+
+if [ $1 -eq 0 ]; then
+    semodule -n -r lsregistrationdaemon
+    if /usr/sbin/selinuxenabled; then
+       /usr/sbin/load_policy
+       restorecon -iR /etc/perfsonar/lsregistrationdaemon-logger.conf \
+                      /etc/perfsonar/lsregistrationdaemon.conf \
+                      /usr/lib/perfsonar/bin/lsregistrationdaemon.pl \
+                      /usr/lib/systemd/system/perfsonar-lsregistrationdaemon.service \
+                      /var/lib/perfsonar/lsregistrationdaemon \
+                      /var/run/lsregistrationdaemon.pid \
+                      /var/log/perfsonar/lsregistrationdaemon.log*
+    fi
+fi
 %else
 if [ "$1" != "0" ]; then
 	# An RPM upgrade
@@ -159,6 +199,7 @@ fi
 %{install_base}/lib/perfSONAR_PS/*
 %if 0%{?el7}
 %attr(0644,root,root) %{_unitdir}/%{init_script_1}.service
+%attr(0644,root,root) %{_datadir}/selinux/packages/lsregistrationdaemon.pp
 %else
 %attr(0755,perfsonar,perfsonar) /etc/init.d/*
 %endif
