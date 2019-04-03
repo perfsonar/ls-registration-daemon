@@ -23,6 +23,7 @@ lib/perfSONAR_PS/LSRegistrationDaemon/Services/OWAMP.pm
 lib/perfSONAR_PS/LSRegistrationDaemon/Services/PScheduler.pm
 lib/perfSONAR_PS/LSRegistrationDaemon/Services/TCP_Service.pm
 lib/perfSONAR_PS/LSRegistrationDaemon/Services/TWAMP.pm
+lib/perfSONAR_PS/LSRegistrationDaemon/Signature.pm
 lib/perfSONAR_PS/LSRegistrationDaemon/Utils/Config.pm
 scripts/perfsonar-lsregistrationdaemon
 scripts/perfsonar-lsregistrationdaemon.service
