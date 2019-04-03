@@ -1,3 +1,9 @@
+perfsonar-lsregistrationdaemon (4.1.7~0-1) perfsonar-patch-snapshot; urgency=low
+
+  * New upstream version.
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Wed, 03 Apr 2019 18:12:33 +0000
+
 perfsonar-lsregistrationdaemon (4.1-1) perfsonar-release; urgency=low
 
   * New upstream version.
