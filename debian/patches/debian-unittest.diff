@@ -1,0 +1,12 @@
+--- ls-registration-daemon.orig/t/discover_primary_ls.t	2019-04-06 00:54:08.372408000 +0000
++++ ls-registration-daemon/t/discover_primary_ls.t	2019-04-06 01:16:19.795956000 +0000
+@@ -2,8 +2,7 @@
+ 
+ use strict;
+ use warnings;
+-use FindBin qw($Bin);
+-use lib "$Bin/../lib";
++use lib "/usr/lib/perfsonar/lib";
+ use Log::Log4perl qw(:easy);
+ Log::Log4perl->easy_init( {level => 'OFF'} );
+ 
