@@ -1,0 +1,11 @@
+--- ls-registration-daemon.orig/t/discover_primary_ls.t	2019-04-12 11:50:40.260851000 +0000
++++ ls-registration-daemon/t/discover_primary_ls.t	2019-04-12 12:03:37.964797000 +0000
+@@ -14,7 +14,7 @@
+ 
+ #Discover primary lookup service
+ my $ls_instance;
+-ok( $ls_instance = discover_primary_lookup_service(), "discover_primary_lookup_service completed");
++ok( $ls_instance = discover_primary_lookup_service({lookup_services => [{ locator => "http://35.237.255.214:8090/lookup/records" }]}), "discover_primary_lookup_service completed");
+ 
+ #Make sure result is defined
+ ok(defined $ls_instance, "LS instance defined") 
