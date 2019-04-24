@@ -1,0 +1,4 @@
+bin/* usr/lib/perfsonar/bin/
+etc/lsregistrationdaemon.conf usr/share/doc/perfsonar-lsregistrationdaemon/examples/
+etc/lsregistrationdaemon-logger.conf etc/perfsonar/
+lib/perfSONAR_PS/LSRegistrationDaemon/* usr/lib/perfsonar/lib/perfSONAR_PS/LSRegistrationDaemon/

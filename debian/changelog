@@ -1,0 +1,105 @@
+perfsonar-lsregistrationdaemon (4.2.0~0-1) perfsonar-release; urgency=low
+
+  * New upstream version.
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Wed, 03 Apr 2019 20:06:25 +0000
+
+perfsonar-lsregistrationdaemon (4.1-1) perfsonar-release; urgency=low
+
+  * New upstream version.
+  * Adding dependency to perfsonar-psconfig-pscheduler-dev
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Mon, 13 Aug 2018 18:33:31 +0000
+
+perfsonar-lsregistrationdaemon (4.0.2.1-1) perfsonar-jessie-release; urgency=low
+
+  * New upstream version.
+  * Removing now unused libnet-ping-external-perl dependency.
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Tue, 19 Dec 2017 15:01:17 +0000
+
+perfsonar-lsregistrationdaemon (4.0.2-1) perfsonar-jessie-release; urgency=low
+
+  * New upstream version.
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Wed, 01 Nov 2017 18:03:18 +0000
+
+perfsonar-lsregistrationdaemon (4.0.1-1) perfsonar-jessie-release; urgency=low
+
+  * New upstream version.
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Tue, 15 Aug 2017 10:24:57 +0100
+
+perfsonar-lsregistrationdaemon (4.0-1) perfsonar-jessie-release; urgency=low
+
+  * New upstream version.
+  * Adding dependency to libperfsonar-pscheduler-perl
+  * lsregistrationdaemon.conf is now generated at install time
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Thu, 13 Apr 2017 16:26:54 +0000
+
+perfsonar-lsregistrationdaemon (3.5.1.4-1) perfsonar-jessie-release; urgency=low
+
+  * New upstream version.
+  * Adding dependency to liblinux-inotify2-perl
+
+ -- Antoine Delvaux <adelvaux@man.poznan.pl>  Wed, 24 Aug 2016 23:19:11 +0000
+
+perfsonar-lsregistrationdaemon (3.5.1.3-1) perfsonar-jessie-release; urgency=low
+
+  * New upstream version.
+
+ -- Antoine Delvaux <adelvaux@man.poznan.pl>  Sat, 28 May 2016 18:45:10 +0200
+
+perfsonar-lsregistrationdaemon (3.5.1.2-1) perfsonar-jessie-release; urgency=low
+
+  * Removing dependency to libsys-meminfo-perl.
+
+ -- Antoine Delvaux <adelvaux@man.poznan.pl>  Tue, 10 May 2016 11:35:07 +0000
+
+perfsonar-lsregistrationdaemon (3.5.1.1-1) perfsonar-jessie-release; urgency=low
+
+  * New upstream version.
+
+ -- Antoine Delvaux <adelvaux@man.poznan.pl>  Wed, 04 May 2016 00:02:14 +0000
+
+perfsonar-lsregistrationdaemon (3.5.1-1) perfsonar-jessie-release; urgency=low
+
+  * Port to Jessie.
+  * Adding systemd support.
+  * Remove VERBOSE checks from init script.
+  * Adding build dependencies for unit tests.
+  * Adding dependency to libsys-meminfo-perl.
+  * Adding dependencies to new libperfsonar libraries.
+  * Not using dh_auto_install but a simpler dh_install.
+  * Removing debian/patches that are integrated upstream.
+  * Include libraries in package build.
+
+ -- Antoine Delvaux <adelvaux@man.poznan.pl>  Fri, 04 Mar 2016 10:38:26 +0100
+
+perfsonar-lsregistrationdaemon (3.5.0.1-1) perfsonar-wheezy-release; urgency=low
+
+  * Adding support for auto-detecting the domain
+
+ -- Antoine Delvaux <adelvaux@man.poznan.pl>  Tue, 10 Nov 2015 11:19:13 +0000
+
+perfsonar-lsregistrationdaemon (3.5-1) perfsonar-wheezy-release; urgency=low
+
+  * Adding support for registering the type of perfSONAR node into the sLS
+  * Adding an authentication type field to LSRegistrationDaemon
+  * Register existence of mesh files
+  * Adding support for client-uuid field
+
+ -- Antoine Delvaux <adelvaux@man.poznan.pl>  Sat, 26 Sep 2015 15:21:45 +0000
+
+perfsonar-lsregistrationdaemon (3.4.2.1-2) unstable; urgency=low
+
+  * We register mp_bwctl and mp_owamp as default services (OPPD).
+
+ -- Antoine Delvaux <adelvaux@man.poznan.pl>  Thu, 11 Jun 2015 22:35:36 +0000
+
+perfsonar-lsregistrationdaemon (3.4.2.1-1) unstable; urgency=low
+
+  * Port to Debian.
+
+ -- Antoine Delvaux <antoine.delvaux@dante.net>  Fri, 24 Apr 2015 15:25:22 +0000

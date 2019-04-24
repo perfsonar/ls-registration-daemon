@@ -4,8 +4,8 @@
 # init scripts must be located in the 'scripts' directory
 %define init_script_1  perfsonar-lsregistrationdaemon
 
-%define perfsonar_auto_version 4.1
-%define perfsonar_auto_relnum  1 
+%define perfsonar_auto_version 4.2.0
+%define perfsonar_auto_relnum 0.0.a1
 
 Name:			perfsonar-lsregistrationdaemon
 Version:		%{perfsonar_auto_version}
@@ -42,6 +42,8 @@ Requires:		perl(Regexp::Common)
 Requires:		perl(Socket)
 Requires:		perl(Time::HiRes)
 Requires:		perl(XML::LibXML)
+Requires:		perl(Crypt::OpenSSL::X509)
+Requires:		perl(Crypt::OpenSSL::RSA)
 Requires:		perl(base)
 Requires:		coreutils
 Requires:		shadow-utils
