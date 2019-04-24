@@ -89,17 +89,17 @@ sub init {
     $self->{STATUS} = "UNREGISTERED";
     $self->{CLIENT_UUID} = get_client_uuid(file => $self->{CONF}->{'client_uuid_file'});
     unless($self->{CLIENT_UUID}){
-         $self->{CLIENT_UUID} = set_client_uuid(file => $self->{CONF}->{'client_uuid_file'});
+        $self->{CLIENT_UUID} = set_client_uuid(file => $self->{CONF}->{'client_uuid_file'});
     }
-    
+
     #if disabled then return
     if($self->{CONF}->{disabled}){
         return 0;
     }
-    
+
     #setup ls client
     $self->init_ls_client();
-    
+
     # Initialize registrations that we depend on
     if ($self->init_dependencies()) {
         return -1;
@@ -117,7 +117,7 @@ sub init {
     }
     else {
         $self->{LOGGER}->debug("Duplicate $duplicate_uri found for " . $self->description());
-    
+
         # if it is a duplicate, determine if anything has changed in the fields the LS
         # does not use to compare records...
         my ($existing_key, $next_refresh) = $self->find_key();
@@ -140,7 +140,7 @@ sub init {
     if ($self->init_subordinates() != 0) {
         return -1;
     }
- 
+
     return 0;
 }
 
@@ -174,9 +174,9 @@ sub validate_conf {
 
 sub init_ls_client {
     my ( $self ) = @_;
-    
+
     $self->{LS_CLIENT} = SimpleLookupService::Client::SimpleLS->new();
-    my $uri = URI->new($self->{CONF}->{ls_instance}); 
+    my $uri = URI->new($self->{CONF}->{ls_instance});
     my $ls_port =$uri->port();
     if(!$ls_port &&  $uri->scheme() eq 'https'){
         $ls_port = 443;
@@ -208,13 +208,13 @@ sub change_lookup_service {
 
 sub init_dependencies {
     my ( $self ) = @_;
-    
+
     return 0;
 }
 
 sub init_subordinates {
     my ( $self ) = @_;
-    
+
     return 0;
 }
 
@@ -228,34 +228,34 @@ Service. If not, it unregisters the service from the Lookup Service.
 
 sub refresh {
     my ( $self ) = @_;
-    
+
     #if disabled then return
     if($self->{CONF}->{disabled}){
         return 0;
     }
-    
+
     if ( $self->{STATUS} eq "BROKEN" ) {
         $self->{LOGGER}->error( "Refreshing misconfigured record (key=" . $self->{KEY} . ", description=" . $self->description() . ")" );
         return;
     }
-    
+
     # Refresh the objects we depend on first
     foreach my $child_reg(@{$self->{DEPENDENCIES}}){
         $child_reg->refresh();
     }
-    
+
     #Refresh current registration    
     $self->{LOGGER}->debug( "Refreshing: " . $self->description() );
     if ( $self->{CONF}->{force_up_status} || $self->is_up ) {
         $self->{LOGGER}->debug( "Service is up" );
-        
+
         #check if record has changed, if it has then need to re-register
         my ($existing_key, $next_refresh) = $self->find_key();
         if($self->{KEY} && !$existing_key){
             $self->{LOGGER}->info( "didn't find existing key " . $self->{KEY} );
             $self->unregister();
         }
-        
+
         #perform needed LS operation
         if ( $self->{STATUS} ne "REGISTERED" ) {
             $self->{LOGGER}->info( "Record is up, registering (description=" . $self->description() . ")" );
@@ -329,16 +329,20 @@ sub bulk_refresh {
         if ( $current_reg->{CONF}->{force_up_status} || $current_reg->is_up ) {
             $current_reg->{LOGGER}->debug( "Service is up" );
 
+            $current_reg->{LOGGER}->debug( "Current reg status" . $current_reg->{STATUS});
+
             #check if record has changed, if it has then need to re-register
             my ($existing_key, $next_refresh) = $current_reg->find_key();
             if($current_reg->{KEY} && !$existing_key){
-                $current_reg->{LOGGER}->info( "didn't find existing key " . $self->{KEY} );
+                $current_reg->{LOGGER}->debug( "Current reg status" . $current_reg->{STATUS});
+                $current_reg->{LOGGER}->info( "didn't find existing key " . $current_reg->{KEY} );
                 $current_reg->unregister();
             }
 
             #perform needed LS operation
             if ( $current_reg->{STATUS} ne "REGISTERED" ) {
                 $current_reg->{LOGGER}->info( "Record is up, registering (description=" .  $current_reg->description() . ")" );
+                $current_reg->{LOGGER}->debug( "Current reg status" . $current_reg->{STATUS});
                 $current_reg->register();
             }
             elsif ( time >= $self->{NEXT_REFRESH} ) {
@@ -350,11 +354,11 @@ sub bulk_refresh {
             }
         }
         elsif ( $self->{STATUS} eq "REGISTERED" ) {
-            $current_reg->{LOGGER}->info( "Record is down, unregistering (key=" . $self->{KEY} . ", description=" . $self->description() . ")" );
+            $current_reg->{LOGGER}->info( "Record is down, unregistering (key=" . $current_reg->{KEY} . ", description=" . $current_reg->description() . ")" );
             $current_reg->unregister();
         }
         else {
-            $current_reg->{LOGGER}->info( "Record is down (key=" . ($self->{KEY} ? $self->{KEY} : 'NONE') . ", description=" . $self->description() . ")" );
+            $current_reg->{LOGGER}->info( "Record is down (key=" . ($current_reg->{KEY} ? $current_reg->{KEY} : 'NONE') . ", description=" . $current_reg->description() . ")" );
         }
     }
 
@@ -362,8 +366,9 @@ sub bulk_refresh {
     #call bulk_keepalive
     if($refresh_list){
         $self->{LOGGER}->info( "Calling bulk_keepalive() " );
-        $self->bulk_keepalive($refresh_list);
+        my $refreshed = $self->bulk_keepalive($refresh_list);
     }
+
 
 
     return;
@@ -407,7 +412,7 @@ sub bulk_keepalive {
         }elsif ($res->getTotal() == $res->getFailed()){
             $self->{LOGGER}->info("Bulk keepalive did not succeed. Added services to failed list. Will try registering in the next interval");
             %failed_keys = %{$services_map} ;
-        }else{
+        }else {
             for my $key (@{$res->getFailedUris()}) {
                 $failed_keys{$key} = $services_map->{$key};
                 delete $services_map->{$key};
@@ -415,9 +420,19 @@ sub bulk_keepalive {
 
             %renewed_keys = %{$services_map};
         }
+
+
+
+
     }else{
         $self->{LOGGER}->info("Bulk keepalive did not succeed. Reason:". $res->{message});
         %failed_keys = %{$services_map} ;
+
+        for my $key (keys %$services_map) {
+            $services_map->{$key}->{STATUS} = "UNREGISTERED";
+            $services_map->{$key}->{LOGGER}->error( "Couldn't send Keepalive. Will send full registration next time.". "(key=" . $services_map->{$key}->{KEY} . ", description=" . $services_map->{$key}->description() . ")");
+            $services_map->{$key}->delete_key();
+        }
     }
 
     if(%renewed_keys){
@@ -428,17 +443,25 @@ sub bulk_keepalive {
         $self->_handle_bulk_update_failure(\%failed_keys);
     }
 
-    return;
+
+
+    return $services_map;
 
 }
 
 sub _handle_bulk_update_success {
     my ($self, $service_map) = @_;
 
+    if($service_map->{$self->{KEY}}){
+        $self->{STATUS} = "REGISTERED";
+        $self->{NEXT_REFRESH} = time + $self->{CONF}->{ls_lease_duration} - $self->{CONF}->{check_interval} - 10;
+    }
+
     for my $key (keys %{$service_map}){
         $service_map->{$key}->{NEXT_REFRESH} = time + $service_map->{$key}->{CONF}->{ls_lease_duration} - $service_map->{$key}->{CONF}->{check_interval} - 10;
         $service_map->{$key}->{LOGGER}->info("Service renewed. Current time". time);
         $service_map->{$key}->update_key();
+        $service_map->{$key}->{STATUS} = "REGISTERED";
 
         $service_map->{$key}->{LOGGER}->info("Service renewed. Next Refresh: " . $service_map->{$key}->{NEXT_REFRESH} . "(key=" . $service_map->{$key}->{KEY} . ", description=" . $service_map->{$key}->description() . ")");
     }
@@ -449,11 +472,17 @@ sub _handle_bulk_update_failure {
 
     my ($self, $service_map) = @_;
 
+    if($service_map->{$self->{KEY}}){
+        $self->{STATUS} = "UNREGISTERED";
+        $self->{LOGGER}->error( "Couldn't send Keepalive. Will send full registration next time.". "(key=" . $self->{KEY} . ", description=" . $self->description() . ")");
+        $self->delete_key();
+    }
+
     for my $key (keys %{$service_map}){
         $service_map->{$key}->{STATUS} = "UNREGISTERED";
         $service_map->{$key}->{LOGGER}->error( "Couldn't send Keepalive. Will send full registration next time.". "(key=" . $service_map->{$key}->{KEY} . ", description=" . $service_map->{$key}->description() . ")");
         $service_map->{$key}->delete_key();
-        }
+    }
     return;
 
 }
@@ -471,7 +500,7 @@ sub register {
     #Register
     my $reg = $self->build_registration();
     $reg->setRecordClientUUID($self->client_uuid());
-    
+
     my $ls_client = new SimpleLookupService::Client::Registration();
     $ls_client->init({server => $self->{LS_CLIENT}, record => $reg});
     my ($resCode, $res) = $ls_client->register();
@@ -480,16 +509,16 @@ sub register {
         $self->{LOGGER}->debug( "Registration succeeded with uri: " . $res->getRecordUri() );
         $self->{STATUS}       = "REGISTERED";
         $self->{KEY}          = $res->getRecordUri();
-        $self->{NEXT_REFRESH} = $res->getRecordExpiresAsUnixTS()->[0] - $self->{CONF}->{check_interval}; 
+        $self->{NEXT_REFRESH} = $res->getRecordExpiresAsUnixTS()->[0] - $self->{CONF}->{check_interval};
         if($self->{NEXT_REFRESH} < time){
-             $self->{LOGGER}->warn( "You may want to decrease the check_interval option as the registered record will expire before the next run");
+            $self->{LOGGER}->warn( "You may want to decrease the check_interval option as the registered record will expire before the next run");
         }
         $self->{LOGGER}->info("Service registered. Next Refresh: " . $self->{NEXT_REFRESH} . "(key=" . $self->{KEY} . ", description=" . $self->description() . ")");
         $self->add_key();
     }else{
         $self->{LOGGER}->error( "Problem registering service. Will retry full registration next time: " . $res->{message} . "(key=NONE, description=" . $self->description() . ")" );
     }
-    
+
     return;
 }
 
@@ -515,7 +544,7 @@ sub keepalive {
         $self->{LOGGER}->error( "Couldn't send Keepalive. Will send full registration next time. Error was: " . $res->{message} . "(key=" . $self->{KEY} . ", description=" . $self->description() . ")");
         $self->delete_key();
     }
-    
+
 
     return;
 }
@@ -530,19 +559,19 @@ Service.
 =cut
 sub unregister {
     my ( $self ) = @_;
-    
+
     my $ls_client = new SimpleLookupService::Client::RecordManager();
     $ls_client->init({ server => $self->{LS_CLIENT}, record_id => $self->{KEY} });
     $ls_client->delete();
     $self->{STATUS} = "UNREGISTERED";
     $self->delete_key();
-    
+
     return;
 }
 
 sub find_key {
     my ( $self ) = @_;
-    
+
     my $key = '';
     my $expires = 0;
     my $checksum = $self->build_checksum();
@@ -560,16 +589,17 @@ sub find_key {
         $self->{LOGGER}->debug( "Found key $key with $checksum for " . $self->description() . " that expires $expires" );
     }
     $dbh->disconnect();
-    
+
     return ($key, $expires);
 }
 
 sub find_duplicate {
     my ( $self ) = @_;
-    
+
     my $key = '';
     my $expires = 0;
     my $checksum = $self->build_duplicate_checksum();
+    $self->{LOGGER}->debug( "Checking duplicate for $checksum for " . $self->description());
     my $dbh = DBI->connect('dbi:SQLite:dbname=' . $self->{CONF}->{"ls_key_db"}, '', '');
     my $stmt  = $dbh->prepare('SELECT uri FROM lsKeys WHERE duplicateChecksum=?');
     $stmt->execute($checksum);
@@ -583,13 +613,13 @@ sub find_duplicate {
         $self->{LOGGER}->debug( "Found duplicate checksum $key with $checksum for " . $self->description());
     }
     $dbh->disconnect();
-    
+
     return $key;
 }
 
 sub add_key {
     my ( $self ) = @_;
-    
+
     my $dbh = DBI->connect('dbi:SQLite:dbname=' . $self->{CONF}->{"ls_key_db"}, '', '');
     my $stmt  = $dbh->prepare('INSERT INTO lsKeys VALUES(?, ?, ?, ?)');
     $stmt->execute($self->{KEY}, $self->{NEXT_REFRESH}, $self->build_checksum(), $self->build_duplicate_checksum());
@@ -603,7 +633,7 @@ sub add_key {
 
 sub update_key {
     my ( $self ) = @_;
-    
+
     my $dbh = DBI->connect('dbi:SQLite:dbname=' . $self->{CONF}->{"ls_key_db"}, '', '');
     my $stmt  = $dbh->prepare('UPDATE lsKeys SET expires=? WHERE uri=?');
     $stmt->execute($self->{NEXT_REFRESH}, $self->{KEY});
@@ -612,12 +642,13 @@ sub update_key {
         $dbh->disconnect();
         return '';
     }
+    $self->{LOGGER}->info( "Updated key: " . $self->{KEY} . "with refresh" . $self->{NEXT_REFRESH} );
     $dbh->disconnect();
 }
 
 sub delete_key {
     my ( $self ) = @_;
-    
+
     my $dbh = DBI->connect('dbi:SQLite:dbname=' . $self->{CONF}->{"ls_key_db"}, '', '');
     my $stmt  = $dbh->prepare('DELETE FROM lsKeys WHERE uri=?');
     $stmt->execute($self->{KEY});
@@ -631,43 +662,43 @@ sub delete_key {
 
 sub client_uuid(){
     my ( $self ) = @_;
-    
+
     return $self->{CLIENT_UUID};
 }
 
 sub build_registration {
     my ( $self ) = @_;
-    
+
     die "Subclass class must implement build_registration"
 }
 
 sub checksum_fields {
     my ( $self ) = @_;
-    
+
     die "Subclass class must implement checksum_fields"
 }
 
 sub duplicate_checksum_fields {
     my ( $self ) = @_;
-    
+
     die "Subclass class must implement duplicate_checksum_fields"
 }
 
 sub checksum_prefix {
     my ( $self ) = @_;
-    
+
     die "Subclass class must implement checksum_prefix"
 }
 
 sub build_checksum {
     my ( $self ) = @_;
-    
+
     my $checksum = $self->checksum_prefix()."::";
     foreach my $field (@{ $self->checksum_fields() }) {
         $checksum .= $self->_add_checksum_val($self->$field());
     }
     $checksum .= $self->_add_checksum_val($self->client_uuid());
-    
+
     $self->{LOGGER}->debug("Checksum prior to md5 is " . $checksum);
 
     utf8::encode($checksum); # convert to binary for md5 to work
@@ -680,12 +711,12 @@ sub build_checksum {
 
 sub build_duplicate_checksum {
     my ( $self ) = @_;
-    
+
     my $checksum = $self->checksum_prefix()."::";
     foreach my $field (@{ $self->duplicate_checksum_fields() }) {
         $checksum .= $self->_add_checksum_val($self->$field());
     }
-    
+
     $self->{LOGGER}->debug("Duplicate checksum prior to md5 is " . $checksum);
 
     utf8::encode($checksum); # convert to binary for md5 to work
@@ -699,19 +730,19 @@ sub build_duplicate_checksum {
 
 sub _add_checksum_val {
     my ($self, $val) = @_;
-    
+
     my $result = '';
-    
+
     if(!defined $val){
         return $result;
     }
-    
+
     if(ref($val) eq 'ARRAY'){
         $result = join ',', sort @{$val};
     }else{
         $result = $val;
     }
-    
+
     return $result;
 }
 
