@@ -400,7 +400,7 @@ sub bulk_keepalive {
     $ls_client->init(server => $self->{LS_CLIENT}, message=>$bulk_renew_message);
 
     my ($resCode, $res) = $ls_client->renew();
-
+    
     my %failed_keys = ();
     my %renewed_keys = ();
 
@@ -451,15 +451,23 @@ sub bulk_keepalive {
 
 sub _handle_bulk_update_success {
     my ($self, $service_map) = @_;
-
+    
+    my $next_refresh;
+    if($self->{CONF}->{ls_lease_duration}){
+        # if ls_lease_duration set, use that knowledge to set next_refresh
+        $next_refresh = time + $self->{CONF}->{ls_lease_duration} - $self->{CONF}->{check_interval} - 10;
+    }else{
+        # if not set, then only the server knows, so just make sure it doesn't expire before next run
+        $next_refresh = time + $self->{CONF}->{check_interval} + 300; #add some wiggle room
+    }
+    
     if($service_map->{$self->{KEY}}){
         $self->{STATUS} = "REGISTERED";
-        $self->{NEXT_REFRESH} = time + $self->{CONF}->{ls_lease_duration} - $self->{CONF}->{check_interval} - 10;
+        $self->{NEXT_REFRESH} = $next_refresh;
     }
 
     for my $key (keys %{$service_map}){
-        $service_map->{$key}->{NEXT_REFRESH} = time + $service_map->{$key}->{CONF}->{ls_lease_duration} - $service_map->{$key}->{CONF}->{check_interval} - 10;
-        $service_map->{$key}->{LOGGER}->info("Service renewed. Current time". time);
+        $service_map->{$key}->{NEXT_REFRESH} = $next_refresh;
         $service_map->{$key}->update_key();
         $service_map->{$key}->{STATUS} = "REGISTERED";
 
