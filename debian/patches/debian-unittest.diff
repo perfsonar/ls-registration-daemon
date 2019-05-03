@@ -1,32 +1,32 @@
 The Debian building host doesn't have full network connectivity
 So we don't run unit test that needs such.
---- ls-registration-daemon.orig/t/discover_primary_ls.t	2019-05-03 13:59:43.610404000 +0000
-+++ ls-registration-daemon/t/discover_primary_ls.t	2019-05-03 14:02:24.990970000 +0000
-@@ -7,21 +7,21 @@
- use Log::Log4perl qw(:easy);
- Log::Log4perl->easy_init( {level => 'OFF'} );
- 
+--- ls-registration-daemon.orig/t/discover_primary_ls.t	2019-05-03 14:02:31.332472000 +0000
++++ /dev/null	1970-01-01 00:00:00.000000000 +0000
+@@ -1,27 +0,0 @@
+-#!/usr/bin/perl -w
+-
+-use strict;
+-use warnings;
+-use FindBin qw($Bin);
+-use lib "$Bin/../lib";
+-use Log::Log4perl qw(:easy);
+-Log::Log4perl->easy_init( {level => 'OFF'} );
+-
 -use Test::More tests => 4;
-+use Test::More tests => 0;
- 
- use perfSONAR_PS::Utils::LookupService qw( discover_primary_lookup_service );
- 
- 
- #Discover primary lookup service
- my $ls_instance;
+-
+-use perfSONAR_PS::Utils::LookupService qw( discover_primary_lookup_service );
+-
+-
+-#Discover primary lookup service
+-my $ls_instance;
 -ok( $ls_instance = discover_primary_lookup_service(), "discover_primary_lookup_service completed");
-+#ok( $ls_instance = discover_primary_lookup_service(), "discover_primary_lookup_service completed");
- 
- #Make sure result is defined
+-
+-#Make sure result is defined
 -ok(defined $ls_instance, "LS instance defined") 
 -    or diag("No LS discovered. You may want to check your network connection.");
-+#ok(defined $ls_instance, "LS instance defined") 
-+#    or diag("No LS discovered. You may want to check your network connection.");
- 
- #Make sure result is non-empty
+-
+-#Make sure result is non-empty
 -ok($ls_instance ne '', "LS instance is non-empty");
-+#ok($ls_instance ne '', "LS instance is non-empty");
- 
- #Make sure it starts with http:// or https://
+-
+-#Make sure it starts with http:// or https://
 -like($ls_instance, qr/https?\:\/\/.+/, "LS instance looks like a http/https URL");
-+#like($ls_instance, qr/https?\:\/\/.+/, "LS instance looks like a http/https URL");
