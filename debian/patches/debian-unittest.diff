@@ -1,24 +1,21 @@
 The Debian building host doesn't have full network connectivity
 So we don't run unit test that needs such.
---- ls-registration-daemon.orig/t/discover_primary_ls.t	2019-05-03 13:17:33.416765000 +0000
-+++ ls-registration-daemon/t/discover_primary_ls.t	2019-05-03 13:29:43.371189000 +0000
-@@ -2,12 +2,11 @@
- 
- use strict;
- use warnings;
--use FindBin qw($Bin);
--use lib "$Bin/../lib";
-+use lib "/usr/lib/perfsonar/lib";
+--- ls-registration-daemon.orig/t/discover_primary_ls.t	2019-05-03 13:59:43.610404000 +0000
++++ ls-registration-daemon/t/discover_primary_ls.t	2019-05-03 14:02:24.990970000 +0000
+@@ -7,21 +7,21 @@
  use Log::Log4perl qw(:easy);
  Log::Log4perl->easy_init( {level => 'OFF'} );
  
 -use Test::More tests => 4;
-+use Test::More tests => 1;
++use Test::More tests => 0;
  
  use perfSONAR_PS::Utils::LookupService qw( discover_primary_lookup_service );
  
-@@ -17,11 +16,11 @@
- ok( $ls_instance = discover_primary_lookup_service(), "discover_primary_lookup_service completed");
+ 
+ #Discover primary lookup service
+ my $ls_instance;
+-ok( $ls_instance = discover_primary_lookup_service(), "discover_primary_lookup_service completed");
++#ok( $ls_instance = discover_primary_lookup_service(), "discover_primary_lookup_service completed");
  
  #Make sure result is defined
 -ok(defined $ls_instance, "LS instance defined") 
