@@ -64,7 +64,7 @@ The LS Registration Daemon is used to register information about the perfSONAR h
 the services it runs to the global perfSONAR Lookup Service
 
 %pre
-/usr/sbin/groupadd perfsonar 2> /dev/null || :
+/usr/sbin/groupadd -r perfsonar 2> /dev/null || :
 /usr/sbin/useradd -g perfsonar -r -s /sbin/nologin -c "perfSONAR User" -d /tmp perfsonar 2> /dev/null || :
 
 %prep

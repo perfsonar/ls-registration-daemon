@@ -247,7 +247,7 @@ EOF
   
   # Runs on all hosts before they are provisioned. Creates user and inits /var directories
   config.vm.provision "shell", inline: <<-SHELL
-    /usr/sbin/groupadd perfsonar 2> /dev/null || :
+    /usr/sbin/groupadd -r perfsonar 2> /dev/null || :
     /usr/sbin/useradd -g perfsonar -r -s /sbin/nologin -c "perfSONAR User" -d /tmp perfsonar 2> /dev/null || :
     mkdir -p /var/lib/perfsonar/lsregistrationdaemon
     chown -R perfsonar:perfsonar /var/lib/perfsonar
