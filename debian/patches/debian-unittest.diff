@@ -1,5 +1,5 @@
---- ls-registration-daemon.orig/t/discover_primary_ls.t	2019-04-12 11:50:40.260851000 +0000
-+++ ls-registration-daemon/t/discover_primary_ls.t	2019-04-12 12:03:37.964797000 +0000
+--- a/t/discover_primary_ls.t	2019-07-22 18:40:51.988551000 +0000
++++ b/t/discover_primary_ls.t	2019-07-22 19:13:51.065001000 +0000
 @@ -14,7 +14,7 @@
  
  #Discover primary lookup service
