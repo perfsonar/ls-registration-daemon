@@ -1,5 +1,5 @@
---- a/t/discover_primary_ls.t	2019-08-08 19:08:41.203993261 +0000
-+++ b/t/discover_primary_ls.t	2019-08-08 19:08:41.885001298 +0000
+--- a/t/discover_primary_ls.t	2019-08-09 13:07:27.863553646 +0000
++++ b/t/discover_primary_ls.t	2019-08-09 13:07:28.340557911 +0000
 @@ -14,7 +14,7 @@
  
  #Discover primary lookup service
