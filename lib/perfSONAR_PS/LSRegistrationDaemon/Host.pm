@@ -41,6 +41,7 @@ sub known_variables {
         { variable => "site_project", type => "array" },
 
         { variable => "administrator", type => "hash" },
+        { variable => "certificate", type => "hash" },
 
         { variable => "allow_internal_addresses", type => "scalar" },
         { variable => "autodiscover", type => "scalar" },
@@ -576,6 +577,28 @@ sub administrator {
     return $admin->find_duplicate();
 }
 
+sub certificate {
+    my ( $self ) = @_;
+
+    #Skip certificate registration if value not set
+    unless ($self->{CONF}->{signature}) {
+        $self->{LOGGER}->info("No certificate found. Skipping certificate registration");
+        return;
+    }
+
+    my $signature_conf = mergeConfig( $self->{CONF}, $self->{CONF}->{signature} );
+    my $sign_record = perfSONAR_PS::LSRegistrationDaemon::Signature->new();
+
+    if ( $sign_record->init( $signature_conf ) != 0 ) {
+        $self->{LOGGER}->error( "Error: Couldn't initialize certificate record" );
+        return;
+    }
+
+    my $dup = $sign_record->find_duplicate();
+
+    return $dup;
+}
+
 sub site_name {
     my ( $self ) = @_;
 
@@ -629,38 +652,39 @@ sub build_registration {
     
     my $service = new perfSONAR_PS::Client::LS::PSRecords::PSHost();
     $service->init(
-        hostName => $self->host_name(), 
-        interfaces => $self->interface(),
-        ipv6Enabled => $self->ipv6_enabled(),
-        memory => $self->memory(), 
-    	processorSpeed => $self->processor_speed(), 
-    	processorCount => $self->processor_count(), 
-    	processorCore => $self->processor_cores(),
-    	cpuId => $self->processor_cpuid(),
-    	osName=> $self->os_name(), 
-    	osVersion=> $self->os_version(), 
-    	osKernel => $self->os_kernel(), 
-    	osArchitecture => $self->os_architecture(),
-    	tcpCongestionAlgorithm => $self->tcp_cc_algorithm(),
-    	tcpMaxBufferSend => $self->tcp_max_buffer_send(), 
-    	tcpMaxBufferRecv => $self->tcp_max_buffer_recv(), 
-    	tcpAutoMaxBufferSend => $self->tcp_autotune_max_buffer_send(), 
-    	tcpAutoMaxBufferRecv => $self->tcp_autotune_max_buffer_recv(), 
-    	tcpMaxBacklog => $self->tcp_max_backlog(), 
-    	tcpMaxAchievable => $self->tcp_max_achievable(), 
-    	vm => $self->is_virtual_machine() . "", #does not register unless a string
-    	manufacturer => $self->manufacturer(),
-    	productName => $self->product_name(),
-        administrators=> $self->administrator(), 
-        domains => $self->domain(),
-    	siteName => $self->site_name(), 
-    	city => $self->city(), 
-    	region => $self->region(),
-    	country => $self->country(), 
-    	zipCode => $self->zip_code(),
-    	latitude => $self->latitude(), 
-    	longitude => $self->longitude(),
+        hostName               => $self->host_name(),
+        interfaces             => $self->interface(),
+        ipv6Enabled            => $self->ipv6_enabled(),
+        memory                 => $self->memory(),
+        processorSpeed         => $self->processor_speed(),
+        processorCount         => $self->processor_count(),
+        processorCore          => $self->processor_cores(),
+        cpuId                  => $self->processor_cpuid(),
+        osName                 => $self->os_name(),
+        osVersion              => $self->os_version(),
+        osKernel               => $self->os_kernel(),
+        osArchitecture         => $self->os_architecture(),
+        tcpCongestionAlgorithm => $self->tcp_cc_algorithm(),
+        tcpMaxBufferSend       => $self->tcp_max_buffer_send(),
+        tcpMaxBufferRecv       => $self->tcp_max_buffer_recv(),
+        tcpAutoMaxBufferSend   => $self->tcp_autotune_max_buffer_send(),
+        tcpAutoMaxBufferRecv   => $self->tcp_autotune_max_buffer_recv(),
+        tcpMaxBacklog          => $self->tcp_max_backlog(),
+        tcpMaxAchievable       => $self->tcp_max_achievable(),
+        vm                     => $self->is_virtual_machine() . "", #does not register unless a string
+        manufacturer           => $self->manufacturer(),
+        productName            => $self->product_name(),
+        administrators         => $self->administrator(),
+        domains                => $self->domain(),
+        siteName               => $self->site_name(),
+        city                   => $self->city(),
+        region                 => $self->region(),
+        country                => $self->country(),
+        zipCode                => $self->zip_code(),
+        latitude               => $self->latitude(),
+        longitude              => $self->longitude()
     );
+    $service->setCertificate($self->certificate()) if(defined $self->certificate());
     $service->setRole($self->role()) if(defined $self->role());
     $service->setBundle($self->bundle_type()) if(defined $self->bundle_type());
     $service->setBundleVersion($self->bundle_version()) if(defined $self->bundle_version());
@@ -722,6 +746,7 @@ sub checksum_fields {
         "latitude",
         "longitude",
         "site_project",
+        "certificate"
     ];
 }
 
