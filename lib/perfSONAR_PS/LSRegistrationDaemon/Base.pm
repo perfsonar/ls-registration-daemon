@@ -338,12 +338,12 @@ sub bulk_refresh {
         if ( $current_reg->{CONF}->{force_up_status} || $current_reg->is_up ) {
             $current_reg->{LOGGER}->debug( "Service is up" );
 
-            $current_reg->{LOGGER}->debug( "Current reg status" . $current_reg->{STATUS});
+            $current_reg->{LOGGER}->debug( "Current reg status " . $current_reg->{STATUS});
 
             #check if record has changed, if it has then need to re-register
             my ($existing_key, $next_refresh) = $current_reg->find_key();
             if($current_reg->{KEY} && !$existing_key){
-                $current_reg->{LOGGER}->debug( "Current reg status" . $current_reg->{STATUS});
+                $current_reg->{LOGGER}->debug( "Current reg status " . $current_reg->{STATUS});
                 $current_reg->{LOGGER}->info( "didn't find existing key " . $current_reg->{KEY} );
                 $current_reg->unregister();
             }
@@ -351,7 +351,7 @@ sub bulk_refresh {
             #perform needed LS operation
             if ( $current_reg->{STATUS} ne "REGISTERED" ) {
                 $current_reg->{LOGGER}->info( "Record is up, registering (description=" .  $current_reg->description() . ")" );
-                $current_reg->{LOGGER}->debug( "Current reg status" . $current_reg->{STATUS});
+                $current_reg->{LOGGER}->debug( "Current reg status " . $current_reg->{STATUS});
                 $current_reg->register();
             }
             elsif ( time >= $self->{NEXT_REFRESH} ) {
@@ -362,7 +362,7 @@ sub bulk_refresh {
                 $current_reg->{LOGGER}->debug( "No need to refresh" );
             }
         }
-        elsif ( $self->{STATUS} eq "REGISTERED" ) {
+        elsif ( $self->{STATUS} eq "REGISTERED" && $current_reg->{KEY}) {
             $current_reg->{LOGGER}->info( "Record is down, unregistering (key=" . $current_reg->{KEY} . ", description=" . $current_reg->description() . ")" );
             $current_reg->unregister();
         }
