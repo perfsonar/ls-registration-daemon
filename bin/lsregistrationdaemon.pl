@@ -229,7 +229,6 @@ while(1){
     
         #determine LS URL
         my $new_ls_instance = $conf{ls_instance};
-        $logger->info("LS new instance URL " . $new_ls_instance);
         if($new_ls_instance){
             #statically set URL
             if(!$current_ls_instance){
