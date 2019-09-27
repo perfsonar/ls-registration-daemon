@@ -1,4 +1,4 @@
-policy_module(lsregistrationdaemon, 1.0.0)
+policy_module(lsregistrationdaemon, 1.0.1)
 
 require {
 	type autofs_t;
@@ -14,10 +14,13 @@ require {
         type var_lib_nfs_t;
         type var_lib_t;
         type var_log_t;
+        type passwd_file_t;
 
         type http_port_t;
         type owamp_port_t;
         type twamp_port_t;
+
+        class file read;
 }
 
 ########################################
@@ -49,6 +52,8 @@ files_pid_file(lsregistrationdaemon_pid_t)
 # daemonize
 allow lsregistrationdaemon_t self:capability { setgid setuid };
 allow lsregistrationdaemon_t self:process { fork setpgid setrlimit signal_perms };
+allow lsregistrationdaemon_t passwd_file_t:file read;
+allow lsregistrationdaemon_t passwd_file_t:file open;
 
 # read configuration
 allow lsregistrationdaemon_t lsregistrationdaemon_etc_t:dir search_dir_perms;
