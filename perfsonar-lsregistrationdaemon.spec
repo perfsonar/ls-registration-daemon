@@ -207,7 +207,7 @@ fi
 %endif
 
 %changelog
-* Thu Jun 18 2014 andy@es.net 3.4-1
+* Wed Jun 18 2014 andy@es.net 3.4-1
 - Reorganization to better handled dual-homed hosts
 - Support for new MA record format
 
@@ -228,7 +228,7 @@ fi
 - Improved logging
 - Add option to require 'site_name' and 'site_location' before starting
 
-* Thu May 29 2009 aaron@internet2.edu 3.1-2
+* Fri May 29 2009 aaron@internet2.edu 3.1-2
 - Documentation updates
 
 * Wed Dec 10 2008 aaron@internet2.edu 3.1-1
