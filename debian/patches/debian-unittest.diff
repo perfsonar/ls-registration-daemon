@@ -1,5 +1,5 @@
---- a/t/discover_primary_ls.t	2020-11-18 15:43:52.105052080 +0000
-+++ b/t/discover_primary_ls.t	2020-11-18 15:43:53.028050509 +0000
+--- a/t/discover_primary_ls.t	2021-02-02 16:38:16.682499639 +0000
++++ b/t/discover_primary_ls.t	2021-02-02 16:38:17.637513072 +0000
 @@ -14,7 +14,7 @@
  
  #Discover primary lookup service
