@@ -1,3 +1,9 @@
+perfsonar-lsregistrationdaemon (4.4.1-1) perfsonar-4.4; urgency=low
+
+  * New upstream version.
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Thu, 26 Aug 2021 01:42:33 +0100
+
 perfsonar-lsregistrationdaemon (4.4.0-1) perfsonar-4.4; urgency=low
 
   * New upstream version.
