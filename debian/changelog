@@ -10,11 +10,11 @@ perfsonar-lsregistrationdaemon (4.5.0~a1.0-1) perfsonar-4.5-snapshot; urgency=lo
 
  -- perfSONAR developers <debian@perfsonar.net>  Fri, 16 Jul 2021 17:12:43 +0000
 
-perfsonar-lsregistrationdaemon (4.4.1~a1.0-1) perfsonar-4.4-snapshot; urgency=low
+perfsonar-lsregistrationdaemon (4.4.1-1) perfsonar-4.4; urgency=low
 
   * New upstream version.
 
- -- perfSONAR developers <debian@perfsonar.net>  Fri, 16 Jul 2021 17:12:40 +0000
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Thu, 26 Aug 2021 01:42:33 +0100
 
 perfsonar-lsregistrationdaemon (4.4.0-1) perfsonar-4.4; urgency=low
 
