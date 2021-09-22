@@ -1,5 +1,7 @@
---- a/t/discover_primary_ls.t	2021-08-26 01:39:48.524486000 +0100
-+++ b/t/discover_primary_ls.t	2021-08-26 01:42:33.790448567 +0100
+The host information cannot be generated when running under Docker because the /proc/sys/net/core/ tree is not existing.
+This should probably be addressed in a general fashion for the ls-registration-agent to be able to run in Docker.
+--- ls-registration-daemon.orig/t/discover_primary_ls.t	2021-09-22 18:36:53.851475000 +0100
++++ ls-registration-daemon/t/discover_primary_ls.t	2021-09-22 19:33:25.003503514 +0100
 @@ -14,7 +14,7 @@
  
  #Discover primary lookup service
@@ -9,3 +11,240 @@
  
  #Make sure result is defined
  ok(defined $ls_instance, "LS instance defined") 
+--- ls-registration-daemon.orig/t/host.t	2021-09-22 18:36:53.851475000 +0100
++++ /dev/null	1970-01-01 00:00:00.000000000 +0000
+@@ -1,168 +0,0 @@
+-#!/usr/bin/perl -w
+-
+-use strict;
+-use warnings;
+-use FindBin qw($Bin);
+-use lib "$Bin/lib";
+-use lib "$Bin/../lib";
+-use Test::More;
+-use perfSONAR_PS::LSRegistrationDaemon::UnitTests::Util qw( test_ls_record );
+-
+-use perfSONAR_PS::LSRegistrationDaemon::Host;
+-
+-#constants
+-use constant TEST_RECORD_HASH => {
+-                                    'pshost-bundle' => [
+-                                                         'perfsonar-toolkit'
+-                                                       ],
+-                                    'location-city' => [
+-                                                         'New York'
+-                                                       ],
+-                                    'host-net-tcp-maxbuffer-recv' => [
+-                                                                       '4194304 bytes'
+-                                                                     ],
+-                                    'host-hardware-processorcore' => [
+-                                                                       '4'
+-                                                                     ],
+-                                    'group-communities' => [
+-                                                             'Test'
+-                                                           ],
+-                                    'pshost-access-policy' => [
+-                                                                'public'
+-                                                              ],
+-                                    'location-state' => [
+-                                                          'NY'
+-                                                        ],
+-                                    'host-os-kernel' => [
+-                                                          'Linux 2.6.32-431.29.2.el6.aufs.web100.x86_64'
+-                                                        ],
+-                                    'host-net-tcp-autotunemaxbuffer-recv' => [
+-                                                                               '4194304 bytes'
+-                                                                             ],
+-                                    'location-latitude' => [
+-                                                             '40.7127'
+-                                                           ],
+-                                    'host-net-tcp-maxachievable' => [
+-                                                                      '9 Gbps'
+-                                                                    ],
+-                                    'host-hardware-cpuid' => [
+-                                                               'Intel(R) Core(TM) i5-3427U CPU @ 1.80GHz'
+-                                                             ],
+-                                    'host-net-interfaces' => [],
+-                                    'host-hardware-processorspeed' => [
+-                                                                        '2600.056 MHz'
+-                                                                      ],
+-                                    'host-administrators' => [
+-                                                               ''
+-                                                             ],
+-                                    'type' => [
+-                                                'host'
+-                                              ],
+-                                    'host-hardware-memory' => [
+-                                                                '1869 MB'
+-                                                              ],
+-                                    'host-os-version' => [
+-                                                           '6.6 (Final)'
+-                                                         ],
+-                                    'location-longitude' => [
+-                                                              '-74.0059'
+-                                                            ],
+-                                    'host-vm' => [
+-                                                   1
+-                                                 ],
+-                                    'host-hardware-processorcount' => [
+-                                                                        '2'
+-                                                                      ],
+-                                    'host-net-tcp-maxbacklog' => [
+-                                                                   '1000'
+-                                                                 ],
+-                                    'location-sitename' => [
+-                                                             'Foo Bar East'
+-                                                           ],
+-                                    'pshost-access-notes' => [
+-                                                               'This is just a test'
+-                                                             ],
+-                                    'host-os-name' => [
+-                                                        'CentOS'
+-                                                      ],
+-                                    'group-domains' => [
+-                                                         'foo.bar'
+-                                                       ],
+-                                    'host-net-tcp-autotunemaxbuffer-send' => [
+-                                                                               '4194304 bytes'
+-                                                                             ],
+-                                    'host-net-tcp-maxbuffer-send' => [
+-                                                                       '124928 bytes'
+-                                                                     ],
+-                                    'host-net-ipv6-enabled' => [
+-                                                                       '0'
+-                                                                     ],
+-                                    'location-country' => [
+-                                                            'US'
+-                                                          ],
+-                                    'location-code' => [
+-                                                         '10001'
+-                                                       ],
+-                                    'pshost-role' => [
+-                                                       'science-dmz'
+-                                                     ],
+-                                    'host-name' => [
+-                                                     'host1.foo.bar'
+-                                                   ],
+-                                    'pshost-toolkitversion' => [
+-                                                                 '3.5.0.5'
+-                                                               ],
+-                                    'host-net-tcp-congestionalgorithm' => [
+-                                                                            'cubic'
+-                                                                          ],
+-                                    'pshost-bundle-version' => [
+-                                                                 '3.5.0.5'
+-                                                               ]
+-                                  };
+-
+-#instantiate object
+-my $record = new perfSONAR_PS::LSRegistrationDaemon::Host;
+-
+-#add extra config
+-my %conf = ( 'host_name' => 'host1.foo.bar',
+-             'domain' => 'foo.bar',
+-             'site_project' => 'Test',
+-             'site_name' => 'Foo Bar East',
+-             'city' => 'New York',
+-             'region' => 'NY',
+-             'zip_code' => '10001',
+-             'country' => 'US',
+-             'phone' => '5555555555',
+-             'latitude' => '40.7127',
+-             'longitude' => '-74.0059',
+-             'memory' => '1869 MB',
+-             'os_kernel' => 'Linux 2.6.32-431.29.2.el6.aufs.web100.x86_64',
+-             'os_name' => 'CentOS',
+-             'os_version' => '6.6 (Final)',
+-             'processor_cores' => '4',
+-             'processor_count' => '2',
+-             'processor_speed' => '2600.056 MHz',
+-             'processor_cpuid' => 'Intel(R) Core(TM) i5-3427U CPU @ 1.80GHz',
+-             'tcp_autotune_max_buffer_recv' => '4194304 bytes',
+-             'tcp_autotune_max_buffer_send' => '4194304 bytes',
+-             'tcp_cc_algorithm' => 'cubic',
+-             'tcp_max_backlog' => '1000',
+-             'tcp_max_buffer_recv' => '4194304 bytes',
+-             'tcp_max_buffer_send' => '124928 bytes',
+-             'tcp_max_achievable' => '9 Gbps',
+-             'role' => 'science-dmz',
+-             'bundle_type' => 'perfsonar-toolkit',
+-             'bundle_version' => '3.5.0.5',
+-             'access_policy' => 'public',
+-             'access_policy_notes' => 'This is just a test',
+-             'is_virtual_machine' => 1,
+-            );
+-        
+-#run standard tests
+-my $registration = test_ls_record($record, \%conf, TEST_RECORD_HASH);
+-
+-#run any extra tests
+-#...
+-
+-#finish testing
+-done_testing();
+\ No newline at end of file
+--- ls-registration-daemon.orig/t/default_config_test.t	2019-10-17 14:15:12.244638066 +0100
++++ /dev/null	1970-01-01 00:00:00.000000000 +0000
+@@ -1,61 +0,0 @@
+-#!/usr/bin/perl -w
+-
+-use strict;
+-use warnings;
+-use FindBin qw($Bin);
+-use lib "$Bin/../lib";
+-use Log::Log4perl qw(:easy);
+-use Test::More;
+-use Config::General;
+-
+-use constant TEST_CONF => "$Bin/../etc/lsregistrationdaemon.conf";
+-use constant TEST_LS_INSTANCE => 'http://foo.bar';
+-use constant TEST_CLIENT_UUID_FILE => "$Bin/test_data/client_uuid";
+-use constant TEST_KEY_DB => "$Bin/test_data/lsKey.db";
+-
+-use perfSONAR_PS::LSRegistrationDaemon::Utils::Config qw( init_sites );
+-
+-# logging
+-Log::Log4perl->easy_init( {level => 'OFF'} );
+-
+-#skip on mac
+-if( $^O eq 'darwin' ) {
+-#      plan skip_all => 'Autodetection does not work on MacOS';
+-}
+-
+-#import config util. use eval since does not work on Mac
+-eval "use perfSONAR_PS::LSRegistrationDaemon::Utils::Config qw( init_sites )";
+-#ok(!$@, "load Config.pm");
+-
+-my %conf;
+-
+-#parse config file
+-ok(%conf = Config::General->new( TEST_CONF )->getall(), "read config file");
+-
+-#override a few settings for testing purposes
+-$conf{'ls_instance'} =  TEST_LS_INSTANCE;
+-$conf{'client_uuid_file'} = TEST_CLIENT_UUID_FILE;
+-$conf{'ls_key_db'} = TEST_KEY_DB;
+-$conf{'allow_internal_addresses'} = 0; #increase autodetection chances
+-
+-#build service records
+-my @site_params;
+-ok(@site_params = init_sites(\%conf), "built record tree") or BAIL_OUT("Unable to build record objects," . 
+-    "no further testing to be performed. Likely autodetection of some value failed. " .
+-    "It may be a bug or it may you are testing on an unsupported system");
+-
+-#verify sites are defined
+-my $site_i = 1;
+-foreach my $site(@site_params){
+-    ok(@{$site->{'services'}} > 0, "site $site_i has hosts");
+-    my $host_i = 1;
+-    #verify all the top level services are hosts
+-    foreach my $host(@{$site->{'services'}}){
+-        # verify we have host types
+-        isa_ok($host, 'perfSONAR_PS::LSRegistrationDaemon::Host', "site $site_i host $host_i type check");
+-        $host_i++;
+-    }
+-    $site_i++;
+-}
+-
+-done_testing();
+\ No newline at end of file
