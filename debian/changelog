@@ -10,6 +10,11 @@ perfsonar-lsregistrationdaemon (4.5.0~a1.0-1) perfsonar-4.5-snapshot; urgency=lo
   * New upstream version.
 
  -- perfSONAR developers <debian@perfsonar.net>  Fri, 16 Jul 2021 17:12:43 +0000
+perfsonar-lsregistrationdaemon (4.4.2-1) perfsonar-4.4; urgency=low
+
+  * New upstream version.
+
+ -- perfSONAR developers <debian@perfsonar.net>  Wed, 12 Jan 2022 09:20:51 -0500
 
 perfsonar-lsregistrationdaemon (4.4.1-1) perfsonar-4.4; urgency=low
 
