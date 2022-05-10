@@ -3,7 +3,11 @@
 # Ignore quilt patch cache
 .pc
 #ignore test data
-t/test_data/*
+lsregistrationdaemon/perfsonar-lsregistrationdaemon/t/test_data/*
 #ignore vagrant data
-.vagrant
-vagrant-data
+lsregistrationdaemon/perfsonar-lsregistrationdaemon/.vagrant
+lsregistrationdaemon/perfsonar-lsregistrationdaemon/vagrant-data
+lsregistrationdaemon/unibuild-work
+lsregistrationdaemon/unibuild-log
+unibuild-log
+unibuild-repo/
