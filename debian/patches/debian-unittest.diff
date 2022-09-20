@@ -1,5 +1,5 @@
---- a/t/discover_primary_ls.t	2022-04-04 12:17:24.864732989 -0400
-+++ b/t/discover_primary_ls.t	2022-04-04 12:17:26.420239492 -0400
+--- a/t/discover_primary_ls.t	2022-09-20 08:42:54.065928248 -0400
++++ b/t/discover_primary_ls.t	2022-09-20 08:42:55.177387136 -0400
 @@ -14,7 +14,7 @@
  
  #Discover primary lookup service
