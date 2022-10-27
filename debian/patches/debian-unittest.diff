@@ -1,7 +1,7 @@
 The host information cannot be generated when running under Docker because the /proc/sys/net/core/ tree is not existing.
 This should probably be addressed in a general fashion for the ls-registration-agent to be able to run in Docker.
---- a/t/discover_primary_ls.t	2022-05-26 11:22:42.226194344 -0400
-+++ b/t/discover_primary_ls.t	2022-05-26 11:22:43.368079211 -0400
+--- a/t/discover_primary_ls.t	2022-10-27 10:34:38.384915483 -0400
++++ b/t/discover_primary_ls.t	2022-10-27 10:34:39.554590769 -0400
 @@ -14,7 +14,7 @@
  
  #Discover primary lookup service
@@ -11,7 +11,7 @@ This should probably be addressed in a general fashion for the ls-registration-a
  
  #Make sure result is defined
  ok(defined $ls_instance, "LS instance defined") 
---- a/t/host.t	2022-05-26 11:22:42.226327145 -0400
+--- a/t/host.t	2022-10-27 10:34:38.385068860 -0400
 +++ /dev/null	1970-01-01 00:00:00.000000000 +0000
 @@ -1,168 +0,0 @@
 -#!/usr/bin/perl -w
@@ -183,7 +183,7 @@ This should probably be addressed in a general fashion for the ls-registration-a
 -#finish testing
 -done_testing();
 \ No newline at end of file
---- a/t/default_config_test.t	2022-05-26 11:22:42.226081002 -0400
+--- a/t/default_config_test.t	2022-10-27 10:34:38.384779482 -0400
 +++ /dev/null	1970-01-01 00:00:00.000000000 +0000
 @@ -1,61 +0,0 @@
 -#!/usr/bin/perl -w
