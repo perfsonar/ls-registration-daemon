@@ -1,0 +1,11 @@
+--- a/t/discover_primary_ls.t	2022-11-08 15:51:36.827210064 +0000
++++ b/t/discover_primary_ls.t	2022-11-09 19:55:10.925394466 +0000
+@@ -14,7 +14,7 @@
+ 
+ #Discover primary lookup service
+ my $ls_instance;
+-ok( $ls_instance = discover_primary_lookup_service(), "discover_primary_lookup_service completed");
++ok( $ls_instance = discover_primary_lookup_service({lookup_services => [{ locator => "http://35.237.255.214:8090/lookup/records" }]}), "discover_primary_lookup_service completed");
+ 
+ #Make sure result is defined
+ ok(defined $ls_instance, "LS instance defined") 
