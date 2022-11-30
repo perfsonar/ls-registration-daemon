@@ -21,7 +21,8 @@ set -e
 
 case "$1" in
     purge)
-        rm -f /etc/perfsonar/lsregistrationdaemon.conf
+        # Removing backup file created by previous version of package (<5.0.0~b2.1-1)
+        rm -f /etc/perfsonar/lsregistrationdaemon.conf.dpkg-backup
         rm -rf /var/lib/perfsonar/lsregistrationdaemon
     ;;
 
