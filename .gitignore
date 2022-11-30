@@ -9,5 +9,8 @@ lsregistrationdaemon/perfsonar-lsregistrationdaemon/.vagrant
 lsregistrationdaemon/perfsonar-lsregistrationdaemon/vagrant-data
 lsregistrationdaemon/unibuild-work
 lsregistrationdaemon/unibuild-log
+# Ignore unibuild files 
 unibuild-log
+unibuild-work/
 unibuild-repo/
+multiarch_build/
