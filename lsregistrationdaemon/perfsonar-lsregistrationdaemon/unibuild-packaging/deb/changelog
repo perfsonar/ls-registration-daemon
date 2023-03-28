@@ -1,5 +1,6 @@
 perfsonar-lsregistrationdaemon (5.0.0~b2.2-1) perfsonar-5.0; urgency=low
 
+  * New upstream version.
   * Installing /etc/perfsonar/lsregistrationdaemon.conf as proper
     configuration file and removed from /usr/share/doc
 
