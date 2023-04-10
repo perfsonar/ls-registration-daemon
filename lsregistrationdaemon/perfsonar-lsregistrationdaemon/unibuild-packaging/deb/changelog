@@ -1,10 +1,10 @@
-perfsonar-lsregistrationdaemon (5.0.0~b2.2-2) perfsonar-5.0; urgency=low
+perfsonar-lsregistrationdaemon (5.0.0~b2.8-1) perfsonar-5.0; urgency=low
 
   * New upstream version.
   * Installing /etc/perfsonar/lsregistrationdaemon.conf as proper
     configuration file and removed from /usr/share/doc
 
- -- perfSONAR developers <debian@perfsonar.net>  Tue, 28 Mar 2023 15:37:35 +0000
+ -- perfSONAR developers <debian@perfsonar.net>  Mon, 10 Apr 2023 09:22:56 -0400
 
 perfsonar-lsregistrationdaemon (4.4.6-1) perfsonar-4.4; urgency=low
 
