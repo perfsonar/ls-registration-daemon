@@ -56,9 +56,16 @@ Provides:		perl-perfSONAR_PS-LSRegistrationDaemon
 BuildRequires: systemd, selinux-policy-devel
 %{?systemd_requires: %systemd_requires}
 # SELinux support
+%if 0%{?el7}
 Requires: policycoreutils-python, libselinux-utils
 Requires(post): selinux-policy-targeted, policycoreutils-python
 Requires(postun): policycoreutils-python
+%else
+#Requirements for > el7
+Requires: python3-policycoreutils, libselinux-utils
+Requires(post): selinux-policy-targeted, python3-policycoreutils
+Requires(postun): python3-policycoreutils
+%endif
 
 %description
 The LS Registration Daemon is used to register information about the perfSONAR host and
