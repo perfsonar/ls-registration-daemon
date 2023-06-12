@@ -1,0 +1,12 @@
+diff --git a/lsregistrationdaemon/perfsonar-lsregistrationdaemon/selinux/lsregistrationdaemon.te b/lsregistrationdaemon/perfsonar-lsregistrationdaemon/selinux/lsregistrationdaemon.te
+index 6229580..0e134c3 100644
+--- a/lsregistrationdaemon/perfsonar-lsregistrationdaemon/selinux/lsregistrationdaemon.te
++++ b/lsregistrationdaemon/perfsonar-lsregistrationdaemon/selinux/lsregistrationdaemon.te
+@@ -58,6 +58,7 @@ allow lsregistrationdaemon_t passwd_file_t:file open;
+ # read configuration
+ allow lsregistrationdaemon_t lsregistrationdaemon_etc_t:dir search_dir_perms;
+ allow lsregistrationdaemon_t lsregistrationdaemon_etc_t:file read_file_perms;
++allow lsregistrationdaemon_t lsregistrationdaemon_etc_t:file watch;
+ 
+ # write pid files
+ allow lsregistrationdaemon_t lsregistrationdaemon_pid_t:file { create_file_perms rw_file_perms };
