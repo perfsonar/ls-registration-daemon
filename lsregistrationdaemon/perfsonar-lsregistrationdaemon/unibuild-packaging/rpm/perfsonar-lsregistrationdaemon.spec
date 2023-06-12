@@ -66,7 +66,7 @@ Requires: python3-policycoreutils, libselinux-utils
 Requires(post): selinux-policy-targeted, python3-policycoreutils
 Requires(postun): python3-policycoreutils
 %endif
-Patch0: selinux.path
+Patch0: selinux.patch
 
 %description
 The LS Registration Daemon is used to register information about the perfSONAR host and
