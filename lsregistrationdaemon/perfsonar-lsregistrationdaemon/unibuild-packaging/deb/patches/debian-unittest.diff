@@ -2,8 +2,8 @@ The host information cannot be generated when running under Docker because the /
 This should probably be addressed in a general fashion for the ls-registration-agent to be able to run in Docker.
 Index: b/t/discover_primary_ls.t
 ===================================================================
---- a/t/discover_primary_ls.t	2023-09-27 10:29:44.724469357 -0400
-+++ b/t/discover_primary_ls.t	2023-09-27 10:29:45.529309086 -0400
+--- a/t/discover_primary_ls.t	2023-11-10 15:33:04.739567002 -0500
++++ b/t/discover_primary_ls.t	2023-11-10 15:33:05.601427998 -0500
 @@ -14,7 +14,7 @@
  
  #Discover primary lookup service
@@ -15,7 +15,7 @@ Index: b/t/discover_primary_ls.t
  ok(defined $ls_instance, "LS instance defined") 
 Index: b/t/host.t
 ===================================================================
---- a/t/host.t	2023-09-27 10:29:44.724538648 -0400
+--- a/t/host.t	2023-11-10 15:33:04.739634795 -0500
 +++ /dev/null	1970-01-01 00:00:00.000000000 +0000
 @@ -1,168 +0,0 @@
 -#!/usr/bin/perl -w
@@ -189,7 +189,7 @@ Index: b/t/host.t
 \ No newline at end of file
 Index: b/t/default_config_test.t
 ===================================================================
---- a/t/default_config_test.t	2023-09-27 10:29:44.724406648 -0400
+--- a/t/default_config_test.t	2023-11-10 15:33:04.739515586 -0500
 +++ /dev/null	1970-01-01 00:00:00.000000000 +0000
 @@ -1,61 +0,0 @@
 -#!/usr/bin/perl -w
