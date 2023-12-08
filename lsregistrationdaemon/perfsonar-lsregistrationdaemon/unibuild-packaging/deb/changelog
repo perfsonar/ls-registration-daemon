@@ -1,6 +1,7 @@
 perfsonar-lsregistrationdaemon (5.0.7~a1.0-1) perfsonar-5.0-snapshot; urgency=low
 
   * New upstream version.
+  * Removing now useless perfsonar-lsregistrationdaemon.maintscript
 
  -- perfSONAR developers <debian@perfsonar.net>  Sat, 11 Nov 2023 07:00:00 -0500
 
