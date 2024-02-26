@@ -195,23 +195,11 @@ while(1){
     if($current_ls_instance){
         #set here so can be passed to sites
         $conf{ls_instance} = $current_ls_instance;
-        my $pid = fork();
-        if( $pid != 0 ){
-            push @child_pids, $pid;
-        }else{
-            #fork this off to prevent memory leak. not ideal but perl has trouble cleaning-up this part of code
-            my @site_params = init_sites(\%conf);
-            foreach my $params ( @site_params ) {
-                my $update_id = time .'';
-                handle_site( $params->{conf}, $params->{services}, $update_id, $init_ls );
-            }
-            exit(0);
+        my @site_params = init_sites(\%conf);
+        foreach my $params ( @site_params ) {
+            my $update_id = time .'';
+            handle_site( $params->{conf}, $params->{services}, $update_id, $init_ls );
         }
-
-        foreach my $pid ( @child_pids ) {
-            waitpid( $pid, 0 );
-        }
-        @child_pids = (); #clear pids
     }else{
         $logger->error("Unable to determine ls_instance so not performing any operations");
     }
