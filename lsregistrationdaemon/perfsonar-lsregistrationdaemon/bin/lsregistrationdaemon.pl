@@ -19,7 +19,6 @@ use FindBin qw($Bin);
 use lib "$Bin/../lib";
 
 use perfSONAR_PS::Common;
-use perfSONAR_PS::Utils::Daemon qw/daemonize setids lockPIDFile unlockPIDFile/;
 use perfSONAR_PS::Utils::LookupService qw( discover_lookup_services discover_primary_lookup_service lookup_service_is_active lookup_services_latency_diff);
 use perfSONAR_PS::LSRegistrationDaemon::Utils::Config qw( init_sites );
 use DBI;
@@ -31,19 +30,11 @@ use Log::Log4perl qw/:easy/;
 # set the process name
 $0 = "lsregistrationdaemon.pl";
 
-my @child_pids = ();
-
-$SIG{INT}  = \&signalHandler;
-$SIG{TERM} = \&signalHandler;
-
 my $CONFIG_FILE;
 my $LOGOUTPUT;
 my $LOGGER_CONF;
-my $PIDFILE;
 my $DEBUGFLAG;
 my $HELP;
-my $RUNAS_USER;
-my $RUNAS_GROUP;
 
 my ( $status, $res );
 
@@ -51,10 +42,7 @@ $status = GetOptions(
     'config=s'  => \$CONFIG_FILE,
     'output=s'  => \$LOGOUTPUT,
     'logger=s'  => \$LOGGER_CONF,
-    'pidfile=s' => \$PIDFILE,
     'verbose'   => \$DEBUGFLAG,
-    'user=s'    => \$RUNAS_USER,
-    'group=s'   => \$RUNAS_GROUP,
     'help'      => \$HELP
 );
 
@@ -65,51 +53,7 @@ if ( not $CONFIG_FILE ) {
 
 my %conf = Config::General->new( $CONFIG_FILE )->getall();
 
-if ( not $PIDFILE ) {
-    $PIDFILE = $conf{"pid_file"};
-}
-
-if ( not $PIDFILE ) {
-    $PIDFILE = "/var/run/lsregistrationdaemon.pid";
-}
-
-( $status, $res ) = lockPIDFile( $PIDFILE );
-if ( $status != 0 ) {
-    print "Error: $res\n";
-    exit( -1 );
-}
-
-my $fileHandle = $res;
-
-# Check if the daemon should run as a specific user/group and then switch to
-# that user/group.
-if ( not $RUNAS_GROUP ) {
-    if ( $conf{"group"} ) {
-        $RUNAS_GROUP = $conf{"group"};
-    }
-}
-
-if ( not $RUNAS_USER ) {
-    if ( $conf{"user"} ) {
-        $RUNAS_USER = $conf{"user"};
-    }
-}
-
-if ( $RUNAS_USER and $RUNAS_GROUP ) {
-    if ( setids( USER => $RUNAS_USER, GROUP => $RUNAS_GROUP ) != 0 ) {
-        print "Error: Couldn't drop privileges\n";
-        exit( -1 );
-    }
-}
-elsif ( $RUNAS_USER or $RUNAS_GROUP ) {
-
-    # they need to specify both the user and group
-    print "Error: You need to specify both the user and group if you specify either\n";
-    exit( -1 );
-}
-
-# Now that we've dropped privileges, create the logger. If we do it in reverse
-# order, the daemon won't be able to write to the logger.
+# Create the logger
 my $logger;
 if ( not defined $LOGGER_CONF or $LOGGER_CONF eq q{} ) {
     use Log::Log4perl qw(:easy);
@@ -135,33 +79,6 @@ else {
     Log::Log4perl->init( $LOGGER_CONF );
     $logger = get_logger( "perfSONAR_PS" );
 }
-
-# Before daemonizing, set die and warn handlers so that any Perl errors or
-# warnings make it into the logs.
-my $insig = 0;
-$SIG{__WARN__} = sub {
-    $logger->warn("Warned: ".join( '', @_ ));
-    return;
-};
-
-$SIG{__DIE__} = sub {                       ## still dies upon return
-	die @_ if $^S;                      ## see perldoc -f die perlfunc
-	die @_ if $insig;                   ## protect against reentrance.
-	$insig = 1;
-	$logger->error("Died: ".join( '', @_ ));
-	$insig = 0;
-	return;
-};
-										    #
-if ( not $DEBUGFLAG ) {
-    ( $status, $res ) = daemonize();
-    if ( $status != 0 ) {
-        $logger->error( "Couldn't daemonize: " . $res );
-        exit( -1 );
-    }
-}
-
-unlockPIDFile( $fileHandle );
 
 #monitor config file for changes
 my $inotify = new Linux::Inotify2 or die "Unable to create new inotify object: $!" ;
@@ -206,7 +123,6 @@ while(1){
         $conf{"client_uuid_file"} = '/var/lib/perfsonar/lsregistrationdaemon/client_uuid';
     }
     
-    #perform operations that could otherwise kill daemon
     my $init_ls = 0;
     eval{
         #initialize the key database
@@ -279,23 +195,11 @@ while(1){
     if($current_ls_instance){
         #set here so can be passed to sites
         $conf{ls_instance} = $current_ls_instance;
-        my $pid = fork();
-        if( $pid != 0 ){
-            push @child_pids, $pid;
-        }else{
-            #fork this off to prevent memory leak. not ideal but perl has trouble cleaning-up this part of code
-            my @site_params = init_sites(\%conf);
-            foreach my $params ( @site_params ) {
-                my $update_id = time .'';
-                handle_site( $params->{conf}, $params->{services}, $update_id, $init_ls );
-            }
-            exit(0);
+        my @site_params = init_sites(\%conf);
+        foreach my $params ( @site_params ) {
+            my $update_id = time .'';
+            handle_site( $params->{conf}, $params->{services}, $update_id, $init_ls );
         }
-
-        foreach my $pid ( @child_pids ) {
-            waitpid( $pid, 0 );
-        }
-        @child_pids = (); #clear pids
     }else{
         $logger->error("Unable to determine ls_instance so not performing any operations");
     }
@@ -341,33 +245,6 @@ sub handle_site {
     
 
     return;
-}
-
-=head2 killChildren
-
-Kills all the children for this process off. It uses global variables
-because this function is used by the signal handler to kill off all
-child processes.
-
-=cut
-
-sub killChildren {
-    foreach my $pid ( @child_pids ) {
-        kill( "SIGINT", $pid );
-    }
-
-    return;
-}
-
-=head2 signalHandler
-
-Kills all the children for the process and then exits
-
-=cut
-
-sub signalHandler {
-    killChildren;
-    exit( 0 );
 }
 
 __END__
