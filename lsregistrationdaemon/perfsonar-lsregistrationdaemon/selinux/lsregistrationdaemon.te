@@ -25,6 +25,7 @@ require {
 	type owamp_port_t;
 	type twamp_port_t;
 	class file read;
+	type node_t;
 }
 
 ########################################
@@ -128,6 +129,7 @@ allow lsregistrationdaemon_t rpc_pipefs_t:dir getattr;
 allow lsregistrationdaemon_t sysctl_fs_t:dir search;
 allow lsregistrationdaemon_t var_lib_nfs_t:dir search;
 
+# misc
 allow lsregistrationdaemon_t bpf_t:dir getattr;
 allow lsregistrationdaemon_t bpf_t:filesystem getattr;
 allow lsregistrationdaemon_t dosfs_t:dir getattr;
@@ -139,3 +141,4 @@ allow lsregistrationdaemon_t tracefs_t:dir getattr;
 allow lsregistrationdaemon_t tracefs_t:filesystem getattr;
 allow lsregistrationdaemon_t binfmt_misc_fs_t:dir getattr;
 allow lsregistrationdaemon_t binfmt_misc_fs_t:filesystem getattr;
+allow lsregistrationdaemon_t node_t:udp_socket node_bind;
