@@ -2,25 +2,29 @@ policy_module(lsregistrationdaemon, 1.0.1)
 
 require {
 	type autofs_t;
+	type binfmt_misc_fs_t;
+	type bpf_t;
 	type cgroup_t;
 	type configfs_t;
 	type device_t;
+	type dosfs_t;
+	type efivarfs_t;
 	type fs_t;
 	type hugetlbfs_t;
 	type pstore_t;
 	type rpc_pipefs_t;
+	type sssd_var_lib_t;
 	type sysctl_fs_t;
 	type tmpfs_t;
-        type var_lib_nfs_t;
-        type var_lib_t;
-        type var_log_t;
-        type passwd_file_t;
-
-        type http_port_t;
-        type owamp_port_t;
-        type twamp_port_t;
-
-        class file read;
+	type tracefs_t;
+	type var_lib_nfs_t;
+	type var_lib_t;
+	type var_log_t;
+	type passwd_file_t;
+	type http_port_t;
+	type owamp_port_t;
+	type twamp_port_t;
+	class file read;
 }
 
 ########################################
@@ -51,9 +55,10 @@ files_pid_file(lsregistrationdaemon_pid_t)
 
 # daemonize
 allow lsregistrationdaemon_t self:capability { setgid setuid };
-allow lsregistrationdaemon_t self:process { fork setpgid setrlimit signal_perms };
+allow lsregistrationdaemon_t self:process { fork setpgid setrlimit signal_perms setcap };
 allow lsregistrationdaemon_t passwd_file_t:file read;
 allow lsregistrationdaemon_t passwd_file_t:file open;
+allow lsregistrationdaemon_t passwd_file_t:file getattr;
 
 # read configuration
 allow lsregistrationdaemon_t lsregistrationdaemon_etc_t:dir search_dir_perms;
@@ -122,3 +127,15 @@ allow lsregistrationdaemon_t autofs_t:dir getattr;
 allow lsregistrationdaemon_t rpc_pipefs_t:dir getattr;
 allow lsregistrationdaemon_t sysctl_fs_t:dir search;
 allow lsregistrationdaemon_t var_lib_nfs_t:dir search;
+
+allow lsregistrationdaemon_t bpf_t:dir getattr;
+allow lsregistrationdaemon_t bpf_t:filesystem getattr;
+allow lsregistrationdaemon_t dosfs_t:dir getattr;
+allow lsregistrationdaemon_t dosfs_t:filesystem getattr;
+allow lsregistrationdaemon_t efivarfs_t:dir getattr;
+allow lsregistrationdaemon_t efivarfs_t:filesystem getattr;
+allow lsregistrationdaemon_t sssd_var_lib_t:dir search;
+allow lsregistrationdaemon_t tracefs_t:dir getattr;
+allow lsregistrationdaemon_t tracefs_t:filesystem getattr;
+allow lsregistrationdaemon_t binfmt_misc_fs_t:dir getattr;
+allow lsregistrationdaemon_t binfmt_misc_fs_t:filesystem getattr;
