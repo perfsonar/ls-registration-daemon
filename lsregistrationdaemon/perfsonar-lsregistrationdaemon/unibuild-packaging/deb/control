@@ -5,7 +5,7 @@ Maintainer: perfSONAR developers <debian@perfsonar.net>
 Uploaders: Lætitia Delvaux <adelvaux@man.poznan.pl>
 Build-Depends: debhelper (>= 10), perl, quilt, procps,
  libdbi-perl, libconfig-general-perl, libsocket6-perl, libdbd-sqlite3-perl,
- libio-socket-inet6-perl, libtest-log4perl-perl, perfsonar-psconfig-pscheduler-dev,
+ libio-socket-inet6-perl, libtest-log4perl-perl,
  net-tools, libperfsonar-perl, libperfsonar-esmond-perl, libperfsonar-sls-perl,
  libperfsonar-toolkit-perl, libperfsonar-pscheduler-perl
 Standards-Version: 3.9.8
