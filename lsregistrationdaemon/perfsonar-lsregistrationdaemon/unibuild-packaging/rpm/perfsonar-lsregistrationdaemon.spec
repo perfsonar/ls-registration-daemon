@@ -5,7 +5,7 @@
 %define init_script_1  perfsonar-lsregistrationdaemon
 
 %define perfsonar_auto_version 5.1.4
-%define perfsonar_auto_relnum 0.a1.0
+%define perfsonar_auto_relnum 1
 
 Name:			perfsonar-lsregistrationdaemon
 Version:		%{perfsonar_auto_version}
