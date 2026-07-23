@@ -2,7 +2,7 @@ perfsonar-lsregistrationdaemon (5.2.6-1) perfsonar-5.2; urgency=low
 
   * New upstream version.
 
- -- perfSONAR developers <debian@perfsonar.net>  Tue, 21 Jul 2026 10:24:29 -0400
+ -- perfSONAR developers <debian@perfsonar.net>  Thu, 23 Jul 2026 11:54:41 -0400
 
 perfsonar-lsregistrationdaemon (5.2.5-1) perfsonar-5.2; urgency=low
 
