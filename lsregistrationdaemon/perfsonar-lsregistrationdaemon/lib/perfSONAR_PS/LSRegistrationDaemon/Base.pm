@@ -439,7 +439,7 @@ sub bulk_keepalive {
 
         for my $key (keys %$services_map) {
             $services_map->{$key}->{STATUS} = "UNREGISTERED";
-            $services_map->{$key}->{LOGGER}->error( "Couldn't send Keepalive. Will send full registration next time.". "(key=" . $services_map->{$key}->{KEY} . ", description=" . $services_map->{$key}->description() . ")");
+            # $services_map->{$key}->{LOGGER}->error( "Couldn't send Keepalive. Will send full registration next time.". "(key=" . $services_map->{$key}->{KEY} . ", description=" . $services_map->{$key}->description() . ")");
             $services_map->{$key}->delete_key();
         }
     }
@@ -491,13 +491,13 @@ sub _handle_bulk_update_failure {
 
     if($service_map->{$self->{KEY}}){
         $self->{STATUS} = "UNREGISTERED";
-        $self->{LOGGER}->error( "Couldn't send Keepalive. Will send full registration next time.". "(key=" . $self->{KEY} . ", description=" . $self->description() . ")");
+        # $self->{LOGGER}->error( "Couldn't send Keepalive. Will send full registration next time.". "(key=" . $self->{KEY} . ", description=" . $self->description() . ")");
         $self->delete_key();
     }
 
     for my $key (keys %{$service_map}){
         $service_map->{$key}->{STATUS} = "UNREGISTERED";
-        $service_map->{$key}->{LOGGER}->error( "Couldn't send Keepalive. Will send full registration next time.". "(key=" . $service_map->{$key}->{KEY} . ", description=" . $service_map->{$key}->description() . ")");
+        # $service_map->{$key}->{LOGGER}->error( "Couldn't send Keepalive. Will send full registration next time.". "(key=" . $service_map->{$key}->{KEY} . ", description=" . $service_map->{$key}->description() . ")");
         $service_map->{$key}->delete_key();
     }
     return;
@@ -562,7 +562,7 @@ sub keepalive {
     }
     else {
         $self->{STATUS} = "UNREGISTERED";
-        $self->{LOGGER}->error( "Couldn't send Keepalive. Will send full registration next time. Error was: " . $res->{message} . "(key=" . $self->{KEY} . ", description=" . $self->description() . ")");
+        # $self->{LOGGER}->error( "Couldn't send Keepalive. Will send full registration next time. Error was: " . $res->{message} . "(key=" . $self->{KEY} . ", description=" . $self->description() . ")");
         $self->delete_key();
     }
 
