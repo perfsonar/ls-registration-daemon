@@ -79,7 +79,7 @@ the services it runs to the global perfSONAR Lookup Service
 %prep
 %setup -q -n perfsonar-lsregistrationdaemon-%{version}
 %if 0%{?rhel} > 8
-%patch0 -p3
+%patch 0 -p3
 %endif
 
 %build
